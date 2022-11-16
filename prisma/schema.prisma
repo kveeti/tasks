@@ -1,0 +1,89 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity", "interactiveTransactions"]
+}
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+model User {
+    id         String     @id @default(cuid())
+    username   String?    @unique
+    email      String     @unique
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
+    deletedAt  DateTime?
+    ownedTags  Tag[]      @relation(name: "ownedTags")
+    ownedTasks Task[]     @relation(name: "ownedTasks")
+    logActors  LogActor[]
+}
+
+model Tag {
+    id            String     @id @default(cuid())
+    label         String
+    was_last_used Boolean    @default(false)
+    ownerId       String
+    owner         User       @relation(name: "ownedTags", fields: [ownerId], references: [id])
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
+    deletedAt     DateTime?
+    tasks         Task[]
+    logActors     LogActor[]
+}
+
+model Task {
+    id        String     @id @default(cuid())
+    tagId     String
+    tag       Tag        @relation(fields: [tagId], references: [id])
+    ownerId   String
+    owner     User       @relation(name: "ownedTasks", fields: [ownerId], references: [id])
+    expiresAt DateTime
+    stoppedAt DateTime?
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    deletedAt DateTime?
+    logActors LogActor[]
+}
+
+enum LogType {
+    UpdateUser
+    DeleteUser
+
+    CreateTag
+    UpdateTag
+    DeleteTag
+
+    CreateTask
+    StopTask
+    UpdateTask
+    DeleteTask
+}
+
+model Log {
+    id        String     @id @default(cuid())
+    createdAt DateTime   @default(now())
+    logType   LogType
+    actors    LogActor[]
+}
+
+enum LogActorSequenceType {
+    Executor
+    Target
+    TargetOwner
+}
+
+model LogActor {
+    id           String               @id @default(cuid())
+    userActorId  String?
+    userActor    User?                @relation(fields: [userActorId], references: [id])
+    taskActorId  String?
+    taskActor    Task?                @relation(fields: [taskActorId], references: [id])
+    tagActorId   String?
+    tagActor     Tag?                 @relation(fields: [tagActorId], references: [id])
+    sequenceType LogActorSequenceType
+    log          Log?                 @relation(fields: [logId], references: [id])
+    logId        String?
+}
