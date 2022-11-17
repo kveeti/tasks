@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { tagColorsEnum } from "~components/IndexPage/Timer/Tags/tagColors";
+
 import { tagLabelSchema, usernameSchema } from "./shared";
 
 export const me = {
@@ -10,12 +12,12 @@ export const me = {
 
 	tags: {
 		createTag: {
-			form: z.object({ label: tagLabelSchema }),
-			input: z.object({ label: tagLabelSchema }),
+			form: z.object({ label: tagLabelSchema, color: tagColorsEnum }),
+			input: z.object({ label: tagLabelSchema, color: tagColorsEnum }),
 		},
 		updateTag: {
-			form: z.object({ label: tagLabelSchema }),
-			input: z.object({ tagId: z.string(), label: tagLabelSchema }),
+			form: z.object({ label: tagLabelSchema, color: tagColorsEnum }),
+			input: z.object({ tagId: z.string(), label: tagLabelSchema, color: tagColorsEnum }),
 		},
 	},
 
