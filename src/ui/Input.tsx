@@ -3,7 +3,7 @@ import { ComponentProps, ReactNode, forwardRef, useId } from "react";
 
 import { classNames } from "~utils/classNames";
 
-import { WarningIcon } from "./Icons/WarningIcon";
+import { Error } from "./Error";
 
 type InputProps = Omit<ComponentProps<"input">, "ref" | "className">;
 
@@ -35,20 +35,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
 					/>
 				</div>
 
-				<AnimatePresence>
-					{hasError && (
-						<motion.span
-							initial={{ opacity: 0, height: 0 }}
-							animate={{ opacity: 1, height: "auto", transition: { duration: 0.15 } }}
-							exit={{ opacity: 0, height: 0, transition: { duration: 0.15 } }}
-							className="text-[15px] font-medium text-red-500"
-						>
-							<label htmlFor={id} className="flex items-center gap-1 pt-2">
-								<WarningIcon /> {error}
-							</label>
-						</motion.span>
-					)}
-				</AnimatePresence>
+				<Error message={error} />
 			</div>
 		);
 	}
