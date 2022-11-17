@@ -10,10 +10,6 @@ export const serverSchema = z.object({
 		(str) => process.env.VERCEL_URL ?? str,
 		process.env.VERCEL ? z.string() : z.string().url()
 	),
-	G_CLIENT_ID: z.string(),
-	G_CLIENT_SECRET: z.string(),
+	G_CLIENT_ID: process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
+	G_CLIENT_SECRET: process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
 });
-
-export const clientSchema = z.object({});
-
-export const clientEnv = {};
