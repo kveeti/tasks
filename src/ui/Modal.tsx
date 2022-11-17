@@ -1,6 +1,5 @@
-import { Dialog } from "@headlessui/react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ReactNode, useRef, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, ReactNode, useRef, useState } from "react";
 
 type Props = {
 	title: string;
@@ -13,45 +12,32 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 	const ref = useRef<HTMLHeadingElement | null>(null);
 
 	return (
-		<AnimatePresence>
-			{isOpen && (
-				<Dialog
-					static
-					as="div"
-					className="relative z-10"
-					onClose={closeModal}
-					open={isOpen}
+		<Transition appear show={isOpen} as={Fragment}>
+			<Dialog static as="div" className="relative z-10" onClose={closeModal} open={isOpen}>
+				<Transition.Child
+					as={Fragment}
+					enter="ease-out duration-[150ms]"
+					enterFrom="opacity-0"
+					enterTo="opacity-100"
+					leave="ease-in duration-[130ms]"
+					leaveFrom="opacity-100"
+					leaveTo="opacity-0"
 				>
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{
-							opacity: 1,
-							transition: { duration: 0.13, ease: "easeOut" },
-						}}
-						exit={{
-							opacity: 0,
-							transition: { duration: 0.11, ease: "easeIn" },
-						}}
-						className="fixed inset-0 bg-p-900/50 backdrop-blur-sm"
-					/>
+					<div className="fixed inset-0 bg-p-900/50 backdrop-blur-sm" />
+				</Transition.Child>
 
-					<div className="fixed inset-0 mx-3 overflow-y-auto">
-						<div className="flex min-h-full items-center justify-center text-center">
-							<Dialog.Panel
-								as={motion.div}
-								initial={{ opacity: 0, scale: 0.95 }}
-								animate={{
-									opacity: 1,
-									scale: 1,
-									transition: { duration: 0.06, ease: "easeOut" },
-								}}
-								exit={{
-									opacity: 0,
-									scale: 0.95,
-									transition: { duration: 0.04, ease: "easeIn" },
-								}}
-								className="w-full max-w-sm transform rounded-xl border border-p-700 bg-p-800 text-left align-middle shadow-xl transition-all"
-							>
+				<div className="fixed inset-0 mx-3 overflow-y-auto">
+					<div className="flex min-h-full items-center justify-center text-center">
+						<Transition.Child
+							as={Fragment}
+							enter="ease-out duration-[150ms]"
+							enterFrom="opacity-0 scale-95"
+							enterTo="opacity-100 scale-100"
+							leave="ease-in duration-[100ms]"
+							leaveFrom="opacity-100 scale-100"
+							leaveTo="opacity-0 scale-95"
+						>
+							<Dialog.Panel className="w-full max-w-sm transform rounded-xl border border-p-700 bg-p-800 text-left align-middle shadow-xl transition-all">
 								<Dialog.Title
 									ref={ref}
 									as="h3"
@@ -62,11 +48,11 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 
 								{children}
 							</Dialog.Panel>
-						</div>
+						</Transition.Child>
 					</div>
-				</Dialog>
-			)}
-		</AnimatePresence>
+				</div>
+			</Dialog>
+		</Transition>
 	);
 };
 
