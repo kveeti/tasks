@@ -4,7 +4,7 @@ import { classNames } from "~utils/classNames";
 
 type Props = {
 	children: ReactNode;
-	htmlFor: string;
+	htmlFor?: string;
 	required?: boolean;
 	error?: boolean;
 };
