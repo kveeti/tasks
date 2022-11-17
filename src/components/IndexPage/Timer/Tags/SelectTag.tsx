@@ -2,7 +2,7 @@ import { ApiTag } from "~types/apiTypes";
 import { Button } from "~ui/Button";
 import { Modal, useModal } from "~ui/Modal";
 
-import { CreateTag } from "./CreateTag";
+import { CreateTag } from "./CreateTag/CreateTag";
 
 type Props = {
 	setSelectedTag: (selectedTag: ApiTag) => void;

@@ -9,7 +9,7 @@ import { StopIcon } from "~ui/Icons/StopIcon";
 import { classNames } from "~utils/classNames";
 import { trpc } from "~utils/trpc";
 
-import { CreateTag } from "./Tags/CreateTag";
+import { CreateTag } from "./Tags/CreateTag/CreateTag";
 import { SelectTag } from "./Tags/SelectTag";
 import { SkeletonTimeButtons, TimeButtons } from "./TimeButtons";
 
