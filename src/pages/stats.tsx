@@ -7,6 +7,8 @@ import { useRef, useState } from "react";
 import { AnimatedChevron } from "~ui/AnimatedChevron";
 import { Button } from "~ui/Button";
 import { ErrorCard } from "~ui/ErrorCard";
+import { ChevronLeft } from "~ui/Icons/ChevronLeft";
+import { ChevronRight } from "~ui/Icons/ChevronRight";
 import { Layout } from "~ui/Layout/Layout";
 import type { Page } from "~utils/PageType";
 import { classNames } from "~utils/classNames";
@@ -26,11 +28,11 @@ const StatsPage: Page = () => {
 			<div className="flex w-full flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
 				<div className="flex justify-between gap-2">
 					<Button onClick={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
-						{"<-"}
+						<ChevronLeft />
 					</Button>
 					<Button className="w-full text-sm">Week {format(selectedWeek, "I")}</Button>
 					<Button onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
-						{"->"}
+						<ChevronRight />
 					</Button>
 				</div>
 
@@ -78,7 +80,7 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 			className="flex flex-col rounded-md border border-p-600 bg-p-700 p-2"
 			onClick={() => setIsOpen(!isOpen)}
 		>
-			<div className="flex justify-between">
+			<div className="flex items-center justify-between">
 				<h2 className="text-lg font-bold">Total</h2>
 
 				<div className="rounded-md border border-p-500 bg-p-600 p-1">
@@ -101,7 +103,7 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 									style={{ backgroundColor: d.tag.color }}
 								/>
 
-								<div className="flex flex-col justify-between gap-1">
+								<div className="flex flex-col justify-between">
 									<p>{d.tag.label}</p>
 									<p>{d.minutes} min</p>
 								</div>
@@ -126,8 +128,6 @@ const WeekdayInfo = ({ data }: WeekdayInfoProps) => {
 		<div
 			className="flex select-none flex-col rounded-md border border-p-600 bg-p-700 p-2"
 			onClick={() => {
-				console.log(ref);
-
 				setIsOpen(!isOpen);
 				if (!isOpen) {
 					setTimeout(() => {
@@ -225,7 +225,9 @@ const Chart = ({ data }: ChartProps) => {
 						<div key={i} className="flex flex-col">
 							{d.tagMinutes.map((tm, tmIndex) => {
 								const isFirst = tmIndex === 0;
-								const isLast = tmIndex === d.tagMinutes.length - 1;
+								const isLast =
+									tmIndex ===
+									d.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
 
 								return (
 									<motion.div
