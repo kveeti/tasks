@@ -48,7 +48,8 @@ export const Timer = () => {
 			clearInterval(id);
 			setIntervalId(null);
 		};
-	}, [activeTask, intervalId]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeTask]);
 
 	const startMutation = trpc.me.tasks.createTask.useMutation();
 	const stopMutation = trpc.me.tasks.stopTask.useMutation();
