@@ -50,3 +50,7 @@ export const DeleteAccount = () => {
 		</>
 	);
 };
+
+export const SkeletonDeleteAccount = () => {
+	return <Button intent="skeleton">&nbsp;</Button>;
+};

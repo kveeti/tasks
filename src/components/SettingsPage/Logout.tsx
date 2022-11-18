@@ -13,3 +13,7 @@ export const Logout = ({ disabled }: Props) => {
 		</Button>
 	);
 };
+
+export const SkeletonLogout = () => {
+	return <Button intent="skeleton">&nbsp;</Button>;
+};

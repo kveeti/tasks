@@ -3,20 +3,17 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
-import { ApiUser } from "~types/apiTypes";
 import { Button } from "~ui/Button";
 import { Input } from "~ui/Input";
 import { Modal, useModal } from "~ui/Modal";
-import { trpc } from "~utils/trpc";
+import { RouterOutputs, trpc } from "~utils/trpc";
 import { v } from "~validation";
-
-import { EditAccountButton } from "./EditAccountButton";
 
 type EditAccountFormSchema = z.infer<typeof v.me.updateMe.form>;
 
-type Props = { user: ApiUser };
+type Props = { user: RouterOutputs["me"]["getMe"] };
 
-export const EditAccountModal = ({ user }: Props) => {
+export const EditAccount = ({ user }: Props) => {
 	const { closeModal, openModal, isModalOpen } = useModal();
 
 	const utils = trpc.useContext();
@@ -46,7 +43,7 @@ export const EditAccountModal = ({ user }: Props) => {
 
 	return (
 		<>
-			<EditAccountButton onClick={openModal} />
+			<Button onClick={openModal}>Edit account</Button>
 
 			<Modal title="Edit user" isOpen={isModalOpen} closeModal={closeModal}>
 				<form
@@ -73,4 +70,8 @@ export const EditAccountModal = ({ user }: Props) => {
 			</Modal>
 		</>
 	);
+};
+
+export const SkeletonEditAccount = () => {
+	return <Button intent="skeleton">&nbsp;</Button>;
 };
