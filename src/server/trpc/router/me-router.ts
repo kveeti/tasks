@@ -213,8 +213,6 @@ export const meRouter = router({
 					},
 				});
 
-				console.log(activeTask);
-
 				if (activeTask) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
