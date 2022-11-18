@@ -7,6 +7,8 @@ import { useRef, useState } from "react";
 import { AnimatedChevron } from "~ui/AnimatedChevron";
 import { Button } from "~ui/Button";
 import { ErrorCard } from "~ui/ErrorCard";
+import { ChevronLeft } from "~ui/Icons/ChevronLeft";
+import { ChevronRight } from "~ui/Icons/ChevronRight";
 import { Layout } from "~ui/Layout/Layout";
 import type { Page } from "~utils/PageType";
 import { classNames } from "~utils/classNames";
@@ -26,11 +28,11 @@ const StatsPage: Page = () => {
 			<div className="flex w-full flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
 				<div className="flex justify-between gap-2">
 					<Button onClick={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
-						{"<-"}
+						<ChevronLeft />
 					</Button>
 					<Button className="w-full text-sm">Week {format(selectedWeek, "I")}</Button>
 					<Button onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
-						{"->"}
+						<ChevronRight />
 					</Button>
 				</div>
 
