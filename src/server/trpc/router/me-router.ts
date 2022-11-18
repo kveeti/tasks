@@ -119,6 +119,7 @@ export const meRouter = router({
 					const createdTag = await tx.tag.create({
 						data: {
 							label: input.label,
+							color: input.color,
 							owner: { connect: { id: ctx.userId } },
 						},
 					});
@@ -157,7 +158,7 @@ export const meRouter = router({
 				return await ctx.prisma.$transaction(async (tx) => {
 					const updatedTag = await tx.tag.update({
 						where: { id: input.tagId },
-						data: { label: input.label },
+						data: { label: input.label, color: input.color },
 					});
 
 					await tx.log.create({
