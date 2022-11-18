@@ -345,9 +345,14 @@ export const meRouter = router({
 					const tasks = dailyTasks.filter((task) => isSameDay(task.createdAt, day));
 
 					const tagMinutes = tags.map((tag) => {
-						const tagTasks = tasks.filter((task) => task.tagId === tag.id);
+						const currentTime = new Date();
+						const completeTagTasks = tasks.filter(
+							(task) =>
+								task.tagId === tag.id &&
+								(task.stoppedAt || task.expiresAt < currentTime)
+						);
 
-						const minutes = tagTasks.reduce((acc, task) => {
+						const minutes = completeTagTasks.reduce((acc, task) => {
 							const taskMinutes = differenceInMinutes(
 								task.stoppedAt ?? task.expiresAt,
 								task.createdAt
