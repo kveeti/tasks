@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 body {
-    @apply bg-p-900 text-p-100;
+	@apply bg-p-900 text-p-100;
 
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	-webkit-tap-highlight-color: transparent;
 }
