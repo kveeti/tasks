@@ -9,7 +9,7 @@ module.exports = {
 				p: colors.stone,
 			},
 			maxWidth: {
-				page: "280px",
+				page: "300px",
 			},
 			keyframes: {
 				"my-pulse": { "50%": { opacity: 0.3 } },
