@@ -2,7 +2,7 @@ import { AccountSettings, SkeletonAccountSettings } from "~components/SettingsPa
 import { DeleteAccount, SkeletonDeleteAccount } from "~components/SettingsPage/DeleteAccount";
 import { ErrorCard } from "~ui/ErrorCard";
 import { Layout } from "~ui/Layout/Layout";
-import { Page } from "~utils/PageType";
+import type { Page } from "~utils/PageType";
 import { trpc } from "~utils/trpc";
 
 export const SettingsPage: Page = () => {

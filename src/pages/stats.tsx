@@ -8,9 +8,10 @@ import { AnimatedChevron } from "~ui/AnimatedChevron";
 import { Button } from "~ui/Button";
 import { ErrorCard } from "~ui/ErrorCard";
 import { Layout } from "~ui/Layout/Layout";
-import { Page } from "~utils/PageType";
+import type { Page } from "~utils/PageType";
 import { classNames } from "~utils/classNames";
-import { RouterOutputs, trpc } from "~utils/trpc";
+import { trpc } from "~utils/trpc";
+import type { RouterOutputs } from "~utils/trpc";
 
 const StatsPage: Page = () => {
 	const [selectedWeek, setSelectedWeek] = useState(new Date());
@@ -93,8 +94,8 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 						exit={{ height: 0, opacity: 0 }}
 						transition={{ duration: 0.2 }}
 					>
-						{data.map((d) => (
-							<div className="flex items-center gap-2 pt-2">
+						{data.map((d, i) => (
+							<div key={i} className="flex items-center gap-2 pt-2">
 								<div
 									className={classNames("h-8 w-8 rounded-md")}
 									style={{ backgroundColor: d.tag.color }}
@@ -182,8 +183,10 @@ const WeekdayInfo = ({ data }: WeekdayInfoProps) => {
 const ChartWeekdays = () => {
 	return (
 		<div className="grid w-full grid-cols-8 gap-1">
-			{[...Array("M", "T", "W", "T", "F", "S", "S")]?.map((weekday) => (
-				<p className="text-center text-xs">{weekday}</p>
+			{["M", "T", "W", "T", "F", "S", "S"].map((weekday, i) => (
+				<p key={i} className="text-center text-xs">
+					{weekday}
+				</p>
 			))}
 			<div className="text-[10px]">min</div>
 		</div>
@@ -208,7 +211,7 @@ const Chart = ({ data }: ChartProps) => {
 		totalMinutesScaled: Math.round(
 			((d.totalMinutes - min) / (max - min)) * (dmax - dmin) + dmin
 		),
-		tagMinutes: d.tagMinutes.map((t, i) => ({
+		tagMinutes: d.tagMinutes.map((t) => ({
 			...t,
 			minutesScaled: Math.round(((t.minutes - min) / (max - min)) * (dmax - dmin) + dmin),
 		})),
@@ -219,7 +222,7 @@ const Chart = ({ data }: ChartProps) => {
 			<div className="flex flex-col gap-2 rounded-md border border-p-600 bg-p-700 p-2">
 				<div className="grid h-[150px] w-full grid-cols-8 items-end justify-end gap-1">
 					{scaled?.map((d, i) => (
-						<div className="flex flex-col">
+						<div key={i} className="flex flex-col">
 							{d.tagMinutes.map((tm, tmIndex) => {
 								const isFirst = tmIndex === 0;
 								const isLast = tmIndex === d.tagMinutes.length - 1;
@@ -247,7 +250,7 @@ const Chart = ({ data }: ChartProps) => {
 
 					<div className="flex h-full flex-col justify-between">
 						{[...Array(yNumbers)].map((_, i) => (
-							<div className="text-xs leading-[80%]">
+							<div key={i} className="text-xs leading-[80%]">
 								{Math.round(min + yBetween * (yNumbers - i))}
 							</div>
 						))}

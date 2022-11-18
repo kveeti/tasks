@@ -8,10 +8,12 @@ import { prisma } from "../../../server/db/client";
 export const authOptions: NextAuthOptions = {
 	session: { strategy: "jwt" },
 	providers: [
-		env.NODE_ENV === "production"
+		env.NODE_ENV !== "production"
 			? GoogleProvider({
-					clientId: env.G_CLIENT_ID,
-					clientSecret: env.G_CLIENT_SECRET,
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					clientId: env.G_CLIENT_ID!,
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					clientSecret: env.G_CLIENT_SECRET!,
 					authorization: {
 						params: {
 							scope: "email",

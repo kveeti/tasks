@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { ComponentProps, ReactNode, forwardRef, useId } from "react";
+import { forwardRef, useId } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { classNames } from "~utils/classNames";
 
@@ -14,8 +14,10 @@ type Props = InputProps & {
 };
 
 export const Input = forwardRef<HTMLInputElement, Props>(
-	({ label, required, id = useId(), error, ...rest }, ref) => {
-		if (!label) return <InnerInput ref={ref} required={required} id={id} {...rest} />;
+	({ label, required, id, error, ...rest }, ref) => {
+		const innerId = useId();
+		if (!label)
+			return <InnerInput ref={ref} required={required} id={id ?? innerId} {...rest} />;
 
 		const hasError = !!error;
 
@@ -57,3 +59,6 @@ const InnerInput = forwardRef<HTMLInputElement, InputProps & { invalid?: boolean
 		);
 	}
 );
+
+Input.displayName = "Input";
+InnerInput.displayName = "InnerInput";

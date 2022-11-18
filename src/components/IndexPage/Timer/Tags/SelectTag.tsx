@@ -1,4 +1,4 @@
-import { ApiTag } from "~types/apiTypes";
+import type { ApiTag } from "~types/apiTypes";
 import { Button } from "~ui/Button";
 import { Modal, useModal } from "~ui/Modal";
 

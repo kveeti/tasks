@@ -2,7 +2,7 @@ import differenceInMinutes from "date-fns/differenceInMinutes";
 import { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 
-import { ApiTag } from "~types/apiTypes";
+import type { ApiTag } from "~types/apiTypes";
 import { Button } from "~ui/Button";
 import { PlayIcon } from "~ui/Icons/PlayIcon";
 import { StopIcon } from "~ui/Icons/StopIcon";
@@ -48,7 +48,7 @@ export const Timer = () => {
 			clearInterval(id);
 			setIntervalId(null);
 		};
-	}, [activeTask]);
+	}, [activeTask, intervalId]);
 
 	const startMutation = trpc.me.tasks.createTask.useMutation();
 	const stopMutation = trpc.me.tasks.stopTask.useMutation();

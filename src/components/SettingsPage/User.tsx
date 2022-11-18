@@ -1,6 +1,6 @@
 import { IoLogoGoogle } from "react-icons/io";
 
-import { RouterOutputs } from "~utils/trpc";
+import type { RouterOutputs } from "~utils/trpc";
 
 type Props = {
 	user: RouterOutputs["me"]["getMe"];

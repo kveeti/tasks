@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { Button } from "~ui/Button";
 import { Error } from "~ui/Error";

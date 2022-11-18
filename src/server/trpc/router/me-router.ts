@@ -259,7 +259,7 @@ export const meRouter = router({
 		/**
 		 * STOP TASK
 		 */
-		stopTask: protectedProcedure.mutation(async ({ ctx, input }) => {
+		stopTask: protectedProcedure.mutation(async ({ ctx }) => {
 			const userId = ctx.userId;
 			const currentTime = new Date();
 

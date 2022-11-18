@@ -1,9 +1,10 @@
 import { LayoutGroup, motion } from "framer-motion";
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 import { classNames } from "~utils/classNames";
 
-import { TagColors, tagColors } from "../tagColors";
+import { tagColors } from "../tagColors";
+import type { TagColors } from "../tagColors";
 
 type Props = {
 	form: UseFormReturn<{ color: TagColors; label: string }>;

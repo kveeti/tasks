@@ -1,6 +1,6 @@
 import { Timer } from "~components/IndexPage/Timer/Timer";
 import { Layout } from "~ui/Layout/Layout";
-import { Page } from "~utils/PageType";
+import type { Page } from "~utils/PageType";
 
 const Home: Page = () => {
 	return (

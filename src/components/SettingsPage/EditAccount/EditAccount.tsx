@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { Button } from "~ui/Button";
 import { Input } from "~ui/Input";
 import { Modal, useModal } from "~ui/Modal";
-import { RouterOutputs, trpc } from "~utils/trpc";
+import { trpc } from "~utils/trpc";
+import type { RouterOutputs } from "~utils/trpc";
 import { v } from "~validation";
 
 type EditAccountFormSchema = z.infer<typeof v.me.updateMe.form>;

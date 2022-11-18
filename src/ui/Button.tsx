@@ -6,7 +6,7 @@ import { ComponentProps, ReactNode, useRef } from "react";
 
 import { buttonColors } from "~utils/buttonColors";
 import { classNames } from "~utils/classNames";
-import { Color } from "~utils/colors";
+import type { Color } from "~utils/colors";
 
 const buttonStyles = cva(
 	"select-none flex items-center rounded-md justify-center border outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline,_opacity] disabled:opacity-30 disabled:cursor-not-allowed",
@@ -90,6 +90,7 @@ export const Button = ({
 
 	return (
 		<FocusRing focusRingClass="outline-none outline-blue-500 outline outline-[3px] outline-offset-2">
+			{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
 			{/* @ts-ignore buttonProps are incompatible at the type level */}
 			<motion.button
 				ref={ref}

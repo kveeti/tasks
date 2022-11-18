@@ -29,6 +29,7 @@
 		"noPropertyAccessFromIndexSignature": false,
 		"noFallthroughCasesInSwitch": true,
 		"useUnknownInCatchVariables": false,
+		"importsNotUsedAsValues": "error",
 		"baseUrl": ".",
 		"paths": {
 			"~*": ["./src/*"]

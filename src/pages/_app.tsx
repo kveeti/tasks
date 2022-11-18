@@ -1,10 +1,10 @@
-import { type Session } from "next-auth";
+import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
-import { type AppType } from "next/app";
-import { ReactNode } from "react";
+import type { AppType } from "next/app";
+import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 
-import { Page } from "~utils/PageType";
+import type { Page } from "~utils/PageType";
 
 import "../styles/globals.css";
 import { trpc } from "../utils/trpc";

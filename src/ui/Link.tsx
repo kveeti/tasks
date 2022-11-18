@@ -1,4 +1,4 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 
 export const Link = (props: Omit<ComponentProps<"a">, "className">) => {
 	return (

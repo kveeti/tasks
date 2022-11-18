@@ -1,4 +1,4 @@
-import { RouterOutputs } from "~utils/trpc";
+import type { RouterOutputs } from "~utils/trpc";
 
 import { EditAccount, SkeletonEditAccount } from "./EditAccount/EditAccount";
 import { Logout, SkeletonLogout } from "./Logout";
