@@ -127,17 +127,7 @@ const WeekdayInfo = ({ data }: WeekdayInfoProps) => {
 	return (
 		<div
 			className="flex select-none flex-col rounded-md border border-p-600 bg-p-700 p-2"
-			onClick={() => {
-				setIsOpen(!isOpen);
-				if (!isOpen) {
-					setTimeout(() => {
-						ref.current?.scrollIntoView({
-							behavior: "auto",
-							block: "center",
-						});
-					}, 200);
-				}
-			}}
+			onClick={() => setIsOpen(!isOpen)}
 			ref={ref}
 		>
 			<div className="flex items-center justify-between">
