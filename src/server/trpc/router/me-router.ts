@@ -373,7 +373,25 @@ export const meRouter = router({
 					};
 				});
 
-				return dailyStats;
+				const totalMinutes = dailyStats.reduce((acc, day) => acc + day.totalMinutes, 0);
+
+				const weeklyTotalMinutesPerTag = tags.map((tag) => {
+					const minutes = dailyStats.reduce((acc, day) => {
+						const tagMinutes =
+							day.tagMinutes.find((tagMinute) => tagMinute.tag.id === tag.id)
+								?.minutes ?? 0;
+
+						return acc + tagMinutes;
+					}, 0);
+
+					return { tag, minutes };
+				});
+
+				return {
+					hasData: totalMinutes > 0,
+					dailyStats,
+					weeklyTotalMinutesPerTag,
+				};
 			}),
 	}),
 });

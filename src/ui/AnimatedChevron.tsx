@@ -4,14 +4,14 @@ import { ChevronDown } from "./Icons/ChevronDown";
 
 type Props = {
 	open: boolean;
-	className?: string;
+	openByDefault?: boolean;
 };
 
-export const AnimatedChevron = ({ open, className }: Props) => (
+export const AnimatedChevron = ({ open, openByDefault }: Props) => (
 	<motion.div
 		key="chevron"
 		aria-hidden="true"
-		initial={{ transform: "rotate(0deg)" }}
+		initial={{ transform: openByDefault ? "rotate(180deg)" : "rotate(0deg)" }}
 		animate={open ? { transform: "rotate(180deg)" } : { transform: "rotate(0deg)" }}
 		transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
 	>
