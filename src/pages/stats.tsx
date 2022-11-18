@@ -223,7 +223,9 @@ const Chart = ({ data }: ChartProps) => {
 						<div key={i} className="flex flex-col">
 							{d.tagMinutes.map((tm, tmIndex) => {
 								const isFirst = tmIndex === 0;
-								const isLast = tmIndex === d.tagMinutes.length - 1;
+								const isLast =
+									tmIndex ===
+									d.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
 
 								return (
 									<motion.div
