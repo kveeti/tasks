@@ -23,6 +23,7 @@ const main = async () => {
 	const tag1 = await prisma.tag.create({
 		data: {
 			label: "tag-1",
+			color: "#01161E",
 			owner: { connect: { id: user.id } },
 		},
 	});
@@ -30,6 +31,7 @@ const main = async () => {
 	const tag2 = await prisma.tag.create({
 		data: {
 			label: "tag-2",
+			color: "#EFF6E0",
 			owner: { connect: { id: user.id } },
 		},
 	});
@@ -37,6 +39,7 @@ const main = async () => {
 	const tag3 = await prisma.tag.create({
 		data: {
 			label: "tag-3",
+			color: "#598392",
 			owner: { connect: { id: user.id } },
 		},
 	});
