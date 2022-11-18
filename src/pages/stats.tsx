@@ -126,8 +126,6 @@ const WeekdayInfo = ({ data }: WeekdayInfoProps) => {
 		<div
 			className="flex select-none flex-col rounded-md border border-p-600 bg-p-700 p-2"
 			onClick={() => {
-				console.log(ref);
-
 				setIsOpen(!isOpen);
 				if (!isOpen) {
 					setTimeout(() => {
