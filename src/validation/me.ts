@@ -28,7 +28,7 @@ export const me = {
 				tagId: z.string(),
 			}),
 			input: z.object({
-				expires_after: z.number(), // minutes
+				expires_after: z.number().min(5).max(120), // minutes
 				tagId: z.string(),
 			}),
 		},

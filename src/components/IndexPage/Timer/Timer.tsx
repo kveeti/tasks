@@ -107,6 +107,8 @@ export const Timer = () => {
 	};
 
 	const addTime = (timeToAdd: number) => {
+		if (time + timeToAdd > 120) return toast.error("You can't add more than 2 hours!");
+
 		setTime(time + timeToAdd);
 	};
 
