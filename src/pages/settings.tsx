@@ -11,9 +11,9 @@ export const SettingsPage: Page = () => {
 
 	return (
 		<Layout>
-			<h1 className="text-3xl font-bold">Settings</h1>
+			<h1 className="pb-10 text-4xl font-bold">Settings</h1>
 
-			<div className="mt-6 flex flex-col gap-8">
+			<div className="flex flex-col gap-8">
 				<AccountSettings user={me} />
 
 				<DeleteAccount />
