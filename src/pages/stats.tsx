@@ -78,7 +78,7 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 			className="flex flex-col rounded-md border border-p-600 bg-p-700 p-2"
 			onClick={() => setIsOpen(!isOpen)}
 		>
-			<div className="flex justify-between">
+			<div className="flex items-center justify-between">
 				<h2 className="text-lg font-bold">Total</h2>
 
 				<div className="rounded-md border border-p-500 bg-p-600 p-1">
@@ -101,7 +101,7 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 									style={{ backgroundColor: d.tag.color }}
 								/>
 
-								<div className="flex flex-col justify-between gap-1">
+								<div className="flex flex-col justify-between">
 									<p>{d.tag.label}</p>
 									<p>{d.minutes} min</p>
 								</div>
