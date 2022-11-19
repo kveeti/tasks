@@ -355,7 +355,8 @@ export const meRouter = router({
 						const minutes = completeTagTasks.reduce((acc, task) => {
 							const taskMinutes = differenceInMinutes(
 								task.stoppedAt ?? task.expiresAt,
-								task.createdAt
+								task.createdAt,
+								{ roundingMethod: "round" }
 							);
 
 							return acc + taskMinutes;
