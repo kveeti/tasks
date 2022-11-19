@@ -1,6 +1,6 @@
 import { signOut } from "next-auth/react";
 
-import { Button } from "~ui/Button";
+import { Button, SkeletonButton } from "~ui/Button";
 
 type Props = {
 	disabled?: boolean;
@@ -8,12 +8,12 @@ type Props = {
 
 export const Logout = ({ disabled }: Props) => {
 	return (
-		<Button onClick={() => signOut()} disabled={disabled}>
+		<Button onPress={() => signOut()} isDisabled={disabled}>
 			Logout
 		</Button>
 	);
 };
 
 export const SkeletonLogout = () => {
-	return <Button intent="skeleton">&nbsp;</Button>;
+	return <SkeletonButton className="w-full" />;
 };

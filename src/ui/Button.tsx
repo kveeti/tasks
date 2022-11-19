@@ -1,114 +1,126 @@
-import { useButton } from "@react-aria/button";
+import { AriaButtonProps, useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
-import { VariantProps, cva } from "class-variance-authority";
+import { useFocusableRef } from "@react-spectrum/utils";
+import type { FocusableRef } from "@react-types/shared";
 import { motion, useAnimation } from "framer-motion";
-import { ComponentProps, ReactNode, useRef } from "react";
+import { forwardRef } from "react";
 
-import { buttonColors } from "~utils/buttonColors";
 import { classNames } from "~utils/classNames";
-import type { Color } from "~utils/colors";
+import { ColorLevel, colors } from "~utils/colors";
 
-const buttonStyles = cva(
-	"select-none flex items-center rounded-md justify-center border outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline,_opacity] disabled:opacity-30 disabled:cursor-not-allowed",
-	{
-		variants: {
-			intent: {
-				primary: buttonColors.primary.CLASSES,
-				submit: buttonColors.submit.CLASSES,
-				skeleton: buttonColors.primary.CLASSES,
-				skeleton_pulse: buttonColors.primary.CLASSES + " animate-pulse",
-			},
-			size: {
-				small: "text-sm px-3 py-2",
-				normal: "px-3 py-2",
-				large: "text-lg px-4 py-3",
-				huge: "text-4xl px-4 py-2",
-			},
-			marginCenter: { true: "mx-auto" },
-			enableTouch: { false: "touch-none", true: "touch-auto" },
+import { NonBreakingSpace } from "./NonBreakingSpace";
+
+const getColors = (intent: "primary" | "submit" = "primary") => {
+	const primaryBg = 800;
+	const primaryBorder = 600;
+
+	const submitBg = primaryBg - 200;
+	const submitBorder = primaryBorder - 200;
+
+	const bg = (intent === "primary" ? primaryBg : submitBg) as ColorLevel;
+	const border = (intent === "primary" ? primaryBorder : submitBorder) as ColorLevel;
+
+	const pressedBg = (bg - 200) as ColorLevel;
+	const pressedBorder = (border - 200) as ColorLevel;
+
+	return {
+		background: colors.p[bg],
+		border: colors.p[border],
+
+		pressed: {
+			background: colors.p[pressedBg],
+			border: colors.p[pressedBorder],
 		},
-		defaultVariants: {
-			size: "normal",
-			intent: "primary",
-			enableTouch: false,
-		},
-	}
-);
+	};
+};
 
-type Props = {
-	children: ReactNode;
-	onClick?: () => void;
-} & ComponentProps<"button"> &
-	VariantProps<typeof buttonStyles>;
-
-export const Button = ({
-	children,
-	onClick,
-	intent,
-	size,
-	marginCenter,
-	enableTouch,
-	type = "button",
-	disabled,
-	className,
-}: Props) => {
-	const ref = useRef<HTMLButtonElement | null>(null);
+const Button = (
+	props: AriaButtonProps<"button"> & { className?: string; intent?: "primary" | "submit" },
+	ref: FocusableRef<HTMLButtonElement>
+) => {
 	const controls = useAnimation();
 
-	const innerIntent = (intent as Color) || "primary";
-	const isDisabled = intent === "skeleton" || disabled;
+	const domRef = useFocusableRef<HTMLButtonElement>(ref);
 
-	const { buttonProps } = useButton(
+	const { intent = "primary" } = props;
+	const { background, border, pressed } = getColors(intent);
+
+	const {
+		buttonProps: {
+			// framer motion doesn't like these props, and typescript doesn't like unused vars
+			onAnimationStart: _onAnimationStart,
+			onAnimationEnd: _onAnimationEnd,
+			onDragStart: _onDragStart,
+			onDragEnd: _onDragEnd,
+			onDrag: _onDrag,
+			...buttonProps
+		},
+	} = useButton(
 		{
-			onPressStart: () => {
+			...props,
+			onPressStart: (e) => {
+				props.onPressStart && props.onPressStart(e);
 				controls.stop();
 				controls.set({
-					background: buttonColors[innerIntent].onPress.background,
-					borderColor: buttonColors[innerIntent].onPress.borderColor,
+					background: pressed.background,
+					borderColor: pressed.border,
 				});
 			},
-			onPressEnd: () => {
+			onPressEnd: (e) => {
+				props.onPressEnd && props.onPressEnd(e);
 				controls.start({
-					background: buttonColors[innerIntent].background,
-					borderColor: buttonColors[innerIntent].borderColor,
+					background: background,
+					borderColor: border,
 					transition: { duration: 0.4 },
 				});
 			},
-			onPress: () => {
-				onClick && onClick();
+			onPress: (e) => {
+				props.onPress && props.onPress(e);
+
 				controls.start({
-					background: [null, buttonColors[innerIntent].background],
-					borderColor: [null, buttonColors[innerIntent].borderColor],
+					background: [null, background],
+					borderColor: [null, border],
 					transition: { duration: 0.4 },
 				});
 			},
-			isDisabled,
-			type,
 		},
-		ref
+		domRef
 	);
 
 	return (
-		<FocusRing focusRingClass="outline-none outline-blue-500 outline outline-[3px] outline-offset-2">
-			{/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-			{/* @ts-ignore buttonProps are incompatible at the type level */}
+		<FocusRing focusRingClass="outline-none outline-blue-400 outline outline-[3px] outline-offset-2">
 			<motion.button
-				ref={ref}
+				ref={domRef}
 				animate={controls}
 				className={classNames(
-					buttonStyles({
-						intent,
-						size,
-						marginCenter,
-						enableTouch,
-					}),
-					className
+					"flex cursor-auto select-none items-center justify-center rounded-md border px-3 py-2 outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline,_opacity] disabled:cursor-not-allowed disabled:text-primary-300 disabled:opacity-50",
+					props.className && props.className
 				)}
+				style={{
+					background,
+					borderColor: border,
+				}}
 				{...buttonProps}
-				type={type}
 			>
-				{children}
+				{props.children}
 			</motion.button>
 		</FocusRing>
+	);
+};
+
+const _Button = forwardRef(Button);
+export { _Button as Button };
+
+export const SkeletonButton = ({ className }: { className?: string }) => {
+	return (
+		<button
+			disabled
+			className={classNames(
+				"rounded-md border border-primary-600 bg-primary-800 px-3 py-2 transition-[outline,_opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-30",
+				className
+			)}
+		>
+			<NonBreakingSpace />
+		</button>
 	);
 };

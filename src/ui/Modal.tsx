@@ -1,6 +1,8 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, ReactNode, useRef, useState } from "react";
 
+import { Card } from "./Card";
+
 type Props = {
 	title: string;
 	children: ReactNode;
@@ -23,7 +25,7 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 					leaveFrom="opacity-100"
 					leaveTo="opacity-0"
 				>
-					<div className="fixed inset-0 bg-p-900/50 backdrop-blur-sm" />
+					<div className="bg-primary-1200/50 fixed inset-0 backdrop-blur-sm" />
 				</Transition.Child>
 
 				<div className="fixed inset-0 mx-3 overflow-y-auto">
@@ -37,7 +39,10 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 							leaveFrom="opacity-100 scale-100"
 							leaveTo="opacity-0 scale-95"
 						>
-							<Dialog.Panel className="w-full max-w-sm transform rounded-xl border border-p-700 bg-p-800 text-left align-middle shadow-xl transition-all">
+							<Dialog.Panel
+								as={Card}
+								className="w-full max-w-sm transform rounded-xl text-left align-middle shadow-xl transition-all"
+							>
 								<Dialog.Title
 									ref={ref}
 									as="h3"

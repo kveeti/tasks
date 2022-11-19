@@ -1,4 +1,5 @@
-import { Button } from "~ui/Button";
+import { Button, SkeletonButton } from "~ui/Button";
+import { classNames } from "~utils/classNames";
 
 type Props = {
 	addTime: (timeToAdd: number) => void;
@@ -9,20 +10,34 @@ type Props = {
 export const TimeButtons = ({ addTime, subtractTime, disabled }: Props) => {
 	return (
 		<div className="grid w-full grid-cols-2 grid-rows-1 gap-2">
-			<div className="flex flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
-				<Button disabled={disabled} onClick={() => addTime(30)}>
+			<div
+				className={classNames(
+					"flex flex-col gap-2 rounded-xl border  p-2",
+					disabled
+						? "border-primary-900 bg-primary-1200"
+						: "border-primary-700 bg-primary-1100"
+				)}
+			>
+				<Button isDisabled={disabled} onPress={() => addTime(30)}>
 					+ 30 min
 				</Button>
-				<Button disabled={disabled} onClick={() => subtractTime(30)}>
+				<Button isDisabled={disabled} onPress={() => subtractTime(30)}>
 					- 30 min
 				</Button>
 			</div>
 
-			<div className="flex flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
-				<Button disabled={disabled} onClick={() => addTime(5)}>
+			<div
+				className={classNames(
+					"flex flex-col gap-2 rounded-xl border  p-2",
+					disabled
+						? "border-primary-900 bg-primary-1200"
+						: "border-primary-700 bg-primary-1100"
+				)}
+			>
+				<Button isDisabled={disabled} onPress={() => addTime(5)}>
 					+ 5 min
 				</Button>
-				<Button disabled={disabled} onClick={() => subtractTime(5)}>
+				<Button isDisabled={disabled} onPress={() => subtractTime(5)}>
 					- 5 min
 				</Button>
 			</div>
@@ -33,14 +48,14 @@ export const TimeButtons = ({ addTime, subtractTime, disabled }: Props) => {
 export const SkeletonTimeButtons = () => {
 	return (
 		<div className="grid w-full grid-cols-2 grid-rows-1 gap-2">
-			<div className="flex flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
-				<Button disabled>&nbsp;</Button>
-				<Button disabled>&nbsp;</Button>
+			<div className="border-primary-700 bg-primary-800 flex flex-col gap-2 rounded-xl border p-2">
+				<SkeletonButton />
+				<SkeletonButton />
 			</div>
 
-			<div className="flex flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
-				<Button disabled>&nbsp;</Button>
-				<Button disabled>&nbsp;</Button>
+			<div className="border-primary-700 bg-primary-800 flex flex-col gap-2 rounded-xl border p-2">
+				<SkeletonButton />
+				<SkeletonButton />
 			</div>
 		</div>
 	);

@@ -29,6 +29,8 @@ export const CreateTag = () => {
 	});
 
 	const onSubmit = async (values: CreateTagFormSchema) => {
+		console.log("onSubmit");
+
 		try {
 			await toast.promise(mutation.mutateAsync(values), {
 				loading: "Creating tag...",
@@ -47,7 +49,7 @@ export const CreateTag = () => {
 
 	return (
 		<>
-			<Button intent="submit" onClick={openModal}>
+			<Button intent="submit" onPress={openModal}>
 				Create a tag
 			</Button>
 
@@ -73,8 +75,8 @@ export const CreateTag = () => {
 					</div>
 
 					<div className="grid grid-cols-2 gap-2 pt-2">
-						<Button onClick={closeModal}>Cancel</Button>
-						<Button disabled={isSubmitting} type="submit" intent="submit">
+						<Button onPress={closeModal}>Cancel</Button>
+						<Button intent="submit" isDisabled={isSubmitting} type="submit">
 							{isSubmitting ? "Creating..." : "Create"}
 						</Button>
 					</div>

@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 
 import { AnimatedChevron } from "~ui/AnimatedChevron";
 import { Button } from "~ui/Button";
+import { Card } from "~ui/Card";
 import { ErrorCard } from "~ui/ErrorCard";
 import { ChevronLeft } from "~ui/Icons/ChevronLeft";
 import { ChevronRight } from "~ui/Icons/ChevronRight";
@@ -25,45 +26,51 @@ const StatsPage: Page = () => {
 		<Layout>
 			<h1 className="pb-10 text-4xl font-bold">Stats</h1>
 
-			<div className="flex w-full flex-col gap-2 rounded-xl border border-p-700 bg-p-800 p-2">
-				<div className="flex justify-between gap-2">
-					<Button onClick={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
-						<ChevronLeft />
-					</Button>
-					<Button className="w-full text-sm">Week {format(selectedWeek, "I")}</Button>
-					<Button onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
-						<ChevronRight />
-					</Button>
+			<Card className="rounded-xl">
+				<div className="flex w-full flex-col gap-2 p-2">
+					<div className="flex justify-between gap-2">
+						<Button onPress={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
+							<ChevronLeft />
+						</Button>
+						<Button className="w-full text-sm">Week {format(selectedWeek, "I")}</Button>
+						<Button onPress={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
+							<ChevronRight />
+						</Button>
+					</div>
+
+					{isLoading ? (
+						<Card className="animate-pulse rounded-md">
+							<div className="flex items-center justify-center px-2 py-[5rem]">
+								Loading...
+							</div>
+						</Card>
+					) : error ? (
+						<ErrorCard>
+							<p>Failed to load stats</p>
+						</ErrorCard>
+					) : weekHasData ? (
+						<Chart data={data.dailyStats} />
+					) : (
+						<Card className="rounded-md">
+							<div className="flex items-center justify-center px-2 py-[5rem]">
+								No data
+							</div>
+						</Card>
+					)}
+
+					{weekHasData && (
+						<>
+							<WeeklyTotal data={data.weeklyTotalMinutesPerTag} />
+
+							<div className="flex flex-col gap-2">
+								{data?.dailyStats.map((item, i) => (
+									<WeekdayInfo key={i} data={item} />
+								))}
+							</div>
+						</>
+					)}
 				</div>
-
-				{isLoading ? (
-					<div className="flex animate-pulse items-center justify-center rounded-md border border-p-600 bg-p-700 px-2 py-[5rem]">
-						Loading...
-					</div>
-				) : error ? (
-					<ErrorCard>
-						<p>Failed to load stats</p>
-					</ErrorCard>
-				) : weekHasData ? (
-					<Chart data={data.dailyStats} />
-				) : (
-					<div className="flex items-center justify-center rounded-md border border-p-600 bg-p-700 px-2 py-[5rem]">
-						No data
-					</div>
-				)}
-
-				{weekHasData && (
-					<>
-						<WeeklyTotal data={data.weeklyTotalMinutesPerTag} />
-
-						<div className="flex flex-col gap-2">
-							{data?.dailyStats.map((item, i) => (
-								<WeekdayInfo key={i} data={item} />
-							))}
-						</div>
-					</>
-				)}
-			</div>
+			</Card>
 		</Layout>
 	);
 };
@@ -76,43 +83,44 @@ const WeeklyTotal = ({ data }: WeeklyTotalProps) => {
 	const [isOpen, setIsOpen] = useState(true);
 
 	return (
-		<div
-			className="flex flex-col rounded-md border border-p-600 bg-p-700 p-2"
-			onClick={() => setIsOpen(!isOpen)}
-		>
-			<div className="flex items-center justify-between">
-				<h2 className="text-lg font-bold">Total</h2>
+		<Card variant={2} className="rounded-md">
+			<div className="flex flex-col p-2" onClick={() => setIsOpen(!isOpen)}>
+				<div className="flex items-center justify-between">
+					<h2 className="text-lg font-bold">Total</h2>
 
-				<div className="rounded-md border border-p-500 bg-p-600 p-1">
-					<AnimatedChevron open={isOpen} openByDefault />
+					<Card variant={3} className="rounded-md">
+						<div className="p-1">
+							<AnimatedChevron openByDefault open={isOpen} />
+						</div>
+					</Card>
 				</div>
-			</div>
 
-			<AnimatePresence initial={false}>
-				{isOpen && (
-					<motion.div
-						initial={{ height: 0, opacity: 0 }}
-						animate={{ height: "auto", opacity: 1 }}
-						exit={{ height: 0, opacity: 0 }}
-						transition={{ duration: 0.2 }}
-					>
-						{data.map((d, i) => (
-							<div key={i} className="flex items-center gap-2 pt-2">
-								<div
-									className={classNames("h-8 w-8 rounded-md")}
-									style={{ backgroundColor: d.tag.color }}
-								/>
+				<AnimatePresence initial={false}>
+					{isOpen && (
+						<motion.div
+							initial={{ height: 0, opacity: 0 }}
+							animate={{ height: "auto", opacity: 1 }}
+							exit={{ height: 0, opacity: 0 }}
+							transition={{ duration: 0.2 }}
+						>
+							{data.map((d, i) => (
+								<div key={i} className="flex items-center gap-2 pt-2">
+									<div
+										className={classNames("h-8 w-8 rounded-md")}
+										style={{ backgroundColor: d.tag.color }}
+									/>
 
-								<div className="flex flex-col justify-between">
-									<p>{d.tag.label}</p>
-									<p>{d.minutes} min</p>
+									<div className="flex flex-col justify-between">
+										<p>{d.tag.label}</p>
+										<p>{d.minutes} min</p>
+									</div>
 								</div>
-							</div>
-						))}
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
+							))}
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</Card>
 	);
 };
 
@@ -125,48 +133,52 @@ const WeekdayInfo = ({ data }: WeekdayInfoProps) => {
 	const ref = useRef<HTMLDivElement>(null);
 
 	return (
-		<div
-			className="flex select-none flex-col rounded-md border border-p-600 bg-p-700 p-2"
-			onClick={() => setIsOpen(!isOpen)}
-			ref={ref}
-		>
-			<div className="flex items-center justify-between">
-				<p>{format(data.date, "EEEEEEE")}</p>
+		<Card variant={2} className="rounded-md">
+			<div
+				className="flex select-none flex-col p-2"
+				onClick={() => setIsOpen(!isOpen)}
+				ref={ref}
+			>
+				<div className="flex items-center justify-between">
+					<p>{format(data.date, "EEEEEEE")}</p>
 
-				<div className="rounded-md border border-p-500 bg-p-600 p-1">
-					<AnimatedChevron open={isOpen} />
-				</div>
-			</div>
-
-			<AnimatePresence>
-				{isOpen && (
-					<motion.div
-						initial={{ height: 0, opacity: 0 }}
-						animate={{ height: "auto", opacity: 1 }}
-						exit={{ height: 0, opacity: 0 }}
-						transition={{ duration: 0.2 }}
-					>
-						<div className="flex flex-col gap-2 pt-2">
-							<p>Total: {data.totalMinutes} min</p>
-
-							{data.tagMinutes.map((tm) => (
-								<div key={tm.tag.id} className="flex items-center gap-2">
-									<div
-										className="h-8 w-8 rounded-md"
-										style={{ backgroundColor: tm.tag.color }}
-									/>
-
-									<div className="flex flex-col">
-										<p>{tm.tag.label}</p>
-										<p>{tm.minutes} min</p>
-									</div>
-								</div>
-							))}
+					<Card variant={3} className="rounded-md">
+						<div className="p-1">
+							<AnimatedChevron open={isOpen} />
 						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
+					</Card>
+				</div>
+
+				<AnimatePresence>
+					{isOpen && (
+						<motion.div
+							initial={{ height: 0, opacity: 0 }}
+							animate={{ height: "auto", opacity: 1 }}
+							exit={{ height: 0, opacity: 0 }}
+							transition={{ duration: 0.2 }}
+						>
+							<div className="flex flex-col gap-2 pt-2">
+								<p>Total: {data.totalMinutes} min</p>
+
+								{data.tagMinutes.map((tm) => (
+									<div key={tm.tag.id} className="flex items-center gap-2">
+										<div
+											className="h-8 w-8 rounded-md"
+											style={{ backgroundColor: tm.tag.color }}
+										/>
+
+										<div className="flex flex-col">
+											<p>{tm.tag.label}</p>
+											<p>{tm.minutes} min</p>
+										</div>
+									</div>
+								))}
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</Card>
 	);
 };
 
@@ -209,49 +221,51 @@ const Chart = ({ data }: ChartProps) => {
 
 	return (
 		<>
-			<div className="flex flex-col gap-2 rounded-md border border-p-600 bg-p-700 p-2">
-				<div className="grid h-[150px] w-full grid-cols-8 items-end justify-end gap-1">
-					{scaled?.map((d, i) => (
-						<div key={i} className="flex flex-col">
-							{d.tagMinutes.map((tm, tmIndex) => {
-								const isFirst = tmIndex === 0;
-								const isLast =
-									tmIndex ===
-									d.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
+			<Card variant={2} className="rounded-md">
+				<div className="flex flex-col gap-2 p-2">
+					<div className="grid h-[150px] w-full grid-cols-8 items-end justify-end gap-1">
+						{scaled?.map((d, i) => (
+							<div key={i} className="flex flex-col">
+								{d.tagMinutes.map((tm, tmIndex) => {
+									const isFirst = tmIndex === 0;
+									const isLast =
+										tmIndex ===
+										d.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
 
-								return (
-									<motion.div
-										key={`${d.date.toISOString()}-${tm.tag.id}`}
-										className={classNames(
-											isFirst && "rounded-tl-md rounded-tr-md",
-											isLast && "rounded-bl-md rounded-br-md",
-											!!!tm.minutesScaled && "!border-none"
-										)}
-										initial={{ height: 0 }}
-										animate={{ height: tm.minutesScaled }}
-										transition={{
-											duration: 0.2,
-											delay: tm.minutesScaled ? i * 0.1 : 0,
-										}}
-										style={{ backgroundColor: tm.tag.color }}
-									/>
-								);
-							})}
-						</div>
-					))}
-
-					<div className="flex h-full flex-col justify-between">
-						{[...Array(yNumbers)].map((_, i) => (
-							<div key={i} className="text-xs leading-[80%]">
-								{Math.round(min + yBetween * (yNumbers - i))}
+									return (
+										<motion.div
+											key={`${d.date.toISOString()}-${tm.tag.id}`}
+											className={classNames(
+												isFirst && "rounded-tl-md rounded-tr-md",
+												isLast && "rounded-bl-md rounded-br-md",
+												!!!tm.minutesScaled && "!border-none"
+											)}
+											initial={{ height: 0 }}
+											animate={{ height: tm.minutesScaled }}
+											transition={{
+												duration: 0.2,
+												delay: tm.minutesScaled ? i * 0.1 : 0,
+											}}
+											style={{ backgroundColor: tm.tag.color }}
+										/>
+									);
+								})}
 							</div>
 						))}
-						<div className="text-xs leading-[80%]">0</div>
-					</div>
-				</div>
 
-				<ChartWeekdays />
-			</div>
+						<div className="flex h-full flex-col justify-between">
+							{[...Array(yNumbers)].map((_, i) => (
+								<div key={i} className="text-xs leading-[80%]">
+									{Math.round(min + yBetween * (yNumbers - i))}
+								</div>
+							))}
+							<div className="text-xs leading-[80%]">0</div>
+						</div>
+					</div>
+
+					<ChartWeekdays />
+				</div>
+			</Card>
 		</>
 	);
 };

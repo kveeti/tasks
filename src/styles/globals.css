@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-	@apply bg-p-900 text-p-100 select-none;
+	@apply bg-primary-1200 text-primary-100 select-none;
 
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;

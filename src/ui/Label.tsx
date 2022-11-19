@@ -1,18 +1,24 @@
-import type { ReactNode } from "react";
+import { ComponentProps, forwardRef } from "react";
 
 import { classNames } from "~utils/classNames";
 
-type Props = {
-	children: ReactNode;
-	htmlFor?: string;
+type Props = Omit<ComponentProps<"label">, "className"> & {
 	required?: boolean;
 	error?: boolean;
 };
 
-export const Label = ({ children, required, htmlFor, error }: Props) => {
-	return (
-		<label className={classNames("text-sm", error && "text-red-500")} htmlFor={htmlFor}>
-			{children} {!!required && <b className="text-red-500"> *</b>}
-		</label>
-	);
-};
+export const Label = forwardRef<HTMLLabelElement, Props>(
+	({ children, required, htmlFor, error }, ref) => {
+		return (
+			<label
+				ref={ref}
+				className={classNames("text-sm", error && "text-red-500")}
+				htmlFor={htmlFor}
+			>
+				{children} {!!required && <b className="text-red-500"> *</b>}
+			</label>
+		);
+	}
+);
+
+Label.displayName = "Label";

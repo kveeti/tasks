@@ -21,14 +21,14 @@ export const SelectTag = ({ setSelectedTag, selectedTag, tags, disabled }: Props
 
 	return (
 		<>
-			<Button marginCenter onClick={openModal} disabled={disabled}>
+			<Button onPress={openModal} isDisabled={disabled}>
 				{selectedTag?.label}
 			</Button>
 
 			<Modal title="Select a tag" isOpen={isModalOpen} closeModal={closeModal}>
 				<div className="flex max-h-[290px] flex-col gap-2 overflow-auto px-4 py-2">
 					{tags.map((tag) => (
-						<Button enableTouch key={tag.id} onClick={() => selectTag(tag)}>
+						<Button key={tag.id} onPress={() => selectTag(tag)}>
 							{tag.label}
 						</Button>
 					))}

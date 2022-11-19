@@ -1,13 +1,13 @@
 import { Button } from "~ui/Button";
 
 type Props = {
-	onClick?: () => void;
+	onPress?: () => void;
 	disabled?: boolean;
 };
 
-export const EditAccountButton = ({ onClick, disabled }: Props) => {
+export const EditAccountButton = ({ onPress, disabled }: Props) => {
 	return (
-		<Button onClick={onClick} disabled={disabled}>
+		<Button onPress={onPress} isDisabled={disabled}>
 			Edit account
 		</Button>
 	);

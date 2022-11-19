@@ -3,6 +3,7 @@ import { DeleteAccount, SkeletonDeleteAccount } from "~components/SettingsPage/D
 import { ErrorCard } from "~ui/ErrorCard";
 import { Layout } from "~ui/Layout/Layout";
 import type { Page } from "~utils/PageType";
+import { classNames } from "~utils/classNames";
 import { trpc } from "~utils/trpc";
 
 export const SettingsPage: Page = () => {
@@ -12,7 +13,7 @@ export const SettingsPage: Page = () => {
 		<Layout>
 			<h1 className="pb-10 text-4xl font-bold">Settings</h1>
 
-			<div className="flex flex-col gap-8">
+			<div className={classNames("flex flex-col gap-8", isLoading && "animate-pulse")}>
 				{isLoading ? (
 					<>
 						<SkeletonAccountSettings />

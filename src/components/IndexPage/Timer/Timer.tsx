@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 
 import type { ApiTag } from "~types/apiTypes";
-import { Button } from "~ui/Button";
+import { Button, SkeletonButton } from "~ui/Button";
+import { Card } from "~ui/Card";
 import { PlayIcon } from "~ui/Icons/PlayIcon";
 import { StopIcon } from "~ui/Icons/StopIcon";
 import { classNames } from "~utils/classNames";
@@ -144,17 +145,12 @@ export const Timer = () => {
 
 	return (
 		<div className="mx-auto flex w-full flex-col items-center justify-center gap-7">
-			<div
-				className={classNames(
-					"before:animate-gradient-x before:animate-100s before:animate-infinite before:animate-linear relative z-[-1] w-full overflow-hidden rounded-[13px] p-[1px] before:absolute before:inset-0",
-					isRunning ? "before:animate-my-pulse before:bg-p-400" : "before:bg-p-700"
-				)}
-			>
-				<div className="relative flex h-full max-h-full w-full justify-center rounded-xl bg-p-800 py-1 px-6 text-[80px] font-bold">
+			<Card className="w-full rounded-xl">
+				<div className="relative flex items-center justify-center p-2 text-[80px] font-bold">
 					<h2
 						className={classNames(
 							"transition-[color] duration-200",
-							!isRunning && "text-p-500"
+							!isRunning && "text-primary-500"
 						)}
 					>
 						<span>{minutes}</span>
@@ -162,7 +158,7 @@ export const Timer = () => {
 						<span>{seconds}</span>
 					</h2>
 				</div>
-			</div>
+			</Card>
 
 			<TimeButtons disabled={isRunning} addTime={addTime} subtractTime={subtractTime} />
 
@@ -179,8 +175,8 @@ export const Timer = () => {
 
 			<Button
 				className="w-full py-5"
-				disabled={isSubmitting}
-				onClick={() => (isRunning ? stop() : start())}
+				isDisabled={isSubmitting}
+				onPress={() => (isRunning ? stop() : start())}
 			>
 				{isSubmitting ? (
 					<LoaderIcon className="!h-6 !w-6" />
@@ -197,19 +193,15 @@ export const Timer = () => {
 const SkeletonTimer = () => {
 	return (
 		<div className="mx-auto flex w-full animate-pulse flex-col items-center justify-center gap-7">
-			<h2 className="flex w-full items-center justify-center rounded-xl border border-p-700 bg-p-800 py-1 px-6 text-[80px] font-bold text-p-500 transition-colors duration-200">
+			<h2 className="flex w-full items-center justify-center rounded-xl border border-primary-700 bg-primary-800 py-1 px-6 text-[80px] font-bold text-primary-500 transition-colors duration-200">
 				--:--
 			</h2>
 
 			<SkeletonTimeButtons />
 
-			<Button intent="skeleton" className="w-[5rem]">
-				&nbsp;
-			</Button>
+			<SkeletonButton className="w-[5rem]" />
 
-			<Button intent="skeleton" className="w-full py-5">
-				&nbsp;
-			</Button>
+			<SkeletonButton className="w-full py-5" />
 		</div>
 	);
 };

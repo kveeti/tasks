@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import type { z } from "zod";
 
-import { Button } from "~ui/Button";
+import { Button, SkeletonButton } from "~ui/Button";
 import { Input } from "~ui/Input";
 import { Modal, useModal } from "~ui/Modal";
 import { trpc } from "~utils/trpc";
@@ -44,7 +44,7 @@ export const EditAccount = ({ user }: Props) => {
 
 	return (
 		<>
-			<Button onClick={openModal}>Edit account</Button>
+			<Button onPress={openModal}>Edit account</Button>
 
 			<Modal title="Edit user" isOpen={isModalOpen} closeModal={closeModal}>
 				<form
@@ -62,8 +62,8 @@ export const EditAccount = ({ user }: Props) => {
 					/>
 
 					<div className="grid grid-cols-2 gap-2">
-						<Button onClick={closeModal}>Cancel</Button>
-						<Button disabled={isSubmitting} type="submit" intent="submit">
+						<Button onPress={closeModal}>Cancel</Button>
+						<Button isDisabled={isSubmitting} type="submit" intent="submit">
 							{isSubmitting ? "Saving..." : "Save"}
 						</Button>
 					</div>
@@ -74,5 +74,5 @@ export const EditAccount = ({ user }: Props) => {
 };
 
 export const SkeletonEditAccount = () => {
-	return <Button intent="skeleton">&nbsp;</Button>;
+	return <SkeletonButton className="w-full" />;
 };

@@ -41,7 +41,7 @@ const Color = ({ color, isSelected, onClick }: ColorProps) => {
 		<li
 			tabIndex={0}
 			className={classNames(
-				"relative h-9 w-9 cursor-pointer rounded-full outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline] duration-200 focus-visible:outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-blue-500",
+				"relative h-9 w-9 cursor-pointer rounded-full outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline] duration-200 focus-visible:outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-blue-400",
 				isSelected ? "focus-visible:outline-offset-[9px]" : "focus-visible:outline-offset-2"
 			)}
 			style={{ backgroundColor: color }}
