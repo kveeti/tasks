@@ -46,7 +46,10 @@ export const TimerContextProvider = ({ children }: Props) => {
 		data: me,
 		isLoading,
 		error,
-	} = trpc.me.getMe.useQuery(null, { refetchInterval: 2500, refetchIntervalInBackground: false });
+	} = trpc.me.getMe.useQuery(undefined, {
+		refetchInterval: 2500,
+		refetchIntervalInBackground: false,
+	});
 	const tags = me?.ownedTags;
 	const activeTask = me?.ownedTasks?.find((task) => task.isActive);
 
