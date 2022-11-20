@@ -11,7 +11,7 @@ export const Layout = ({ children }: Props) => {
 		<>
 			<NavBar />
 
-			<main className="mx-auto max-w-page px-3 pb-[6rem] pt-[5rem] sm:pt-[7rem]">
+			<main className="mx-auto h-max max-w-page px-3 pb-[6rem] pt-[5rem] sm:pt-[7rem]">
 				{children}
 			</main>
 		</>
