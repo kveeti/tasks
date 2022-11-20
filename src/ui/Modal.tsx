@@ -21,11 +21,11 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 					enter="ease-out duration-[150ms]"
 					enterFrom="opacity-0"
 					enterTo="opacity-100"
-					leave="ease-in duration-[130ms]"
+					leave="ease-in duration-[75ms]"
 					leaveFrom="opacity-100"
 					leaveTo="opacity-0"
 				>
-					<div className="bg-primary-1200/50 fixed inset-0 backdrop-blur-sm" />
+					<div className="fixed inset-0 bg-primary-1200/50 backdrop-blur-sm" />
 				</Transition.Child>
 
 				<div className="fixed inset-0 mx-3 overflow-y-auto">
