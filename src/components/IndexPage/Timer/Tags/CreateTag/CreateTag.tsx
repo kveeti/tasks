@@ -49,7 +49,7 @@ export const CreateTag = () => {
 
 	return (
 		<>
-			<Button intent="submit" onPress={openModal}>
+			<Button intent="submit" onPress={openModal} className="mt-7">
 				Create a tag
 			</Button>
 
