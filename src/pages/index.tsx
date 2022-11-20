@@ -5,8 +5,6 @@ import type { Page } from "~utils/PageType";
 const Home: Page = () => {
 	return (
 		<Layout>
-			<div className="mt-[5rem]" />
-
 			<Timer />
 		</Layout>
 	);
