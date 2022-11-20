@@ -56,7 +56,7 @@ export const TimerContextProvider = ({ children }: Props) => {
 	useEffect(() => {
 		if (!tags?.length || selectedTag) return;
 
-		const tagToSet = tags.find((tag) => tag.was_last_used) || tags[0];
+		const tagToSet = tags.find((tag) => tag.wasLastUsed) || tags[0];
 		if (!tagToSet) return;
 
 		setSelectedTag(tagToSet);
