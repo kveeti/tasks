@@ -54,13 +54,13 @@ export const TimerContextProvider = ({ children }: Props) => {
 	const activeTask = me?.ownedTasks?.find((task) => task.isActive);
 
 	useEffect(() => {
-		if (!tags?.length) return;
+		if (!tags?.length || selectedTag) return;
 
 		const tagToSet = tags.find((tag) => tag.was_last_used) || tags[0];
 		if (!tagToSet) return;
 
 		setSelectedTag(tagToSet);
-	}, [tags]);
+	}, [tags, selectedTag]);
 
 	useEffect(() => {
 		if (activeTask) {
