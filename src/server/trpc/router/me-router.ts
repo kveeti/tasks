@@ -61,11 +61,13 @@ export const meRouter = router({
 							data: [
 								{
 									sequenceType: "Executor",
-									userActorId: userId,
+									actorType: "User",
+									actorId: userId,
 								},
 								{
 									sequenceType: "Target",
-									userActorId: userId,
+									actorType: "User",
+									actorId: userId,
 								},
 							],
 						},
@@ -84,10 +86,7 @@ export const meRouter = router({
 		const userId = ctx.userId;
 
 		await ctx.prisma.$transaction(async (tx) => {
-			await tx.user.update({
-				where: { id: userId },
-				data: { deletedAt: new Date() },
-			});
+			await tx.user.delete({ where: { id: userId } });
 
 			await tx.log.create({
 				data: {
@@ -95,8 +94,8 @@ export const meRouter = router({
 					actors: {
 						createMany: {
 							data: [
-								{ sequenceType: "Executor", userActorId: userId },
-								{ sequenceType: "Target", userActorId: userId },
+								{ sequenceType: "Executor", actorType: "User", actorId: userId },
+								{ sequenceType: "Target", actorType: "User", actorId: userId },
 							],
 						},
 					},
@@ -132,12 +131,18 @@ export const meRouter = router({
 									data: [
 										{
 											sequenceType: "Executor",
-											userActorId: ctx.userId,
+											actorType: "User",
+											actorId: ctx.userId,
 										},
-										{ sequenceType: "Target", tagActorId: createdTag.id },
+										{
+											sequenceType: "Target",
+											actorType: "Tag",
+											actorId: createdTag.id,
+										},
 										{
 											sequenceType: "TargetOwner",
-											userActorId: ctx.userId,
+											actorType: "User",
+											actorId: ctx.userId,
 										},
 									],
 								},
@@ -169,12 +174,18 @@ export const meRouter = router({
 									data: [
 										{
 											sequenceType: "Executor",
-											userActorId: ctx.userId,
+											actorType: "User",
+											actorId: ctx.userId,
 										},
-										{ sequenceType: "Target", tagActorId: updatedTag.id },
+										{
+											sequenceType: "Target",
+											actorType: "Tag",
+											actorId: input.tagId,
+										},
 										{
 											sequenceType: "TargetOwner",
-											userActorId: ctx.userId,
+											actorType: "User",
+											actorId: ctx.userId,
 										},
 									],
 								},
@@ -237,12 +248,18 @@ export const meRouter = router({
 									data: [
 										{
 											sequenceType: "Executor",
-											userActorId: userId,
+											actorType: "User",
+											actorId: userId,
 										},
-										{ sequenceType: "Target", taskActorId: createdTask.id },
+										{
+											sequenceType: "Target",
+											actorType: "Task",
+											actorId: createdTask.id,
+										},
 										{
 											sequenceType: "TargetOwner",
-											userActorId: userId,
+											actorType: "User",
+											actorId: userId,
 										},
 									],
 								},
@@ -295,12 +312,18 @@ export const meRouter = router({
 								data: [
 									{
 										sequenceType: "Executor",
-										userActorId: userId,
+										actorType: "User",
+										actorId: userId,
 									},
-									{ sequenceType: "Target", taskActorId: stoppedTask.id },
+									{
+										sequenceType: "Target",
+										actorType: "Task",
+										actorId: stoppedTask.id,
+									},
 									{
 										sequenceType: "TargetOwner",
-										userActorId: userId,
+										actorType: "User",
+										actorId: userId,
 									},
 								],
 							},
