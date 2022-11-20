@@ -1,4 +1,4 @@
-import { Card } from "~ui/Card";
+import { Card, SkeletonCard } from "~ui/Card";
 import { classNames } from "~utils/classNames";
 
 import { useTimerContext } from "./TimerContext";
@@ -21,5 +21,15 @@ export const Time = () => {
 				</h2>
 			</div>
 		</Card>
+	);
+};
+
+export const SkeletonTime = () => {
+	return (
+		<SkeletonCard className="w-full rounded-xl">
+			<div className="relative flex items-center justify-center p-2 text-[75px] font-bold">
+				<h2 className="text-primary-500">--:--</h2>
+			</div>
+		</SkeletonCard>
 	);
 };
