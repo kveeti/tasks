@@ -21,7 +21,7 @@ if (!_serverEnv.success) {
 	throw new Error("Invalid environment variables");
 }
 
-console.log(`Running in: ${_serverEnv.data.ENV}`);
+console.log(`Running in: ${_serverEnv.data.VERCEL_ENV}`);
 
 for (let key of Object.keys(_serverEnv.data)) {
 	if (key.startsWith("NEXT_PUBLIC_")) {

@@ -9,7 +9,7 @@ export default createNextApiHandler({
 	router: appRouter,
 	createContext,
 	onError:
-		env.ENV === "development"
+		env.VERCEL_ENV === "development"
 			? ({ path, error }) => {
 					console.error(`❌ tRPC failed on ${path}: ${error}`);
 			  }
