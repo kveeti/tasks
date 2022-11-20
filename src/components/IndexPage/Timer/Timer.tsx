@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import type { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 
 import { SkeletonButton } from "~ui/Button";
 
@@ -28,13 +28,15 @@ export const Timer = () => {
 					</AnimatedItem>
 				)}
 
-				{isRunning ? (
-					<ShowTag />
-				) : tags?.length ? (
-					<SelectTag key="select-tag" />
-				) : (
-					<CreateTag key="create-tag" />
-				)}
+				<Fragment key="tags">
+					{isRunning ? (
+						<ShowTag key="show-tag" />
+					) : tags?.length ? (
+						<SelectTag key="select-tag" />
+					) : (
+						<CreateTag key="create-tag" />
+					)}
+				</Fragment>
 
 				<ToggleTimerButton key="toggle-timer-button" />
 			</AnimatePresence>
