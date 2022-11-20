@@ -10,43 +10,37 @@ datasource db {
 }
 
 model User {
-    id         String     @id @default(cuid())
-    username   String?    @unique
-    email      String     @unique
-    createdAt  DateTime   @default(now())
-    updatedAt  DateTime   @updatedAt
-    deletedAt  DateTime?
-    ownedTags  Tag[]      @relation(name: "ownedTags")
-    ownedTasks Task[]     @relation(name: "ownedTasks")
-    logActors  LogActor[]
+    id         String   @id @default(cuid())
+    username   String?  @unique
+    email      String   @unique
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    ownedTags  Tag[]    @relation(name: "ownedTags")
+    ownedTasks Task[]   @relation(name: "ownedTasks")
 }
 
 model Tag {
-    id            String     @id @default(cuid())
+    id            String   @id @default(cuid())
     label         String
-    was_last_used Boolean    @default(false)
+    was_last_used Boolean  @default(false)
     ownerId       String
     color         String
-    owner         User       @relation(name: "ownedTags", fields: [ownerId], references: [id])
-    createdAt     DateTime   @default(now())
-    updatedAt     DateTime   @updatedAt
-    deletedAt     DateTime?
+    owner         User     @relation(name: "ownedTags", fields: [ownerId], references: [id], onDelete: Cascade)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
     tasks         Task[]
-    logActors     LogActor[]
 }
 
 model Task {
-    id        String     @id @default(cuid())
+    id        String    @id @default(cuid())
     tagId     String
-    tag       Tag        @relation(fields: [tagId], references: [id])
+    tag       Tag       @relation(fields: [tagId], references: [id])
     ownerId   String
-    owner     User       @relation(name: "ownedTasks", fields: [ownerId], references: [id])
+    owner     User      @relation(name: "ownedTasks", fields: [ownerId], references: [id], onDelete: Cascade)
     expiresAt DateTime
     stoppedAt DateTime?
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-    deletedAt DateTime?
-    logActors LogActor[]
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 }
 
 enum LogType {
@@ -76,15 +70,17 @@ enum LogActorSequenceType {
     TargetOwner
 }
 
+enum LogActorType {
+    User
+    Tag
+    Task
+}
+
 model LogActor {
     id           String               @id @default(cuid())
-    userActorId  String?
-    userActor    User?                @relation(fields: [userActorId], references: [id])
-    taskActorId  String?
-    taskActor    Task?                @relation(fields: [taskActorId], references: [id])
-    tagActorId   String?
-    tagActor     Tag?                 @relation(fields: [tagActorId], references: [id])
+    actorId      String
+    actorType    LogActorType
     sequenceType LogActorSequenceType
-    log          Log?                 @relation(fields: [logId], references: [id])
+    log          Log?                 @relation(fields: [logId], references: [id], onDelete: Cascade)
     logId        String?
 }
