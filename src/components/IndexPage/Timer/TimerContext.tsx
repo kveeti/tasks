@@ -42,7 +42,11 @@ export const TimerContextProvider = ({ children }: Props) => {
 	const [selectedTag, setSelectedTag] = useState<ApiTag | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const { data: me, isLoading, error } = trpc.me.getMe.useQuery();
+	const {
+		data: me,
+		isLoading,
+		error,
+	} = trpc.me.getMe.useQuery(null, { refetchInterval: 2500, refetchIntervalInBackground: false });
 	const tags = me?.ownedTags;
 	const activeTask = me?.ownedTasks?.find((task) => task.isActive);
 
@@ -58,6 +62,8 @@ export const TimerContextProvider = ({ children }: Props) => {
 	useEffect(() => {
 		if (activeTask) {
 			activeTaskExpiresAt.current = activeTask.expiresAt;
+		} else if (me && !activeTask) {
+			stopTimer();
 		}
 	}, [activeTask]);
 
