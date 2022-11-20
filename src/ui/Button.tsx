@@ -15,13 +15,19 @@ const getColors = (intent: "primary" | "submit" = "primary") => {
 	const primaryBorder = 600;
 
 	const submitBg = primaryBg - 200;
-	const submitBorder = primaryBorder - 200;
+	const submitBorder = primaryBorder - 100;
 
 	const bg = (intent === "primary" ? primaryBg : submitBg) as ColorLevel;
 	const border = (intent === "primary" ? primaryBorder : submitBorder) as ColorLevel;
 
-	const pressedBg = (bg - 200) as ColorLevel;
-	const pressedBorder = (border - 200) as ColorLevel;
+	const primaryPressedBg = (bg - 200) as ColorLevel;
+	const primaryPressedBorder = (border - 100) as ColorLevel;
+
+	const submitPressedBg = (bg - 100) as ColorLevel;
+	const submitPressedBorder = (border - 100) as ColorLevel;
+
+	const pressedBg = intent === "primary" ? primaryPressedBg : submitPressedBg;
+	const pressedBorder = intent === "primary" ? primaryPressedBorder : submitPressedBorder;
 
 	return {
 		background: colors.p[bg],
