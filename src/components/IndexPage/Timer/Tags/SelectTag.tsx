@@ -16,7 +16,7 @@ export const SelectTag = () => {
 
 	return (
 		<>
-			<Button onPress={openModal} isDisabled={isRunning}>
+			<Button onPress={openModal} isDisabled={isRunning} className="mt-7">
 				{selectedTag?.label}
 			</Button>
 
