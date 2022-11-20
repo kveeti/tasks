@@ -68,6 +68,7 @@ export const TimerContextProvider = ({ children }: Props) => {
 		} else if (me && !activeTask) {
 			stopTimer();
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeTask]);
 
 	useSetInterval(
