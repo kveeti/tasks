@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 
 import { TimerContextProvider } from "~components/IndexPage/Timer/TimerContext";
 import type { Page } from "~utils/PageType";
+import { colors } from "~utils/colors";
 
 import "../styles/globals.css";
 import { trpc } from "../utils/trpc";
@@ -20,9 +21,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 				reverseOrder
 				toastOptions={{
 					style: {
-						background: "#292524",
-						border: "1px solid #44403c",
-						color: "#f5f5f4",
+						background: colors.p[1000],
+						border: `1px solid ${colors.p[800]}`,
+						color: colors.p[100],
 						display: "flex",
 						justifyContent: "center",
 						alignItems: "center",
