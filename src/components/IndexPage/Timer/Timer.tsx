@@ -8,16 +8,7 @@ import { useTimerContext } from "./TimerContext";
 import { ToggleTimerButton } from "./ToggleTimerButton";
 
 export const Timer = () => {
-	const {
-		addTime,
-		error,
-		isLoading,
-		isRunning,
-		selectedTag,
-		setSelectedTag,
-		subtractTime,
-		tags,
-	} = useTimerContext();
+	const { error, isLoading, tags } = useTimerContext();
 
 	if (isLoading) return <SkeletonTimer />;
 	if (error) return <div>Error</div>;
@@ -26,18 +17,9 @@ export const Timer = () => {
 		<div className="mx-auto flex w-full flex-col items-center justify-center gap-7">
 			<Time />
 
-			<TimeButtons disabled={isRunning} addTime={addTime} subtractTime={subtractTime} />
+			<TimeButtons />
 
-			{tags?.length ? (
-				<SelectTag
-					disabled={isRunning}
-					setSelectedTag={setSelectedTag}
-					selectedTag={selectedTag}
-					tags={tags}
-				/>
-			) : (
-				<CreateTag />
-			)}
+			{tags?.length ? <SelectTag /> : <CreateTag />}
 
 			<ToggleTimerButton />
 		</div>

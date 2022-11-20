@@ -2,21 +2,19 @@ import { Button, SkeletonButton } from "~ui/Button";
 import { Card } from "~ui/Card";
 import { FIVE_MINUTES, HALF_HOUR } from "~utils/times";
 
-type Props = {
-	addTime: (timeToAdd: number) => void;
-	subtractTime: (timeToSubstract: number) => void;
-	disabled?: boolean;
-};
+import { useTimerContext } from "./TimerContext";
 
-export const TimeButtons = ({ addTime, subtractTime, disabled }: Props) => {
+export const TimeButtons = () => {
+	const { addTime, subtractTime, isRunning } = useTimerContext();
+
 	return (
 		<div className="grid w-full grid-cols-2 grid-rows-1 gap-2">
 			<Card variant={1} className="rounded-xl">
 				<div className="flex flex-col gap-2 p-2">
-					<Button isDisabled={disabled} onPress={() => addTime(HALF_HOUR)}>
+					<Button isDisabled={isRunning} onPress={() => addTime(HALF_HOUR)}>
 						+ 30 min
 					</Button>
-					<Button isDisabled={disabled} onPress={() => subtractTime(HALF_HOUR)}>
+					<Button isDisabled={isRunning} onPress={() => subtractTime(HALF_HOUR)}>
 						- 30 min
 					</Button>
 				</div>
@@ -24,10 +22,10 @@ export const TimeButtons = ({ addTime, subtractTime, disabled }: Props) => {
 
 			<Card variant={1} className="rounded-xl">
 				<div className="flex flex-col gap-2 p-2">
-					<Button isDisabled={disabled} onPress={() => addTime(FIVE_MINUTES)}>
+					<Button isDisabled={isRunning} onPress={() => addTime(FIVE_MINUTES)}>
 						+ 5 min
 					</Button>
-					<Button isDisabled={disabled} onPress={() => subtractTime(FIVE_MINUTES)}>
+					<Button isDisabled={isRunning} onPress={() => subtractTime(FIVE_MINUTES)}>
 						- 5 min
 					</Button>
 				</div>

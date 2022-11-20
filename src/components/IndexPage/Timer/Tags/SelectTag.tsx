@@ -2,17 +2,12 @@ import type { ApiTag } from "~types/apiTypes";
 import { Button } from "~ui/Button";
 import { Modal, useModal } from "~ui/Modal";
 
+import { useTimerContext } from "../TimerContext";
 import { CreateTag } from "./CreateTag/CreateTag";
 
-type Props = {
-	setSelectedTag: (selectedTag: ApiTag) => void;
-	selectedTag: ApiTag | null;
-	tags: ApiTag[];
-	disabled?: boolean;
-};
-
-export const SelectTag = ({ setSelectedTag, selectedTag, tags, disabled }: Props) => {
+export const SelectTag = () => {
 	const { isModalOpen, closeModal, openModal } = useModal();
+	const { setSelectedTag, isRunning, tags, selectedTag } = useTimerContext();
 
 	const selectTag = (tag: ApiTag) => {
 		setSelectedTag(tag);
@@ -21,13 +16,13 @@ export const SelectTag = ({ setSelectedTag, selectedTag, tags, disabled }: Props
 
 	return (
 		<>
-			<Button onPress={openModal} isDisabled={disabled}>
+			<Button onPress={openModal} isDisabled={isRunning}>
 				{selectedTag?.label}
 			</Button>
 
 			<Modal title="Select a tag" isOpen={isModalOpen} closeModal={closeModal}>
 				<div className="flex max-h-[290px] flex-col gap-2 overflow-auto px-4 py-2">
-					{tags.map((tag) => (
+					{tags?.map((tag) => (
 						<Button key={tag.id} onPress={() => selectTag(tag)}>
 							{tag.label}
 						</Button>
