@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import {
-	addMinutes,
+	addSeconds,
 	differenceInMinutes,
 	eachDayOfInterval,
 	endOfWeek,
@@ -223,7 +223,7 @@ export const meRouter = router({
 				return await ctx.prisma.$transaction(async (tx) => {
 					const createdTask = await tx.task.create({
 						data: {
-							expiresAt: addMinutes(new Date(), input.expires_after),
+							expiresAt: addSeconds(new Date(), input.expires_after),
 							tag: { connect: { id: input.tagId } },
 							owner: { connect: { id: userId } },
 						},

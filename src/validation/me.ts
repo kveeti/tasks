@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { tagColorsEnum } from "~components/IndexPage/Timer/Tags/tagColors";
+import { FIVE_MINUTES, TWO_HOURS } from "~utils/times";
 
 import { tagLabelSchema, usernameSchema } from "./shared";
 
@@ -24,11 +25,11 @@ export const me = {
 	tasks: {
 		createTask: {
 			form: z.object({
-				expires_after: z.number(), // minutes
+				expires_after: z.number(), // seconds
 				tagId: z.string(),
 			}),
 			input: z.object({
-				expires_after: z.number().min(5).max(120), // minutes
+				expires_after: z.number().min(FIVE_MINUTES).max(TWO_HOURS), // seconds
 				tagId: z.string(),
 			}),
 		},

@@ -1,56 +1,37 @@
-import differenceInMinutes from "date-fns/differenceInMinutes";
-import { useEffect, useState } from "react";
+import addSeconds from "date-fns/addSeconds";
 import toast, { LoaderIcon } from "react-hot-toast";
 
-import type { ApiTag } from "~types/apiTypes";
 import { Button, SkeletonButton } from "~ui/Button";
 import { Card } from "~ui/Card";
 import { PlayIcon } from "~ui/Icons/PlayIcon";
 import { StopIcon } from "~ui/Icons/StopIcon";
 import { classNames } from "~utils/classNames";
+import { FIVE_MINUTES } from "~utils/times";
 import { trpc } from "~utils/trpc";
 
 import { CreateTag } from "./Tags/CreateTag/CreateTag";
 import { SelectTag } from "./Tags/SelectTag";
 import { SkeletonTimeButtons, TimeButtons } from "./TimeButtons";
+import { useTimerContext } from "./TimerContext";
 
 export const Timer = () => {
-	const [time, setTime] = useState(0); // minutes
-	const [isRunning, setIsRunning] = useState(false);
-	const [selectedTag, setSelectedTag] = useState<ApiTag | null>(null);
-	const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-
-	const { data: me, isLoading, error } = trpc.me.getMe.useQuery();
-	const tags = me?.ownedTags;
-	const activeTask = me?.ownedTasks?.find((task) => task.isActive);
-
-	useEffect(() => {
-		if (!activeTask) {
-			setIsRunning(false);
-			setTime(0);
-			return;
-		}
-
-		setIsRunning(true);
-
-		setTime(differenceInMinutes(activeTask.expiresAt, new Date()));
-
-		if (intervalId) return;
-
-		const id = setInterval(
-			() => setTime(differenceInMinutes(activeTask.expiresAt, new Date())),
-			500
-		);
-
-		setIntervalId(id);
-
-		return () => {
-			clearInterval(id);
-			setIntervalId(null);
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeTask]);
+	const {
+		addTime,
+		error,
+		isLoading,
+		isRunning,
+		isSubmitting,
+		setIsSubmitting,
+		minutes,
+		seconds,
+		selectedTag,
+		setSelectedTag,
+		startTimer,
+		stopTimer,
+		subtractTime,
+		tags,
+		time,
+	} = useTimerContext();
 
 	const startMutation = trpc.me.tasks.createTask.useMutation();
 	const stopMutation = trpc.me.tasks.stopTask.useMutation();
@@ -60,7 +41,7 @@ export const Timer = () => {
 			return toast.error("Please select a tag!");
 		}
 
-		if (time < 5) {
+		if (time < FIVE_MINUTES) {
 			return toast.error("Please set a time of at least 5 minutes!");
 		}
 
@@ -79,7 +60,7 @@ export const Timer = () => {
 				}
 			);
 
-			setIsRunning(!isRunning);
+			startTimer(addSeconds(new Date(), time));
 		} catch (err) {
 			toast.error(err.message);
 		}
@@ -97,9 +78,7 @@ export const Timer = () => {
 				error: "Failed to stop :(",
 			});
 
-			setIsRunning(!isRunning);
-			setTime(0);
-			intervalId && clearInterval(intervalId);
+			stopTimer();
 		} catch (err) {
 			toast.error(err.message);
 		}
@@ -107,46 +86,13 @@ export const Timer = () => {
 		setIsSubmitting(false);
 	};
 
-	const addTime = (timeToAdd: number) => {
-		if (time === 120) {
-			return toast.error("You can't add more than 2 hours!");
-		} else if (time + timeToAdd > 120) {
-			return setTime(120);
-		}
-
-		setTime(time + timeToAdd);
-	};
-
-	const subtractTime = (timeToSubtract: number) => {
-		const newTime = time - timeToSubtract;
-
-		if (newTime < 0) {
-			setTime(0);
-		} else {
-			setTime(newTime);
-		}
-	};
-
-	useEffect(() => {
-		if (!tags?.length) return;
-
-		const tagToSet = tags.find((tag) => tag.was_last_used) || tags[0];
-		if (!tagToSet) return;
-
-		setSelectedTag(tagToSet);
-	}, [tags]);
-
-	const minutes = Math.floor(time / 60).toString();
-	const seconds = String(time % 60).padStart(2, "0");
-
 	if (isLoading) return <SkeletonTimer />;
 	if (error) return <div>Error</div>;
-	if (!me) return <div>Something went wrong</div>;
 
 	return (
 		<div className="mx-auto flex w-full flex-col items-center justify-center gap-7">
 			<Card className="w-full rounded-xl">
-				<div className="relative flex items-center justify-center p-2 text-[80px] font-bold">
+				<div className="relative flex items-center justify-center p-2 text-[75px] font-bold">
 					<h2
 						className={classNames(
 							"transition-[color] duration-200",

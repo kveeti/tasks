@@ -4,6 +4,7 @@ import type { AppType } from "next/app";
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 
+import { TimerContextProvider } from "~components/IndexPage/Timer/TimerContext";
 import type { Page } from "~utils/PageType";
 
 import "../styles/globals.css";
@@ -37,7 +38,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 			<SessionProvider session={session}>
 				{(Component as Page).requireAuth ? (
 					<Auth>
-						<Component {...pageProps} />
+						<TimerContextProvider>
+							<Component {...pageProps} />
+						</TimerContextProvider>
 					</Auth>
 				) : (
 					<Component {...pageProps} />
