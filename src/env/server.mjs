@@ -1,15 +1,7 @@
 // @ts-check
-import { serverSchema } from "./schema.mjs";
 
-export const formatErrors = (
-	/** @type {import('zod').ZodFormattedError<Map<string,string>,string>} */
-	errors
-) =>
-	Object.entries(errors)
-		.map(([name, value]) => {
-			if (value && "_errors" in value) return `${name}: ${value._errors.join(", ")}\n`;
-		})
-		.filter(Boolean);
+import { serverSchema } from "./schema.mjs";
+import { env as clientEnv, formatErrors } from "./client.mjs";
 
 const _serverEnv = serverSchema.safeParse(process.env);
 
@@ -21,8 +13,6 @@ if (!_serverEnv.success) {
 	throw new Error("Invalid environment variables");
 }
 
-console.log(`Running in: ${_serverEnv.data.VERCEL_ENV}`);
-
 for (let key of Object.keys(_serverEnv.data)) {
 	if (key.startsWith("NEXT_PUBLIC_")) {
 		console.warn("❌ You are exposing a server-side env-variable:", key);
@@ -31,4 +21,4 @@ for (let key of Object.keys(_serverEnv.data)) {
 	}
 }
 
-export const env = { ..._serverEnv.data };
+export const env = { ..._serverEnv.data, ...clientEnv };
