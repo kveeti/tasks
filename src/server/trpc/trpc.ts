@@ -18,7 +18,29 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 	if (!ctx.session || !ctx.session.userId) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
-	return next({ ctx: { userId: ctx.session.userId } });
+	return next({
+		ctx: {
+			userId: ctx.session.userId,
+			isAdmin: ctx.session.isAdmin,
+		},
+	});
+});
+
+const isAdmin = t.middleware(({ ctx, next }) => {
+	if (!ctx.session || !ctx.session.userId) {
+		throw new TRPCError({ code: "UNAUTHORIZED" });
+	}
+
+	if (!ctx.session.isAdmin) {
+		throw new TRPCError({ code: "FORBIDDEN" });
+	}
+	return next({
+		ctx: {
+			userId: ctx.session.userId,
+			isAdmin: ctx.session.isAdmin,
+		},
+	});
 });
 
 export const protectedProcedure = t.procedure.use(isAuthed);
+export const adminProcedure = t.procedure.use(isAdmin);

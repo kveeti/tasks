@@ -11,5 +11,6 @@ const Home: Page = () => {
 };
 
 Home.requireAuth = true;
+Home.requireAdmin = false;
 
 export default Home;

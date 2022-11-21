@@ -76,6 +76,7 @@ export const authOptions: NextAuthOptions = {
 
 			return {
 				userId: user.id,
+				isAdmin: user.isAdmin,
 				email: user.email,
 				iat: params.token.iat,
 				exp: params.token.exp,
@@ -86,6 +87,7 @@ export const authOptions: NextAuthOptions = {
 			return {
 				expires: params.session.expires,
 				userId: params.token.userId,
+				isAdmin: params.token.isAdmin,
 			};
 		},
 	},

@@ -1,6 +1,7 @@
 import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { AppType } from "next/app";
+import { useRouter } from "next/router";
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 
@@ -38,7 +39,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 			/>
 			<SessionProvider session={session}>
 				{(Component as Page).requireAuth ? (
-					<Auth>
+					<Auth requireAdmin={(Component as Page).requireAdmin}>
 						<TimerContextProvider>
 							<Component {...pageProps} />
 						</TimerContextProvider>
@@ -51,11 +52,20 @@ const MyApp: AppType<{ session: Session | null }> = ({
 	);
 };
 
-const Auth = ({ children }: { children: ReactNode }) => {
-	const { status } = useSession({ required: true });
+const Auth = ({ children, requireAdmin }: { children: ReactNode; requireAdmin: boolean }) => {
+	const { status, data } = useSession({ required: true });
+	const router = useRouter();
 
-	if (status === "authenticated") return <>{children}</>;
-	else return <></>;
+	if (status === "loading") {
+		return <></>;
+	} else if (requireAdmin && !data.isAdmin) {
+		router.push("/");
+		return <></>;
+	} else if (status === "authenticated") {
+		return <>{children}</>;
+	} else {
+		return <></>;
+	}
 };
 
 export default trpc.withTRPC(MyApp);

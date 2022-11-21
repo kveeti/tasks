@@ -35,5 +35,6 @@ export const SettingsPage: Page = () => {
 };
 
 SettingsPage.requireAuth = true;
+SettingsPage.requireAdmin = false;
 
 export default SettingsPage;
