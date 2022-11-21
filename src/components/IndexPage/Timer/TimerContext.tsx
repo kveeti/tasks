@@ -42,14 +42,7 @@ export const TimerContextProvider = ({ children }: Props) => {
 	const [selectedTag, setSelectedTag] = useState<ApiTag | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const {
-		data: me,
-		isLoading,
-		error,
-	} = trpc.me.getMe.useQuery(undefined, {
-		refetchInterval: 2500,
-		refetchIntervalInBackground: false,
-	});
+	const { data: me, isLoading, error } = trpc.me.getMe.useQuery();
 	const tags = me?.ownedTags;
 	const activeTask = me?.ownedTasks?.find((task) => task.isActive);
 
