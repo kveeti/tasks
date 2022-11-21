@@ -271,5 +271,6 @@ const Chart = ({ data }: ChartProps) => {
 };
 
 StatsPage.requireAuth = true;
+StatsPage.requireAdmin = false;
 
 export default StatsPage;
