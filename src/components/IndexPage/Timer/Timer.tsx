@@ -3,7 +3,7 @@ import { Fragment, ReactNode } from "react";
 
 import { SkeletonButton } from "~ui/Button";
 
-import { CreateTag } from "./Tags/CreateTag/CreateTag";
+import { CreateTag } from "../../_shared/CreateTagModal/CreateTagModal";
 import { SelectTag } from "./Tags/SelectTag";
 import { ShowTag } from "./Tags/ShowTag";
 import { SkeletonTime, Time } from "./Time";
