@@ -1,6 +1,6 @@
 import { AccountSettings, SkeletonAccountSettings } from "~components/SettingsPage/AccountSettings";
 import { DeleteAccount, SkeletonDeleteAccount } from "~components/SettingsPage/DeleteAccount";
-import { ManageTags } from "~components/SettingsPage/ManageTags/ManageTags";
+import { ManageTags, SkeletonManageTags } from "~components/SettingsPage/ManageTags/ManageTags";
 import { ErrorCard } from "~ui/ErrorCard";
 import { Layout } from "~ui/Layout/Layout";
 import type { Page } from "~utils/PageType";
@@ -23,6 +23,7 @@ export const SettingsPage: Page = () => {
 			>
 				{meIsLoading || tagsLoading ? (
 					<>
+						<SkeletonManageTags />
 						<SkeletonAccountSettings />
 						<SkeletonDeleteAccount />
 					</>
@@ -33,7 +34,6 @@ export const SettingsPage: Page = () => {
 				) : (
 					<>
 						<ManageTags tags={tags} />
-
 						<AccountSettings user={me} />
 						<DeleteAccount />
 					</>

@@ -1,5 +1,5 @@
 import { CreateTag } from "~components/_shared/CreateTagModal/CreateTagModal";
-import { Button } from "~ui/Button";
+import { Button, SkeletonButton } from "~ui/Button";
 import { Card } from "~ui/Card";
 import { Modal, useModal } from "~ui/Modal";
 import type { RouterOutputs } from "~utils/trpc";
@@ -53,4 +53,8 @@ export const ManageTagsModal = ({ tags }: Props) => {
 			</Modal>
 		</>
 	);
+};
+
+export const SkeletonManageTags = () => {
+	return <SkeletonButton className="w-full" />;
 };
