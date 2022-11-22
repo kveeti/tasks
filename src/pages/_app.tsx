@@ -1,6 +1,7 @@
 import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { AppType } from "next/app";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
@@ -18,6 +19,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
 	return (
 		<>
+			<Head>
+				<title>Tasks | Login</title>
+			</Head>
+
 			<Toaster
 				reverseOrder
 				toastOptions={{

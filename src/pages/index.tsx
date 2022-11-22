@@ -4,7 +4,7 @@ import type { Page } from "~utils/PageType";
 
 const Home: Page = () => {
 	return (
-		<Layout>
+		<Layout title="Home">
 			<Timer />
 		</Layout>
 	);

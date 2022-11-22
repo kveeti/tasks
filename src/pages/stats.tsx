@@ -23,7 +23,7 @@ const StatsPage: Page = () => {
 	const weekHasData = data?.hasData;
 
 	return (
-		<Layout>
+		<Layout title="Stats">
 			<h1 className="pb-10 text-4xl font-bold">Stats</h1>
 
 			<Card className="rounded-xl">
