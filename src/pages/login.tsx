@@ -17,7 +17,7 @@ export const LoginPage: Page = () => {
 	}
 
 	return (
-		<main className="mt-[25rem] flex w-screen justify-center">
+		<main className="mt-[30vh] flex w-screen justify-center">
 			<div className="flex flex-col space-y-10">
 				<h1 className="text-center text-5xl font-bold">Tasks | Login</h1>
 
