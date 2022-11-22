@@ -32,29 +32,16 @@ export const PreviewLogin = () => {
 	};
 
 	return (
-		<form className="flex flex-col space-y-2" onSubmit={form.handleSubmit(onSubmit)}>
+		<form className="flex flex-col space-y-2" onSubmit={form.handleSubmit(onSubmit)} noValidate>
 			<Input
 				label="Password"
 				type="password"
+				required
 				error={form.formState.errors.password?.message}
 				{...form.register("password")}
 			/>
 
-			<Button
-				onPress={() => {
-					const { username, password } = form.getValues();
-
-					if (!username || !password) return toast.error("Please fill in all fields");
-
-					signIn("credentials", {
-						username,
-						password,
-						callbackUrl: "/",
-					});
-				}}
-			>
-				Login to preview
-			</Button>
+			<Button type="submit">Login to preview</Button>
 		</form>
 	);
 };
