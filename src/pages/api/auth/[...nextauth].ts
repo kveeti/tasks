@@ -2,11 +2,17 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+import { safeEqual } from "~server/common/timingSafeEqual";
+import { loginFormSchema } from "~validation/login";
+
 import { env } from "../../../env/server.mjs";
 import { prisma } from "../../../server/db/client";
 
 export const authOptions: NextAuthOptions = {
 	session: { strategy: "jwt" },
+	pages: {
+		signIn: "/login",
+	},
 	providers: [
 		env.ENV === "production"
 			? GoogleProvider({
@@ -33,18 +39,35 @@ export const authOptions: NextAuthOptions = {
 					},
 					async authorize(credentials) {
 						if (!credentials) {
-							return null;
+							throw new Error("No credentials provided");
 						}
+
+						if (!env.PREVIEW_PASSWORD) {
+							throw new Error("PREVIEW_PASSWORD not set");
+						}
+
+						const result = await loginFormSchema.safeParseAsync(credentials);
+						if (!result.success) {
+							throw new Error("Invalid credentials");
+						}
+
+						const { username, password } = result.data;
 
 						const user = await prisma.user.findUnique({
-							where: { username: credentials.username },
+							where: { username },
 						});
 
-						if (user) {
-							return user;
+						if (!user) {
+							throw new Error("Invalid username");
 						}
 
-						return null;
+						const validPassword = safeEqual(env.PREVIEW_PASSWORD, password);
+
+						if (!validPassword) {
+							throw new Error("Invalid password");
+						}
+
+						return user;
 					},
 			  }),
 	],

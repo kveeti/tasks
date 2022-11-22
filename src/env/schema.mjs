@@ -4,6 +4,7 @@ import { z } from "zod";
 export const serverSchema = z.object({
 	DATABASE_URL: z.string(),
 	ENV: z.enum(["development", "preview", "production"]),
+	PREVIEW_PASSWORD: process.env.ENV === "preview" ? z.string() : z.string().optional(),
 	NEXTAUTH_SECRET:
 		process.env.ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
 	NEXTAUTH_URL: z.preprocess(
