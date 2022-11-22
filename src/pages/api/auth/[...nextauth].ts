@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
 					},
 					async authorize(credentials) {
 						if (!credentials) {
-							return null;
+							throw new Error("No credentials provided");
 						}
 
 						if (!env.PREVIEW_PASSWORD) {
@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
 
 						const result = await loginFormSchema.safeParseAsync(credentials);
 						if (!result.success) {
-							return null;
+							throw new Error("Invalid credentials");
 						}
 
 						const { username, password } = result.data;
@@ -58,13 +58,13 @@ export const authOptions: NextAuthOptions = {
 						});
 
 						if (!user) {
-							return null;
+							throw new Error("Invalid username");
 						}
 
 						const validPassword = safeEqual(env.PREVIEW_PASSWORD, password);
 
 						if (!validPassword) {
-							return null;
+							throw new Error("Invalid password");
 						}
 
 						return user;

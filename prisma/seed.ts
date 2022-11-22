@@ -17,6 +17,7 @@ const main = async () => {
 		data: {
 			email: "preview@tasks.preview",
 			username: "preview",
+			isAdmin: true,
 		},
 	});
 
