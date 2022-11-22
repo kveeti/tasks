@@ -27,8 +27,6 @@ export const CreateTag = ({ btnAsSubmit }: { btnAsSubmit?: boolean }) => {
 	const mutation = trpc.me.tags.createTag.useMutation();
 
 	const onSubmit = async (values: CreateTagFormSchema) => {
-		console.log("onSubmit");
-
 		try {
 			await toast.promise(mutation.mutateAsync(values), {
 				loading: "Creating tag...",
@@ -39,7 +37,8 @@ export const CreateTag = ({ btnAsSubmit }: { btnAsSubmit?: boolean }) => {
 			utils.me.tags.getAll.invalidate();
 			form.reset();
 			closeModal();
-		} catch (_err) {
+		} catch (err) {
+			toast.error(err.message);
 			form.setFocus("label");
 		}
 	};
