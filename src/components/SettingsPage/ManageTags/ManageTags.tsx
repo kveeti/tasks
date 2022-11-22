@@ -20,9 +20,7 @@ export const ManageTagsModal = ({ tags }: Props) => {
 
 	return (
 		<>
-			<Button onClick={openModal} className="mt-7">
-				Tags
-			</Button>
+			<Button onClick={openModal}>Tags</Button>
 
 			<Modal title="Tags" isOpen={isModalOpen} closeModal={closeModal}>
 				<div className="mx-4 mt-4 mb-0 flex max-h-[290px] flex-col gap-2 overflow-auto py-1">
