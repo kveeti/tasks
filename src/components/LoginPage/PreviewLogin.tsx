@@ -30,12 +30,12 @@ export const PreviewLogin = () => {
 				});
 
 				if (!res) {
-					toast.error("Network error");
+					toast.error("Network error", { id: "network-error" });
 					throw new Error("Network error");
 				}
 
 				if (res?.error || !res?.ok) {
-					toast.error(res.error || "Unknown error");
+					toast.error(res.error || "Unknown error", { id: "login-error" });
 					throw new Error(res.error);
 				}
 
@@ -45,7 +45,8 @@ export const PreviewLogin = () => {
 				loading: "Logging in...",
 				success: "Logged in!",
 				error: "Failed to login",
-			}
+			},
+			{ id: "login" }
 		);
 	};
 
