@@ -20,6 +20,9 @@ export const me = {
 			form: z.object({ label: tagLabelSchema, color: tagColorsEnum }),
 			input: z.object({ tagId: z.string(), label: tagLabelSchema, color: tagColorsEnum }),
 		},
+		deleteTag: {
+			input: z.object({ tagId: z.string() }),
+		},
 	},
 
 	tasks: {
