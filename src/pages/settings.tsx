@@ -10,7 +10,7 @@ export const SettingsPage: Page = () => {
 	const { data: me, isLoading, error } = trpc.me.getMe.useQuery();
 
 	return (
-		<Layout>
+		<Layout title="Settings">
 			<h1 className="pb-10 text-4xl font-bold">Settings</h1>
 
 			<div className={classNames("flex flex-col gap-8", isLoading && "animate-pulse")}>

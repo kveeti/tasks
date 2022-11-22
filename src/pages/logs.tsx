@@ -14,7 +14,7 @@ export const LogsPage: Page = () => {
 	);
 
 	return (
-		<Layout>
+		<Layout title="Admin logs">
 			<h1 className="pb-10 text-4xl font-bold">Logs</h1>
 
 			<LogFilters form={form} />
