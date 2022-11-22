@@ -69,8 +69,8 @@ export const ToggleTimerButton = () => {
 	return (
 		<Button
 			className="mt-7 w-full py-5"
-			isDisabled={isSubmitting}
-			onPress={() => (isRunning ? stop() : start())}
+			disabled={isSubmitting}
+			onClick={() => (isRunning ? stop() : start())}
 		>
 			{isSubmitting ? (
 				<LoaderIcon className="!h-6 !w-6" />

@@ -30,7 +30,7 @@ export const DeleteAccount = () => {
 
 	return (
 		<>
-			<Button onPress={openModal}>Delete account</Button>
+			<Button onClick={openModal}>Delete account</Button>
 
 			<Modal title="Delete account" isOpen={isModalOpen} closeModal={closeModal}>
 				<p className="px-4 pt-2 pb-4">Are you sure you want to delete your account?</p>
@@ -40,8 +40,8 @@ export const DeleteAccount = () => {
 					onSubmit={form.handleSubmit(onSubmit)}
 				>
 					<div className="grid grid-cols-2 gap-2">
-						<Button onPress={closeModal}>Cancel</Button>
-						<Button isDisabled={isSubmitting} type="submit" intent="submit">
+						<Button onClick={closeModal}>Cancel</Button>
+						<Button disabled={isSubmitting} type="submit" intent="submit">
 							{isSubmitting ? "Deleting..." : "Delete"}
 						</Button>
 					</div>

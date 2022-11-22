@@ -11,10 +11,10 @@ export const TimeButtons = () => {
 		<div className="grid w-full grid-cols-2 grid-rows-1 gap-2">
 			<Card variant={1} className="rounded-xl">
 				<div className="flex flex-col gap-2 p-2">
-					<Button isDisabled={isRunning} onPress={() => addTime(HALF_HOUR)}>
+					<Button disabled={isRunning} onClick={() => addTime(HALF_HOUR)}>
 						+ 30 min
 					</Button>
-					<Button isDisabled={isRunning} onPress={() => subtractTime(HALF_HOUR)}>
+					<Button disabled={isRunning} onClick={() => subtractTime(HALF_HOUR)}>
 						- 30 min
 					</Button>
 				</div>
@@ -22,10 +22,10 @@ export const TimeButtons = () => {
 
 			<Card variant={1} className="rounded-xl">
 				<div className="flex flex-col gap-2 p-2">
-					<Button isDisabled={isRunning} onPress={() => addTime(FIVE_MINUTES)}>
+					<Button disabled={isRunning} onClick={() => addTime(FIVE_MINUTES)}>
 						+ 5 min
 					</Button>
-					<Button isDisabled={isRunning} onPress={() => subtractTime(FIVE_MINUTES)}>
+					<Button disabled={isRunning} onClick={() => subtractTime(FIVE_MINUTES)}>
 						- 5 min
 					</Button>
 				</div>

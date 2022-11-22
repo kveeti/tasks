@@ -24,7 +24,7 @@ export const LoginPage: Page = () => {
 				{env.NEXT_PUBLIC_ENV !== "production" ? (
 					<PreviewLogin />
 				) : (
-					<Button onPress={() => signIn("google", { callbackUrl: "/" })}>
+					<Button onClick={() => signIn("google", { callbackUrl: "/" })}>
 						Login with Google
 					</Button>
 				)}
