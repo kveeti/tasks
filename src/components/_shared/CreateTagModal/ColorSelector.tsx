@@ -3,8 +3,8 @@ import type { UseFormReturn } from "react-hook-form";
 
 import { classNames } from "~utils/classNames";
 
-import { tagColors } from "../tagColors";
-import type { TagColors } from "../tagColors";
+import { tagColors } from "../../IndexPage/Timer/Tags/tagColors";
+import type { TagColors } from "../../IndexPage/Timer/Tags/tagColors";
 
 type Props = {
 	form: UseFormReturn<{ color: TagColors; label: string }>;

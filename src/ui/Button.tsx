@@ -1,121 +1,51 @@
-import { AriaButtonProps, useButton } from "@react-aria/button";
-import { FocusRing } from "@react-aria/focus";
-import { useFocusableRef } from "@react-spectrum/utils";
-import type { FocusableRef } from "@react-types/shared";
-import { motion, useAnimation } from "framer-motion";
-import { forwardRef } from "react";
+import { VariantProps, cva } from "class-variance-authority";
+import type { ComponentProps } from "react";
 
 import { classNames } from "~utils/classNames";
-import { ColorLevel, colors } from "~utils/colors";
 
 import { NonBreakingSpace } from "./NonBreakingSpace";
 
-const getColors = (intent: "primary" | "submit" = "primary") => {
-	const primaryBg = 800;
-	const primaryBorder = 600;
-
-	const submitBg = primaryBg - 200;
-	const submitBorder = primaryBorder - 100;
-
-	const bg = (intent === "primary" ? primaryBg : submitBg) as ColorLevel;
-	const border = (intent === "primary" ? primaryBorder : submitBorder) as ColorLevel;
-
-	const primaryPressedBg = (bg - 200) as ColorLevel;
-	const primaryPressedBorder = (border - 100) as ColorLevel;
-
-	const submitPressedBg = (bg - 100) as ColorLevel;
-	const submitPressedBorder = (border - 100) as ColorLevel;
-
-	const pressedBg = intent === "primary" ? primaryPressedBg : submitPressedBg;
-	const pressedBorder = intent === "primary" ? primaryPressedBorder : submitPressedBorder;
-
-	return {
-		background: colors.p[bg],
-		border: colors.p[border],
-
-		pressed: {
-			background: colors.p[pressedBg],
-			border: colors.p[pressedBorder],
-		},
-	};
-};
-
-const Button = (
-	props: AriaButtonProps<"button"> & { className?: string; intent?: "primary" | "submit" },
-	ref: FocusableRef<HTMLButtonElement>
-) => {
-	const controls = useAnimation();
-
-	const domRef = useFocusableRef<HTMLButtonElement>(ref);
-
-	const { intent = "primary" } = props;
-	const { background, border, pressed } = getColors(intent);
-
-	const {
-		buttonProps: {
-			// framer motion doesn't like these props, and typescript doesn't like unused vars
-			onAnimationStart: _onAnimationStart,
-			onAnimationEnd: _onAnimationEnd,
-			onDragStart: _onDragStart,
-			onDragEnd: _onDragEnd,
-			onDrag: _onDrag,
-			...buttonProps
-		},
-	} = useButton(
-		{
-			...props,
-			onPressStart: (e) => {
-				props.onPressStart && props.onPressStart(e);
-				controls.stop();
-				controls.set({
-					background: pressed.background,
-					borderColor: pressed.border,
-				});
+const buttonStyles = cva(
+	`flex 
+    cursor-auto touch-none select-none 
+    items-center justify-center 
+    rounded-md border 
+    px-3 py-2 
+    outline-none outline outline-[3px] outline-offset-2 outline-transparent 
+    transition-all duration-200 
+    disabled:cursor-not-allowed disabled:text-primary-300 disabled:opacity-50 
+    focus-visible:outline-offset-2 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-blue-400`,
+	{
+		variants: {
+			intent: {
+				primary:
+					"bg-primary-800 border-primary-600 hover:bg-primary-700 hover:border-primary-500 active:bg-primary-600 active:border-primary-500",
+				submit: "bg-primary-600 border-primary-500 hover:bg-primary-500/80 hover:border-primary-400 active:bg-primary-500 active:border-primary-400",
+				danger: "bg-red-600/70 border-red-500/80 hover:bg-red-600 hover:border-red-500 active:bg-red-500/90 active:border-red-400/80",
 			},
-			onPressEnd: (e) => {
-				props.onPressEnd && props.onPressEnd(e);
-				controls.start({
-					background: background,
-					borderColor: border,
-					transition: { duration: 0.4 },
-				});
-			},
-			onPress: (e) => {
-				props.onPress && props.onPress(e);
-
-				controls.start({
-					background: [null, background],
-					borderColor: [null, border],
-					transition: { duration: 0.4 },
-				});
-			},
+			marginCenter: { true: "mx-auto" },
+			enableTouch: { false: "touch-none", true: "touch-auto" },
 		},
-		domRef
-	);
+		defaultVariants: {
+			intent: "primary",
+			enableTouch: false,
+		},
+	}
+);
 
+type Props = ComponentProps<"button"> & VariantProps<typeof buttonStyles>;
+
+export const Button = ({ className, ...props }: Props) => {
 	return (
-		<FocusRing focusRingClass="outline-none outline-blue-400 outline outline-[3px] outline-offset-2">
-			<motion.button
-				ref={domRef}
-				animate={controls}
-				className={classNames(
-					"flex cursor-auto select-none items-center justify-center rounded-md border px-3 py-2 outline-none outline outline-[3px] outline-offset-2 outline-transparent transition-[outline,_opacity] disabled:cursor-not-allowed disabled:text-primary-300 disabled:opacity-50",
-					props.className && props.className
-				)}
-				style={{
-					background,
-					borderColor: border,
-				}}
-				{...buttonProps}
-			>
-				{props.children}
-			</motion.button>
-		</FocusRing>
+		<button
+			className={classNames(buttonStyles(props), !!className && className)}
+			{...props}
+			type={props.type ?? "button"}
+		>
+			{props.children}
+		</button>
 	);
 };
-
-const _Button = forwardRef(Button);
-export { _Button as Button };
 
 export const SkeletonButton = ({ className }: { className?: string }) => {
 	return (

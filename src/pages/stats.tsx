@@ -29,11 +29,11 @@ const StatsPage: Page = () => {
 			<Card className="rounded-xl">
 				<div className="flex w-full flex-col gap-2 p-2">
 					<div className="flex justify-between gap-2">
-						<Button onPress={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
+						<Button onClick={() => setSelectedWeek(subWeeks(selectedWeek, 1))}>
 							<ChevronLeft />
 						</Button>
 						<Button className="w-full text-sm">Week {format(selectedWeek, "I")}</Button>
-						<Button onPress={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
+						<Button onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}>
 							<ChevronRight />
 						</Button>
 					</div>

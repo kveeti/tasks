@@ -109,11 +109,31 @@ export const meRouter = router({
 	 */
 	tags: router({
 		/**
+		 * GET TAGS
+		 */
+		getAll: protectedProcedure.query(async ({ ctx }) => {
+			return await ctx.prisma.tag.findMany({
+				where: { ownerId: ctx.userId },
+			});
+		}),
+
+		/**
 		 * CREATE TAG
 		 */
 		createTag: protectedProcedure
 			.input(v.me.tags.createTag.input)
 			.mutation(async ({ ctx, input }) => {
+				const collidingTag = await ctx.prisma.tag.findFirst({
+					where: { label: input.label, ownerId: ctx.userId },
+				});
+
+				if (collidingTag) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `You already have a tag with the label "${input.label}"`,
+					});
+				}
+
 				return await ctx.prisma.$transaction(async (tx) => {
 					const createdTag = await tx.tag.create({
 						data: {
@@ -160,6 +180,31 @@ export const meRouter = router({
 		updateTag: protectedProcedure
 			.input(v.me.tags.updateTag.input)
 			.mutation(async ({ ctx, input }) => {
+				const tagToUpdate = await ctx.prisma.tag.findFirst({
+					where: { id: input.tagId, ownerId: ctx.userId },
+				});
+
+				if (!tagToUpdate) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Tag doesn't exist",
+					});
+				}
+
+				// check for tags with same label, if label is being updated
+				if (input.label !== tagToUpdate.label) {
+					const collidingTag = await ctx.prisma.tag.findFirst({
+						where: { label: input.label, ownerId: ctx.userId },
+					});
+
+					if (collidingTag) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: `You already have a tag with the label "${input.label}"`,
+						});
+					}
+				}
+
 				return await ctx.prisma.$transaction(async (tx) => {
 					const updatedTag = await tx.tag.update({
 						where: { id: input.tagId },
@@ -194,6 +239,54 @@ export const meRouter = router({
 					});
 
 					return updatedTag;
+				});
+			}),
+		/**
+		 * DELETE TAG
+		 */
+		deleteTag: protectedProcedure
+			.input(v.me.tags.deleteTag.input)
+			.mutation(async ({ ctx, input }) => {
+				return await ctx.prisma.$transaction(async (tx) => {
+					const tagToDelete = await tx.tag.findFirst({
+						where: { id: input.tagId, ownerId: ctx.userId },
+					});
+
+					if (!tagToDelete) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Tag doesn't exist",
+						});
+					}
+
+					await tx.tag.deleteMany({ where: { id: input.tagId, ownerId: ctx.userId } });
+
+					await tx.log.create({
+						data: {
+							logType: "DeleteTag",
+							actors: {
+								createMany: {
+									data: [
+										{
+											sequenceType: "Executor",
+											actorType: "User",
+											actorId: ctx.userId,
+										},
+										{
+											sequenceType: "Target",
+											actorType: "Tag",
+											actorId: input.tagId,
+										},
+										{
+											sequenceType: "TargetOwner",
+											actorType: "User",
+											actorId: ctx.userId,
+										},
+									],
+								},
+							},
+						},
+					});
 				});
 			}),
 	}),

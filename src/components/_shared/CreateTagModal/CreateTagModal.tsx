@@ -11,12 +11,12 @@ import { Modal, useModal } from "~ui/Modal";
 import { trpc } from "~utils/trpc";
 import { v } from "~validation";
 
-import { tagColors } from "../tagColors";
+import { tagColors } from "../../IndexPage/Timer/Tags/tagColors";
 import { ColorSelector } from "./ColorSelector";
 
 type CreateTagFormSchema = z.infer<typeof v.me.tags.createTag.form>;
 
-export const CreateTag = () => {
+export const CreateTag = ({ btnAsSubmit }: { btnAsSubmit?: boolean }) => {
 	const { isModalOpen, closeModal, openModal } = useModal();
 
 	const form = useForm<CreateTagFormSchema>({
@@ -24,13 +24,9 @@ export const CreateTag = () => {
 		defaultValues: { color: tagColors.at(2) },
 	});
 	const utils = trpc.useContext();
-	const mutation = trpc.me.tags.createTag.useMutation({
-		onSuccess: () => utils.me.getMe.invalidate(),
-	});
+	const mutation = trpc.me.tags.createTag.useMutation();
 
 	const onSubmit = async (values: CreateTagFormSchema) => {
-		console.log("onSubmit");
-
 		try {
 			await toast.promise(mutation.mutateAsync(values), {
 				loading: "Creating tag...",
@@ -38,9 +34,11 @@ export const CreateTag = () => {
 				error: "Failed to create tag :(",
 			});
 
+			utils.me.tags.getAll.invalidate();
 			form.reset();
 			closeModal();
-		} catch (_err) {
+		} catch (err) {
+			toast.error(err.message);
 			form.setFocus("label");
 		}
 	};
@@ -49,7 +47,11 @@ export const CreateTag = () => {
 
 	return (
 		<>
-			<Button intent="submit" onPress={openModal} className="mt-7">
+			<Button
+				intent={btnAsSubmit ? "submit" : "primary"}
+				onClick={openModal}
+				className="mt-7"
+			>
 				Create a tag
 			</Button>
 
@@ -75,8 +77,8 @@ export const CreateTag = () => {
 					</div>
 
 					<div className="grid grid-cols-2 gap-2 pt-2">
-						<Button onPress={closeModal}>Cancel</Button>
-						<Button intent="submit" isDisabled={isSubmitting} type="submit">
+						<Button onClick={closeModal}>Cancel</Button>
+						<Button intent="submit" disabled={isSubmitting} type="submit">
 							{isSubmitting ? "Creating..." : "Create"}
 						</Button>
 					</div>

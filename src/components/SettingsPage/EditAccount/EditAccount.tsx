@@ -18,9 +18,8 @@ export const EditAccount = ({ user }: Props) => {
 	const { closeModal, openModal, isModalOpen } = useModal();
 
 	const utils = trpc.useContext();
-	const mutation = trpc.me.updateMe.useMutation({
-		onSuccess: () => utils.me.getMe.invalidate(),
-	});
+	const mutation = trpc.me.updateMe.useMutation();
+
 	const form = useForm({
 		resolver: zodResolver(v.me.updateMe.form),
 		defaultValues: { username: user.username ?? "" },
@@ -36,6 +35,7 @@ export const EditAccount = ({ user }: Props) => {
 				error: "Failed to save changes :(",
 			});
 
+			utils.me.getMe.invalidate();
 			closeModal();
 		} catch (err) {
 			form.setFocus("username");
@@ -44,7 +44,7 @@ export const EditAccount = ({ user }: Props) => {
 
 	return (
 		<>
-			<Button onPress={openModal}>Edit account</Button>
+			<Button onClick={openModal}>Edit account</Button>
 
 			<Modal title="Edit user" isOpen={isModalOpen} closeModal={closeModal}>
 				<form
@@ -62,8 +62,8 @@ export const EditAccount = ({ user }: Props) => {
 					/>
 
 					<div className="grid grid-cols-2 gap-2">
-						<Button onPress={closeModal}>Cancel</Button>
-						<Button isDisabled={isSubmitting} type="submit" intent="submit">
+						<Button onClick={closeModal}>Cancel</Button>
+						<Button disabled={isSubmitting} type="submit" intent="submit">
 							{isSubmitting ? "Saving..." : "Save"}
 						</Button>
 					</div>
