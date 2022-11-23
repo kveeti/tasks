@@ -21,7 +21,7 @@ const buttonStyles = cva(
 				primary:
 					"bg-primary-800 border-primary-600 hover:bg-primary-700 hover:border-primary-500 active:bg-primary-600 active:border-primary-500",
 				submit: "bg-primary-600 border-primary-500 hover:bg-primary-500/80 hover:border-primary-400 active:bg-primary-500 active:border-primary-400",
-				danger: "bg-red-600 border-red-500 hover:bg-red-500/80 hover:border-red-400 active:bg-red-500 active:border-red-400",
+				danger: "bg-red-600/70 border-red-500/80 hover:bg-red-600 hover:border-red-500 active:bg-red-500/90 active:border-red-400/80",
 			},
 			marginCenter: { true: "mx-auto" },
 			enableTouch: { false: "touch-none", true: "touch-auto" },
