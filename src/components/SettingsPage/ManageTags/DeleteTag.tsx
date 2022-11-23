@@ -31,7 +31,7 @@ export const DeleteTag = ({ tag }: Props) => {
 
 	return (
 		<>
-			<Button onClick={openModal} className="w-full">
+			<Button onClick={openModal} intent="danger">
 				Delete
 			</Button>
 
@@ -47,7 +47,7 @@ export const DeleteTag = ({ tag }: Props) => {
 					<div className="grid grid-cols-2 gap-2 pt-2">
 						<Button onClick={closeModal}>Cancel</Button>
 						<Button
-							intent="submit"
+							intent="danger"
 							disabled={mutation.isLoading}
 							onClick={() => onSubmit()}
 						>
