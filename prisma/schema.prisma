@@ -35,7 +35,7 @@ model Tag {
 model Task {
     id        String    @id @default(cuid())
     tagId     String
-    tag       Tag       @relation(fields: [tagId], references: [id])
+    tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
     ownerId   String
     owner     User      @relation(name: "ownedTasks", fields: [ownerId], references: [id], onDelete: Cascade)
     expiresAt DateTime
