@@ -46,7 +46,7 @@ export const ManageTagsModal = ({ tags }: Props) => {
 				</div>
 
 				<div className="flex flex-col px-4 pb-4">
-					<CreateTag btnAsSubmit />
+					<CreateTag btnAsSubmit btnClassName="mt-4" />
 				</div>
 			</Modal>
 		</>
