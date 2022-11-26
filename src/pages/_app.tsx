@@ -20,7 +20,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 	return (
 		<>
 			<Head>
-				<title>Tasks | Login</title>
+				<title>Tasks</title>
 			</Head>
 
 			<Toaster
