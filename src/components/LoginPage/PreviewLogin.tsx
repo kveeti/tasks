@@ -51,14 +51,25 @@ export const PreviewLogin = () => {
 	};
 
 	return (
-		<form className="flex flex-col space-y-2" onSubmit={form.handleSubmit(onSubmit)} noValidate>
-			<Input
-				label="Password"
-				type="password"
-				required
-				error={form.formState.errors.password?.message}
-				{...form.register("password")}
-			/>
+		<form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+			<div className="flex flex-col gap-2">
+				<Input
+					label="Username"
+					autoComplete="username"
+					required
+					error={form.formState.errors.username?.message}
+					{...form.register("username")}
+				/>
+
+				<Input
+					label="Password"
+					type="password"
+					autoComplete="current-password"
+					required
+					error={form.formState.errors.password?.message}
+					{...form.register("password")}
+				/>
+			</div>
 
 			<Button type="submit">Login to preview</Button>
 		</form>
