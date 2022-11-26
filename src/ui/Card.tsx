@@ -1,7 +1,9 @@
 import { VariantProps, cva } from "class-variance-authority";
-import { ComponentProps, forwardRef } from "react";
+import type { ComponentPropsWithoutRef, ElementType, ReactNode, Ref } from "react";
 
 import { classNames } from "~utils/classNames";
+
+import { forwardRefWithAs } from "./utils";
 
 const cardStyles = cva("border", {
 	variants: {
@@ -16,24 +18,32 @@ const cardStyles = cva("border", {
 	},
 });
 
-type Props = ComponentProps<"div"> & VariantProps<typeof cardStyles>;
+type Props<T extends ElementType = "div"> = {
+	as?: T;
+	children: ReactNode;
+} & ComponentPropsWithoutRef<T> &
+	VariantProps<typeof cardStyles>;
 
-export const Card = forwardRef<HTMLDivElement, Props>(({ children, className, ...rest }, ref) => {
-	return (
-		<div ref={ref} className={classNames(cardStyles(rest), className)} {...rest}>
-			{children}
-		</div>
-	);
-});
+export const Card = forwardRefWithAs(
+	<T extends ElementType>(props: Props<T>, ref: Ref<HTMLDivElement>) => {
+		const { as: Component = "div", children, className, ...rest } = props;
 
-Card.displayName = "Card";
-
-export const SkeletonCard = forwardRef<HTMLDivElement, Props>(
-	({ children, className, ...rest }, ref) => {
 		return (
-			<div ref={ref} className={classNames(cardStyles(rest), className)} {...rest}>
+			<Component ref={ref} className={classNames(cardStyles(rest), className)} {...rest}>
 				{children}
-			</div>
+			</Component>
+		);
+	}
+);
+
+export const SkeletonCard = forwardRefWithAs(
+	<T extends ElementType>(props: Props<T>, ref: Ref<HTMLDivElement>) => {
+		const { as: Component = "div", children, className, ...rest } = props;
+
+		return (
+			<Component ref={ref} className={classNames(cardStyles(rest), className)} {...rest}>
+				{children}
+			</Component>
 		);
 	}
 );
