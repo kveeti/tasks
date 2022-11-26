@@ -16,7 +16,13 @@ import { ColorSelector } from "./ColorSelector";
 
 type CreateTagFormSchema = z.infer<typeof v.me.tags.createTag.form>;
 
-export const CreateTag = ({ btnAsSubmit }: { btnAsSubmit?: boolean }) => {
+export const CreateTag = ({
+	btnAsSubmit,
+	btnClassName,
+}: {
+	btnAsSubmit?: boolean;
+	btnClassName?: string;
+}) => {
 	const { isModalOpen, closeModal, openModal } = useModal();
 
 	const form = useForm<CreateTagFormSchema>({
@@ -50,7 +56,7 @@ export const CreateTag = ({ btnAsSubmit }: { btnAsSubmit?: boolean }) => {
 			<Button
 				intent={btnAsSubmit ? "submit" : "primary"}
 				onClick={openModal}
-				className="mt-7"
+				className={btnClassName}
 			>
 				Create a tag
 			</Button>

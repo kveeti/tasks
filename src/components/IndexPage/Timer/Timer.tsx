@@ -34,7 +34,7 @@ export const Timer = () => {
 					) : tags?.length ? (
 						<SelectTag key="select-tag" />
 					) : (
-						<CreateTag key="create-tag" />
+						<CreateTag key="create-tag" btnClassName="mt-7" />
 					)}
 				</Fragment>
 
