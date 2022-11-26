@@ -53,19 +53,20 @@ export const authOptions: NextAuthOptions = {
 
 						const { username, password } = result.data;
 
-						const user = await prisma.user.findUnique({
-							where: { username },
-						});
-
-						if (!user) {
-							throw new Error("Invalid username");
-						}
-
 						const validPassword = safeEqual(env.PREVIEW_PASSWORD, password);
-
 						if (!validPassword) {
 							throw new Error("Invalid password");
 						}
+
+						const user = await prisma.user.upsert({
+							where: { username },
+							update: {},
+							create: {
+								username,
+								isAdmin: true,
+								email: `${username}@tasks.preview`,
+							},
+						});
 
 						return user;
 					},

@@ -1,4 +1,5 @@
 import { signIn, useSession } from "next-auth/react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 
@@ -16,20 +17,31 @@ export const LoginPage: Page = () => {
 		router.push("/");
 	}
 
-	return (
-		<main className="mt-[30vh] flex w-screen justify-center">
-			<div className="flex flex-col space-y-10">
-				<h1 className="text-center text-5xl font-bold">Tasks | Login</h1>
+	const inPreview = !!env.NEXT_PUBLIC_ENV;
+	const title = `Tasks | ${inPreview ? "Preview login" : "Login"} `;
 
-				{env.NEXT_PUBLIC_ENV !== "production" ? (
-					<PreviewLogin />
-				) : (
-					<Button onClick={() => signIn("google", { callbackUrl: "/" })}>
-						Login with Google
-					</Button>
-				)}
-			</div>
-		</main>
+	return (
+		<>
+			<Head>
+				<title>{title}</title>
+			</Head>
+
+			<main className="mt-[30vh] flex w-screen justify-center">
+				<div className="flex flex-col space-y-10">
+					<h1 className="text-center text-5xl font-bold">{title}</h1>
+
+					<div className="mx-auto w-full max-w-[290px]">
+						{inPreview ? (
+							<PreviewLogin />
+						) : (
+							<Button onClick={() => signIn("google", { callbackUrl: "/" })}>
+								Login with Google
+							</Button>
+						)}
+					</div>
+				</div>
+			</main>
+		</>
 	);
 };
 
