@@ -7,18 +7,19 @@ import { PreviewLogin } from "~components/LoginPage/PreviewLogin";
 import { env } from "~env/client.mjs";
 import { Button } from "~ui/Button";
 import type { Page } from "~utils/PageType";
+import { useIsProd } from "~utils/useIsProd";
 
 export const LoginPage: Page = () => {
 	const { status } = useSession();
 	const router = useRouter();
+	const inProd = useIsProd();
 
 	if (status === "authenticated") {
 		toast.success("Logged in!", { id: "login" });
 		router.push("/");
 	}
 
-	const inPreview = !!env.NEXT_PUBLIC_ENV;
-	const title = `Tasks | ${inPreview ? "Preview login" : "Login"} `;
+	const title = `Tasks | ${!inProd ? "Preview login" : "Login"} `;
 
 	return (
 		<>
@@ -31,7 +32,7 @@ export const LoginPage: Page = () => {
 					<h1 className="text-center text-5xl font-bold">{title}</h1>
 
 					<div className="mx-auto w-full max-w-[290px]">
-						{inPreview ? (
+						{!inProd ? (
 							<PreviewLogin />
 						) : (
 							<Button onClick={() => signIn("google", { callbackUrl: "/" })}>
