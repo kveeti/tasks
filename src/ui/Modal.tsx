@@ -41,6 +41,8 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 						>
 							<Dialog.Panel
 								as={Card}
+								// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+								// @ts-ignore
 								className="w-full max-w-sm transform rounded-xl text-left align-middle shadow-xl transition-all"
 							>
 								<Dialog.Title
