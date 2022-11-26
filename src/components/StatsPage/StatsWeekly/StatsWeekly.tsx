@@ -35,7 +35,7 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 					</div>
 				</Card>
 			) : error ? (
-				<ErrorCard>
+				<ErrorCard className="mt-2">
 					<p>Failed to load stats</p>
 				</ErrorCard>
 			) : (
