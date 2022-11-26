@@ -38,7 +38,7 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 				<ErrorCard className="mt-2">
 					<p>Failed to load stats</p>
 				</ErrorCard>
-			) : (
+			) : data?.hasData ? (
 				<>
 					<ChartWeekly
 						key={"chart"}
@@ -51,6 +51,10 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 
 					<WeeklyTotal key="weekly-total" data={data} setSelectedDay={setSelectedDay} />
 				</>
+			) : (
+				<Card className="mt-2 animate-pulse rounded-md">
+					<div className="flex items-center justify-center px-2 py-[5rem]">No data</div>
+				</Card>
 			)}
 		</AnimatePresence>
 	);
