@@ -29,7 +29,7 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 	return (
 		<AnimatePresence initial={false}>
 			{isLoading ? (
-				<Card className="animate-pulse rounded-md">
+				<Card className="mt-2 animate-pulse rounded-md">
 					<div className="flex items-center justify-center px-2 py-[5rem]">
 						Loading...
 					</div>
