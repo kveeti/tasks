@@ -42,7 +42,13 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 							<div
 								key={i}
 								className="flex h-[150px] flex-col justify-end"
-								onClick={() => setSelectedDay(d)}
+								onClick={() => {
+									if (d.totalMinutes) {
+										setSelectedDay(d);
+									} else {
+										setSelectedDay(null);
+									}
+								}}
 							>
 								{d.tagMinutes.map((tm, tmIndex) => {
 									const isFirst = tmIndex === 0;
@@ -95,8 +101,8 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 
 					<div className="grid w-full grid-cols-8 gap-1">
 						{data?.dailyStats.map((d, i) => (
-							<p key={i} className="text-center text-xs">
-								{format(d.date, "E")}
+							<p key={i} className="text-center text-[0.7rem]">
+								{format(d.date, "EEEEEE")}
 							</p>
 						))}
 						<div className="text-[10px]">min</div>
