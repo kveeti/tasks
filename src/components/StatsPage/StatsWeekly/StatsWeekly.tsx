@@ -15,10 +15,10 @@ type Props = {
 
 export const StatsWeekly = ({ selectedWeek }: Props) => {
 	const [selectedDay, setSelectedDay] = useState<WeekdayInfoDay | null>(null);
-	const { data, isLoading, error } = trpc.me.stats.daily.useQuery({ week: selectedWeek });
+	const { data, isLoading, error } = trpc.me.stats.weekly.useQuery({ week: selectedWeek });
 
-	const setNewSelectedDay = (day: WeekdayInfoDay) => {
-		if (selectedDay?.date === day.date) {
+	const setNewSelectedDay = (day: WeekdayInfoDay | null) => {
+		if (selectedDay?.date === day?.date) {
 			setSelectedDay(null);
 			return;
 		}
@@ -27,7 +27,7 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 	};
 
 	return (
-		<AnimatePresence initial={false}>
+		<AnimatePresence>
 			{isLoading ? (
 				<Card className="mt-2 animate-pulse rounded-md">
 					<div className="flex items-center justify-center px-2 py-[5rem]">
@@ -39,18 +39,24 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 					<p>Failed to load stats</p>
 				</ErrorCard>
 			) : data?.hasData ? (
-				<>
+				<AnimatePresence>
 					<ChartWeekly
-						key={"chart"}
+						key="chart"
 						data={data}
 						selectedDay={selectedDay}
 						setSelectedDay={setNewSelectedDay}
 					/>
 
-					{selectedDay && <WeekdayInfo key="weekday-info" data={selectedDay} />}
+					{selectedDay && (
+						<WeekdayInfo
+							key="weekday-info"
+							data={selectedDay}
+							setSelectedDay={setNewSelectedDay}
+						/>
+					)}
 
-					<WeeklyTotal key="weekly-total" data={data} setSelectedDay={setSelectedDay} />
-				</>
+					<WeeklyTotal key="weekly-total" data={data} />
+				</AnimatePresence>
 			) : (
 				<Card className="mt-2 rounded-md">
 					<div className="flex items-center justify-center px-2 py-[5rem]">No data</div>

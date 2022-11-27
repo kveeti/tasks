@@ -21,6 +21,7 @@ const cardStyles = cva("border", {
 type Props<T extends ElementType = "div"> = {
 	as?: T;
 	children: ReactNode;
+	className?: string;
 } & ComponentPropsWithoutRef<T> &
 	VariantProps<typeof cardStyles>;
 

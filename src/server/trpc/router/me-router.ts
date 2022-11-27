@@ -434,11 +434,12 @@ export const meRouter = router({
 	 */
 	stats: router({
 		/**
-		 * DAILY
+		 * WEEKLY
 		 */
-		daily: protectedProcedure
+		weekly: protectedProcedure
 			.input(z.object({ week: z.date() }))
 			.query(async ({ ctx, input }) => {
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				const start = startOfWeek(input.week, { weekStartsOn: 1 });
 				const end = endOfWeek(start, { weekStartsOn: 1 });
 
@@ -462,13 +463,13 @@ export const meRouter = router({
 
 					const tagMinutes = tags.map((tag) => {
 						const currentTime = new Date();
-						const completeTagTasks = tasks.filter(
+						const completedTagTasks = tasks.filter(
 							(task) =>
 								task.tagId === tag.id &&
 								(task.stoppedAt || task.expiresAt < currentTime)
 						);
 
-						const minutes = completeTagTasks.reduce((acc, task) => {
+						const minutes = completedTagTasks.reduce((acc, task) => {
 							const taskMinutes = differenceInMinutes(
 								task.stoppedAt ?? task.expiresAt,
 								task.createdAt,
