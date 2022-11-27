@@ -8,9 +8,9 @@ import type { RouterOutputs } from "~utils/trpc";
 import type { WeekdayInfoDay } from "../WeekdayInfo";
 
 type Props = {
-	data: RouterOutputs["me"]["stats"]["daily"];
+	data: RouterOutputs["me"]["stats"]["weekly"];
 	selectedDay: WeekdayInfoDay | null;
-	setSelectedDay: (date: WeekdayInfoDay) => void;
+	setSelectedDay: (date: WeekdayInfoDay | null) => void;
 };
 
 export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
@@ -39,7 +39,17 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 				<div className="flex flex-col gap-2 p-2">
 					<div className="grid h-[150px] w-full grid-cols-8 items-end justify-end gap-1">
 						{scaled?.map((d, i) => (
-							<div key={i} className="flex h-[150px] flex-col justify-end">
+							<div
+								key={i}
+								className="flex h-[150px] flex-col justify-end"
+								onClick={() => {
+									if (d.totalMinutes) {
+										setSelectedDay(d);
+									} else {
+										setSelectedDay(null);
+									}
+								}}
+							>
 								{d.tagMinutes.map((tm, tmIndex) => {
 									const isFirst = tmIndex === 0;
 									const isLast =
@@ -73,7 +83,6 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 													? "unset"
 													: "grayscale(1)",
 											}}
-											onClick={() => setSelectedDay(d)}
 										/>
 									);
 								})}
@@ -92,8 +101,8 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 
 					<div className="grid w-full grid-cols-8 gap-1">
 						{data?.dailyStats.map((d, i) => (
-							<p key={i} className="text-center text-xs">
-								{format(d.date, "E")}
+							<p key={i} className="text-center text-[0.7rem]">
+								{format(d.date, "EEEEEE")}
 							</p>
 						))}
 						<div className="text-[10px]">min</div>

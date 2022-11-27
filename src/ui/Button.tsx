@@ -10,7 +10,6 @@ const buttonStyles = cva(
     cursor-auto touch-none select-none 
     items-center justify-center 
     rounded-md border 
-    px-3 py-2 
     outline-none outline outline-[3px] outline-offset-2 outline-transparent 
     transition-all duration-200 
     disabled:cursor-not-allowed disabled:text-primary-300 disabled:opacity-50 
@@ -25,10 +24,15 @@ const buttonStyles = cva(
 			},
 			marginCenter: { true: "mx-auto" },
 			enableTouch: { false: "touch-none", true: "touch-auto" },
+			size: {
+				small: "px-1 py-1 text-sm",
+				base: "px-3 py-2",
+			},
 		},
 		defaultVariants: {
 			intent: "primary",
 			enableTouch: false,
+			size: "base",
 		},
 	}
 );
