@@ -30,11 +30,14 @@ export const LoginPage: Page = () => {
 				<div className="flex flex-col space-y-10">
 					<h1 className="text-center text-5xl font-bold">{title}</h1>
 
-					<div className="mx-auto w-full max-w-[290px]">
-						{!inProd ? (
+					<div className="mx-auto flex w-full max-w-[290px] flex-col items-center">
+						{inProd ? (
 							<PreviewLogin />
 						) : (
-							<Button onClick={() => signIn("google", { callbackUrl: "/" })}>
+							<Button
+								onClick={() => signIn("google", { callbackUrl: "/" })}
+								className="w-max"
+							>
 								Login with Google
 							</Button>
 						)}

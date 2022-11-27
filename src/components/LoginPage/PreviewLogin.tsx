@@ -51,7 +51,11 @@ export const PreviewLogin = () => {
 	};
 
 	return (
-		<form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+		<form
+			className="flex w-full flex-col gap-4"
+			onSubmit={form.handleSubmit(onSubmit)}
+			noValidate
+		>
 			<div className="flex flex-col gap-2">
 				<Input
 					label="Username"
