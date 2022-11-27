@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 
 import { PreviewLogin } from "~components/LoginPage/PreviewLogin";
-import { env } from "~env/client.mjs";
 import { Button } from "~ui/Button";
 import type { Page } from "~utils/PageType";
 import { useIsProd } from "~utils/useIsProd";
