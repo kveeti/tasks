@@ -31,7 +31,7 @@ export const LoginPage: Page = () => {
 					<h1 className="text-center text-5xl font-bold">{title}</h1>
 
 					<div className="mx-auto flex w-full max-w-[290px] flex-col items-center">
-						{inProd ? (
+						{!inProd ? (
 							<PreviewLogin />
 						) : (
 							<Button
