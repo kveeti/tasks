@@ -23,7 +23,7 @@
 		"@trpc/server": "10.0.0-rc.4",
 		"class-variance-authority": "^0.4.0",
 		"date-fns": "^2.29.3",
-		"framer-motion": "^7.6.2",
+		"framer-motion": "^9.0.1",
 		"next": "13.1.6",
 		"next-auth": "^4.15.1",
 		"react": "18.2.0",
