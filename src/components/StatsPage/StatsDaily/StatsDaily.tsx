@@ -5,15 +5,15 @@ import { Card } from "~ui/Card";
 import { ErrorCard } from "~ui/ErrorCard";
 import { trpc } from "~utils/trpc";
 
-import { ChartWeekly } from "./ChartWeekly/ChartWeekly";
+import { ChartDaily } from "./ChartDaily";
+import { WeeklyTotal } from "./DailyTotal";
 import { WeekdayInfo, WeekdayInfoDay } from "./WeekdayInfo";
-import { WeeklyTotal } from "./WeeklyTotal";
 
 type Props = {
 	selectedWeek: Date;
 };
 
-export const StatsWeekly = ({ selectedWeek }: Props) => {
+export const StatsDaily = ({ selectedWeek }: Props) => {
 	const [selectedDay, setSelectedDay] = useState<WeekdayInfoDay | null>(null);
 	const { data, isLoading, error } = trpc.me.stats.weekly.useQuery({ week: selectedWeek });
 
@@ -40,7 +40,7 @@ export const StatsWeekly = ({ selectedWeek }: Props) => {
 				</ErrorCard>
 			) : data?.hasData ? (
 				<AnimatePresence>
-					<ChartWeekly
+					<ChartDaily
 						key="chart"
 						data={data}
 						selectedDay={selectedDay}

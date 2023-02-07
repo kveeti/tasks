@@ -5,7 +5,7 @@ import { Card } from "~ui/Card";
 import { classNames } from "~utils/classNames";
 import type { RouterOutputs } from "~utils/trpc";
 
-import type { WeekdayInfoDay } from "../WeekdayInfo";
+import type { WeekdayInfoDay } from "./WeekdayInfo";
 
 type Props = {
 	data: RouterOutputs["me"]["stats"]["weekly"];
@@ -13,7 +13,7 @@ type Props = {
 	setSelectedDay: (date: WeekdayInfoDay | null) => void;
 };
 
-export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
+export const ChartDaily = ({ selectedDay, setSelectedDay, data }: Props) => {
 	const min = Math.min(...(data?.dailyStats.map((d) => d.totalMinutes) ?? []));
 	const max = Math.max(...(data?.dailyStats.map((d) => d.totalMinutes) ?? []));
 	const dmin = 0;

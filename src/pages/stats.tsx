@@ -3,7 +3,7 @@ import format from "date-fns/format";
 import subWeeks from "date-fns/subWeeks";
 import { useState } from "react";
 
-import { StatsWeekly } from "~components/StatsPage/StatsWeekly/StatsWeekly";
+import { StatsDaily } from "~components/StatsPage/StatsDaily/StatsDaily";
 import { Button } from "~ui/Button";
 import { Card } from "~ui/Card";
 import { ChevronLeft } from "~ui/Icons/ChevronLeft";
@@ -30,7 +30,7 @@ const StatsPage: Page = () => {
 						</Button>
 					</div>
 
-					<StatsWeekly selectedWeek={selectedWeek} />
+					<StatsDaily selectedWeek={selectedWeek} />
 				</div>
 			</Card>
 		</Layout>
