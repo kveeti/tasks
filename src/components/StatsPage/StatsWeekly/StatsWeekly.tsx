@@ -6,8 +6,8 @@ import { ErrorCard } from "~ui/ErrorCard";
 import { trpc } from "~utils/trpc";
 
 import { ChartWeekly } from "./ChartWeekly";
-import { WeeklyTotal } from "./DailyTotal";
 import { WeekdayInfo, WeekdayInfoDay } from "./WeekdayInfo";
+import { WeeklyTotal } from "./WeeklyTotal";
 
 type Props = {
 	selectedWeek: Date;
