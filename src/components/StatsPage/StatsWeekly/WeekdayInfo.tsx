@@ -6,7 +6,7 @@ import { Card } from "~ui/Card";
 import { CloseIcon } from "~ui/Icons/CloseIcon";
 import type { RouterOutputs } from "~utils/trpc";
 
-export type WeekdayInfoDay = RouterOutputs["me"]["stats"]["weekly"]["dailyStats"][number];
+export type WeekdayInfoDay = RouterOutputs["me"]["stats"]["weekly"]["weeklyStats"][number];
 
 type Props = {
 	data: WeekdayInfoDay;

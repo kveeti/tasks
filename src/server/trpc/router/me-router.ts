@@ -3,8 +3,10 @@ import {
 	addSeconds,
 	differenceInMinutes,
 	eachDayOfInterval,
+	endOfMonth,
 	endOfWeek,
 	isSameDay,
+	startOfMonth,
 	startOfWeek,
 } from "date-fns";
 import { z } from "zod";
@@ -443,7 +445,7 @@ export const meRouter = router({
 				const start = startOfWeek(input.week, { weekStartsOn: 1 });
 				const end = endOfWeek(start, { weekStartsOn: 1 });
 
-				const [dailyTasks, tags] = await ctx.prisma.$transaction([
+				const [weeklyTasks, tags] = await ctx.prisma.$transaction([
 					ctx.prisma.task.findMany({
 						where: {
 							ownerId: ctx.userId,
@@ -458,8 +460,8 @@ export const meRouter = router({
 
 				const days = eachDayOfInterval({ start, end });
 
-				const dailyStats = days.map((day) => {
-					const tasks = dailyTasks.filter((task) => isSameDay(task.createdAt, day));
+				const weeklyStats = days.map((day) => {
+					const tasks = weeklyTasks.filter((task) => isSameDay(task.createdAt, day));
 
 					const tagMinutes = tags.map((tag) => {
 						const currentTime = new Date();
@@ -494,10 +496,10 @@ export const meRouter = router({
 					};
 				});
 
-				const totalMinutes = dailyStats.reduce((acc, day) => acc + day.totalMinutes, 0);
+				const totalMinutes = weeklyStats.reduce((acc, day) => acc + day.totalMinutes, 0);
 
 				const weeklyTotalMinutesPerTag = tags.map((tag) => {
-					const minutes = dailyStats.reduce((acc, day) => {
+					const minutes = weeklyStats.reduce((acc, day) => {
 						const tagMinutes =
 							day.tagMinutes.find((tagMinute) => tagMinute.tag.id === tag.id)
 								?.minutes ?? 0;
@@ -510,7 +512,7 @@ export const meRouter = router({
 
 				return {
 					hasData: totalMinutes > 0,
-					dailyStats,
+					weeklyStats,
 					weeklyTotalMinutesPerTag,
 				};
 			}),

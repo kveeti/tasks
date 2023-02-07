@@ -13,16 +13,16 @@ type Props = {
 	setSelectedDay: (date: WeekdayInfoDay | null) => void;
 };
 
-export const ChartDaily = ({ selectedDay, setSelectedDay, data }: Props) => {
-	const min = Math.min(...(data?.dailyStats.map((d) => d.totalMinutes) ?? []));
-	const max = Math.max(...(data?.dailyStats.map((d) => d.totalMinutes) ?? []));
+export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
+	const min = Math.min(...(data?.weeklyStats.map((d) => d.totalMinutes) ?? []));
+	const max = Math.max(...(data?.weeklyStats.map((d) => d.totalMinutes) ?? []));
 	const dmin = 0;
 	const dmax = 150;
 	const range = max - min;
 	const yNumbers = 4;
 	const yBetween = range / yNumbers;
 
-	const scaled = data?.dailyStats?.map((d) => ({
+	const scaled = data?.weeklyStats?.map((d) => ({
 		...d,
 		totalMinutesScaled: Math.round(
 			((d.totalMinutes - min) / (max - min)) * (dmax - dmin) + dmin
@@ -100,7 +100,7 @@ export const ChartDaily = ({ selectedDay, setSelectedDay, data }: Props) => {
 					</div>
 
 					<div className="grid w-full grid-cols-8 gap-1">
-						{data?.dailyStats.map((d, i) => (
+						{data?.weeklyStats.map((d, i) => (
 							<p key={i} className="text-center text-[0.7rem]">
 								{format(d.date, "EEEEEE")}
 							</p>
