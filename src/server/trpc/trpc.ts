@@ -46,7 +46,7 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
 export const protectedProcedure = t.procedure.use(isAuthed);
 export const adminProcedure = t.procedure.use(isAdmin);
-export const devProcedure = protectedProcedure.use(({ ctx, next }) => {
+export const devProcedure = protectedProcedure.use(({ next }) => {
 	if (env.ENV === "production") {
 		throw new TRPCError({
 			code: "FORBIDDEN",
