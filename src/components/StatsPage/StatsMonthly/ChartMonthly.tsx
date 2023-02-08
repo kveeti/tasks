@@ -37,7 +37,12 @@ export const ChartMonthly = ({ selectedInnerWeek, setSelectedInnerWeek, data }: 
 		<>
 			<Card variant={2} className="mt-2 rounded-md">
 				<div className="flex flex-col gap-2 p-2">
-					<div className="grid h-[150px] w-full grid-cols-6 items-end justify-end gap-1">
+					<div
+						className="grid h-[150px] w-full items-end justify-end gap-1"
+						style={{
+							gridTemplateColumns: `repeat(${data.monthlyStats.length + 1}, 1fr)`,
+						}}
+					>
 						{scaled?.map((week, i) => (
 							<div
 								key={i}
@@ -99,7 +104,12 @@ export const ChartMonthly = ({ selectedInnerWeek, setSelectedInnerWeek, data }: 
 						</div>
 					</div>
 
-					<div className="grid w-full grid-cols-6 gap-1">
+					<div
+						className="grid w-full gap-1"
+						style={{
+							gridTemplateColumns: `repeat(${data.monthlyStats.length + 1}, 1fr)`,
+						}}
+					>
 						{data?.monthlyStats.map((d, i) => (
 							<p key={i} className="text-center text-[0.7rem]">
 								w {format(d.week, "I", { weekStartsOn: 1 })}
