@@ -6,6 +6,8 @@
 		"build": "next build",
 		"dev": "next dev",
 		"dev1": "dotenv -v APP_ENV=dev -- op run --env-file=\"./.1password.env\" -- next dev",
+		"dbpush": "dotenv -v APP_ENV=dev -- op run --env-file=\"./.1password.env\" -- prisma db push",
+		"dbstudio": "dotenv -v APP_ENV=dev -- op run --env-file=\"./.1password.env\" -- prisma studio",
 		"postinstall": "prisma generate",
 		"lint": "next lint",
 		"start": "next start",

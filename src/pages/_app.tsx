@@ -6,7 +6,9 @@ import { useRouter } from "next/router";
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 
+import { DevMenu } from "~components/DevMenu/DevMenu";
 import { TimerContextProvider } from "~components/IndexPage/Timer/TimerContext";
+import { env } from "~env/client.mjs";
 import type { Page } from "~utils/PageType";
 import { colors } from "~utils/colors";
 
@@ -42,6 +44,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 					position: "top-right",
 				}}
 			/>
+
+			{env.NEXT_PUBLIC_ENV !== "production" && <DevMenu />}
+
 			<SessionProvider session={session}>
 				{(Component as Page).requireAuth ? (
 					<Auth requireAdmin={(Component as Page).requireAdmin}>

@@ -1,6 +1,8 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 
+import { env } from "~env/server.mjs";
+
 import type { Context } from "./context";
 
 const t = initTRPC.context<Context>().create({
@@ -44,3 +46,13 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
 export const protectedProcedure = t.procedure.use(isAuthed);
 export const adminProcedure = t.procedure.use(isAdmin);
+export const devProcedure = protectedProcedure.use(({ ctx, next }) => {
+	if (env.ENV === "production") {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Can't do that in production",
+		});
+	}
+
+	return next();
+});

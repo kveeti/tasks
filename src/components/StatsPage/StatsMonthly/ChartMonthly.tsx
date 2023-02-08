@@ -5,24 +5,24 @@ import { Card } from "~ui/Card";
 import { classNames } from "~utils/classNames";
 import type { RouterOutputs } from "~utils/trpc";
 
-import type { WeekdayInfoDay } from "./WeekdayInfo";
+import type { WeekData } from "./WeekInfo";
 
 type Props = {
-	data: RouterOutputs["me"]["stats"]["weekly"];
-	selectedDay: WeekdayInfoDay | null;
-	setSelectedDay: (date: WeekdayInfoDay | null) => void;
+	data: RouterOutputs["me"]["stats"]["monthly"];
+	selectedInnerWeek: WeekData | null;
+	setSelectedInnerWeek: (date: WeekData | null) => void;
 };
 
-export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
-	const min = Math.min(...(data?.weeklyStats.map((d) => d.totalMinutes) ?? []));
-	const max = Math.max(...(data?.weeklyStats.map((d) => d.totalMinutes) ?? []));
+export const ChartMonthly = ({ selectedInnerWeek, setSelectedInnerWeek, data }: Props) => {
+	const min = Math.min(...(data?.monthlyStats.map((d) => d.totalMinutes) ?? []));
+	const max = Math.max(...(data?.monthlyStats.map((d) => d.totalMinutes) ?? []));
 	const dmin = 0;
 	const dmax = 150;
 	const range = max - min;
 	const yNumbers = 4;
 	const yBetween = range / yNumbers;
 
-	const scaled = data?.weeklyStats?.map((d) => ({
+	const scaled = data?.monthlyStats?.map((d) => ({
 		...d,
 		totalMinutesScaled: Math.round(
 			((d.totalMinutes - min) / (max - min)) * (dmax - dmin) + dmin
@@ -37,28 +37,28 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 		<>
 			<Card variant={2} className="mt-2 rounded-md">
 				<div className="flex flex-col gap-2 p-2">
-					<div className="grid h-[150px] w-full grid-cols-8 items-end justify-end gap-1">
-						{scaled?.map((d, i) => (
+					<div className="grid h-[150px] w-full grid-cols-6 items-end justify-end gap-1">
+						{scaled?.map((week, i) => (
 							<div
 								key={i}
 								className="flex h-[150px] flex-col justify-end"
 								onClick={() => {
-									if (d.totalMinutes) {
-										setSelectedDay(d);
+									if (week.totalMinutes) {
+										setSelectedInnerWeek(week);
 									} else {
-										setSelectedDay(null);
+										setSelectedInnerWeek(null);
 									}
 								}}
 							>
-								{d.tagMinutes.map((tm, tmIndex) => {
+								{week.tagMinutes.map((tm, tmIndex) => {
 									const isFirst = tmIndex === 0;
 									const isLast =
 										tmIndex ===
-										d.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
+										week.tagMinutes.filter((tmi) => !!tmi.minutes).length - 1;
 
 									return (
 										<motion.div
-											key={`${d.date.toISOString()}-${tm.tag.id}`}
+											key={`${week.week.toISOString()}-${tm.tag.id}`}
 											className={classNames(
 												isFirst && "rounded-tl-md rounded-tr-md",
 												isLast && "rounded-bl-md rounded-br-md",
@@ -72,14 +72,14 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 											}}
 											style={{
 												backgroundColor: tm.tag.color,
-												opacity: !selectedDay?.date
+												opacity: !selectedInnerWeek?.week
 													? 1
-													: d.date === selectedDay.date
+													: week.week === selectedInnerWeek.week
 													? 1
 													: 0.3,
-												filter: !selectedDay?.date
+												filter: !selectedInnerWeek?.week
 													? "unset"
-													: d.date === selectedDay.date
+													: week.week === selectedInnerWeek.week
 													? "unset"
 													: "grayscale(1)",
 											}}
@@ -99,10 +99,10 @@ export const ChartWeekly = ({ selectedDay, setSelectedDay, data }: Props) => {
 						</div>
 					</div>
 
-					<div className="grid w-full grid-cols-8 gap-1">
-						{data?.weeklyStats.map((d, i) => (
+					<div className="grid w-full grid-cols-6 gap-1">
+						{data?.monthlyStats.map((d, i) => (
 							<p key={i} className="text-center text-[0.7rem]">
-								{format(d.date, "EEEEEE", { weekStartsOn: 1 })}
+								w {format(d.week, "I", { weekStartsOn: 1 })}
 							</p>
 						))}
 						<div className="text-[10px]">min</div>

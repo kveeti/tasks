@@ -3,9 +3,11 @@ import {
 	addSeconds,
 	differenceInMinutes,
 	eachDayOfInterval,
+	eachWeekOfInterval,
 	endOfMonth,
 	endOfWeek,
 	isSameDay,
+	isSameWeek,
 	startOfMonth,
 	startOfWeek,
 } from "date-fns";
@@ -441,7 +443,6 @@ export const meRouter = router({
 		weekly: protectedProcedure
 			.input(z.object({ week: z.date() }))
 			.query(async ({ ctx, input }) => {
-				await new Promise((resolve) => setTimeout(resolve, 1000));
 				const start = startOfWeek(input.week, { weekStartsOn: 1 });
 				const end = endOfWeek(start, { weekStartsOn: 1 });
 
@@ -514,6 +515,87 @@ export const meRouter = router({
 					hasData: totalMinutes > 0,
 					weeklyStats,
 					weeklyTotalMinutesPerTag,
+				};
+			}),
+
+		/**
+		 * MONTHLY
+		 */
+		monthly: protectedProcedure
+			.input(z.object({ week: z.date() }))
+			.query(async ({ ctx, input }) => {
+				const start = startOfMonth(input.week);
+				const end = endOfMonth(input.week);
+
+				const [weeklyTasks, tags] = await ctx.prisma.$transaction([
+					ctx.prisma.task.findMany({
+						where: {
+							ownerId: ctx.userId,
+							createdAt: { gte: start, lte: end },
+						},
+						include: { tag: true },
+					}),
+					ctx.prisma.tag.findMany({
+						where: { ownerId: ctx.userId },
+					}),
+				]);
+
+				const weeks = eachWeekOfInterval({ start, end }, { weekStartsOn: 1 });
+				const currentTime = new Date();
+
+				const monthlyStats = weeks.map((week) => {
+					const completedTasks = weeklyTasks.filter(
+						(task) =>
+							isSameWeek(task.createdAt, week, { weekStartsOn: 1 }) &&
+							(task.stoppedAt || task.expiresAt < currentTime)
+					);
+
+					const tagMinutes = tags.map((tag) => {
+						const tagTasks = completedTasks.filter((task) => task.tagId === tag.id);
+
+						const minutes = tagTasks.reduce((acc, task) => {
+							const taskMinutes = differenceInMinutes(
+								task.stoppedAt ?? task.expiresAt,
+								task.createdAt,
+								{ roundingMethod: "round" }
+							);
+
+							return acc + taskMinutes;
+						}, 0);
+
+						return { tag, minutes };
+					});
+
+					const totalMinutes = tagMinutes.reduce(
+						(acc, tagHour) => acc + tagHour.minutes,
+						0
+					);
+
+					return {
+						week,
+						tagMinutes,
+						totalMinutes,
+					};
+				});
+
+				const totalMinutes = monthlyStats.reduce((acc, week) => acc + week.totalMinutes, 0);
+
+				const monthlyTotalMinutesPerTag = tags.map((tag) => {
+					const minutes = monthlyStats.reduce((acc, week) => {
+						const tagMinutes =
+							week.tagMinutes.find((tagMinute) => tagMinute.tag.id === tag.id)
+								?.minutes ?? 0;
+
+						return acc + tagMinutes;
+					}, 0);
+
+					return { tag, minutes };
+				});
+
+				return {
+					hasData: totalMinutes > 0,
+					monthlyStats,
+					monthlyTotalMinutesPerTag,
 				};
 			}),
 	}),
