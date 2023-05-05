@@ -1,0 +1,14 @@
+{
+	"extends": "@tasks/tsconfig/base.json",
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src",
+
+		"module": "ESNext",
+		"target": "ESNext",
+		"lib": ["ESNext", "DOM"],
+
+		"moduleResolution": "node",
+		"esModuleInterop": true
+	}
+}

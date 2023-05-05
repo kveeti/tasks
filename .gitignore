@@ -1,4 +1,4 @@
-/node_modules
+**/node_modules
 /.pnp
 .pnp.js
 /.next/
@@ -14,3 +14,16 @@ yarn-error.log*
 .env*.local
 .vercel
 *.tsbuildinfo
+dist
+dist-ssr
+*.local
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.turbo
