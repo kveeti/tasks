@@ -10,12 +10,20 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@react-aria/button": "^3.7.1",
+		"@react-aria/focus": "^3.12.0",
+		"@react-aria/link": "^3.5.0",
+		"@react-types/button": "^3.7.2",
+		"@react-types/link": "^3.4.1",
 		"@tanstack/react-query": "^4.29.5",
 		"@trpc/client": "^10.25.0",
 		"@trpc/react-query": "^10.25.0",
 		"@trpc/server": "^10.25.0",
+		"framer-motion": "^10.12.8",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
+		"react-router-dom": "^6.11.1",
+		"react-use-measure": "^2.1.1",
 		"superjson": "^1.12.3"
 	},
 	"devDependencies": {

@@ -1,7 +1,7 @@
-import { trpc } from "./api";
-
 export function App() {
-	const query = trpc.users.me.useQuery();
-
-	return <div>{query.data?.email}</div>;
+	return (
+		<div>
+			<h1>App</h1>
+		</div>
+	);
 }

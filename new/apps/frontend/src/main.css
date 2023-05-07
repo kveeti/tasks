@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+	@apply bg-primary-1200 text-primary-100;
+
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	text-size-adjust: 100%;
+}
+
+html,
+body {
+	position: fixed;
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+	-webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+	overflow: hidden;
+}
+
+#root,
+body {
+	height: 100%;
+	margin: 0;
+}
