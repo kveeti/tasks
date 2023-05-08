@@ -36,6 +36,12 @@ export function CallbackPage() {
 						setStatus("success");
 					}, 1000 - timeSinceFirstRender)
 				);
+
+				timeouts.push(
+					setTimeout(() => {
+						navigate("/");
+					}, 2000 - timeSinceFirstRender)
+				);
 			} else {
 				setStatus("success");
 

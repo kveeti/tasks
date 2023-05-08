@@ -11,7 +11,17 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
 	const [trpcClient] = useState(() =>
 		trpc.createClient({
 			transformer: superjson,
-			links: [httpBatchLink({ url: import.meta.env.VITE_APP_API_URL })],
+			links: [
+				httpBatchLink({
+					url: import.meta.env.VITE_APP_API_URL,
+					fetch(url, options) {
+						return fetch(url, {
+							...options,
+							credentials: "include",
+						});
+					},
+				}),
+			],
 		})
 	);
 

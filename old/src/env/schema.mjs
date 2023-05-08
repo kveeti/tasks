@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 export const serverSchema = z.object({
-	DATABASE_URL: z.string(),
+	DB_URL: z.string(),
 	ENV: z.enum(["development", "preview", "production"]),
 	PREVIEW_PASSWORD: process.env.ENV === "preview" ? z.string() : z.string().optional(),
 	NEXTAUTH_SECRET:

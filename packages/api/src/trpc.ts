@@ -6,7 +6,8 @@ import { db } from "./db/db";
 import { verifyToken } from "./token";
 
 export async function createContext(opts: CreateHTTPContextOptions) {
-	const token = opts.req.headers.authorization?.replace("Bearer ", "");
+	let token = opts.req.headers.authorization?.replace("Bearer ", "");
+	token ??= opts.req.headers.cookie?.split("=")[1] ?? "";
 
 	const userId = token
 		? await verifyToken(token)
@@ -14,7 +15,7 @@ export async function createContext(opts: CreateHTTPContextOptions) {
 				.catch(() => null)
 		: null;
 
-	return { db, userId };
+	return { db, userId, res: opts.res };
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;

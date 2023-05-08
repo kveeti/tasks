@@ -1,5 +1,5 @@
 import type { InferModel } from "drizzle-orm";
-import { boolean, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
 	id: varchar("id", { length: 36 }).primaryKey(),
