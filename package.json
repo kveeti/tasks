@@ -1,63 +1,22 @@
 {
-	"name": "2tasks",
-	"version": "0.0.0",
+	"name": "tasks-monorepo",
 	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"scripts": {
-		"build": "next build",
-		"dev": "next dev",
-		"dev1": "APP_ENV=dev op run --env-file=\"./.1password.env\" -- next dev",
-		"dbpush": "APP_ENV=dev op run --env-file=\"./.1password.env\" -- prisma db push",
-		"dbstudio": "APP_ENV=prod op run --env-file=\"./.1password.env\" -- prisma studio",
-		"postinstall": "prisma generate",
-		"lint": "next lint",
-		"start": "next start",
-		"format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json}\"",
-		"typecheck": "tsc --noEmit"
-	},
-	"dependencies": {
-		"@headlessui/react": "^1.7.4",
-		"@heroicons/react": "^2.0.13",
-		"@hookform/resolvers": "^2.9.10",
-		"@prisma/client": "^4.5.0",
-		"@tanstack/react-query": "^4.10.0",
-		"@trpc/client": "10.0.0-rc.4",
-		"@trpc/next": "10.0.0-rc.4",
-		"@trpc/react-query": "10.0.0-rc.4",
-		"@trpc/server": "10.0.0-rc.4",
-		"class-variance-authority": "^0.4.0",
-		"date-fns": "^2.29.3",
-		"framer-motion": "^9.0.1",
-		"next": "13.1.6",
-		"next-auth": "^4.15.1",
-		"react": "18.2.0",
-		"react-dom": "18.2.0",
-		"react-hook-form": "^7.39.1",
-		"react-hot-toast": "^2.4.0",
-		"react-icons": "^4.6.0",
-		"superjson": "1.12.2",
-		"tabler-icons-react": "^1.55.0",
-		"zod": "^3.18.0"
+		"dev": "APP_ENV=dev op run --env-file=\"./.1password.env\" -- turbo dev",
+		"clean": "rm -rf ./node_modules ./.turbo ./**/**/node_modules ./**/**/dist ./**/**/.turbo",
+		"db": "docker run -v tasks-dev -it -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=tasks -e MYSQL_USER=tasks -e MYSQL_PASSWORD=tasks mysql"
 	},
 	"devDependencies": {
-		"@trivago/prettier-plugin-sort-imports": "^4.0.0",
-		"@types/node": "^18.0.0",
-		"@types/react": "^18.0.14",
-		"@types/react-dom": "^18.0.5",
-		"@typescript-eslint/eslint-plugin": "^5.33.0",
-		"@typescript-eslint/parser": "^5.33.0",
-		"autoprefixer": "^10.4.7",
-		"dotenv-cli": "^7.0.0",
-		"eslint": "^8.26.0",
-		"eslint-config-next": "13.1.6",
-		"postcss": "^8.4.14",
-		"prettier": "^2.7.1",
-		"prettier-plugin-tailwindcss": "^0.2.2",
-		"prisma": "^4.5.0",
-		"tailwindcss": "^3.2.0",
-		"ts-node": "^10.9.1",
-		"typescript": "^4.9.3"
+		"turbo": "^1.9.3",
+		"typescript": "^5.0.2"
 	},
-	"prisma": {
-		"seed": "ts-node --transpile-only --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+	"packageManager": "yarn@1.22.19",
+	"engines": {
+		"node": ">=16.0.0",
+		"npm": ">=7.0.0"
 	}
 }

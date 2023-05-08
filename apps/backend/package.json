@@ -5,8 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "tsx watch --clear-screen=false src/index.ts",
-		"build": "tsc",
-		"clean": "rm -rf dist node_modules"
+		"build": "tsc"
 	},
 	"dependencies": {
 		"@tasks/api": "*",

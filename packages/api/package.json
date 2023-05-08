@@ -9,8 +9,7 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsup",
-		"dev": "tsc --preserveWatchOutput --watch",
-		"clean": "rm -rf dist node_modules"
+		"dev": "tsc --preserveWatchOutput --watch"
 	},
 	"dependencies": {
 		"@trpc/server": "^10.25.0",

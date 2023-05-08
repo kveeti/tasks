@@ -16,7 +16,7 @@ export function LoginPage() {
 function redirectUrl() {
 	const queryParams = new URLSearchParams({
 		client_id: import.meta.env.VITE_APP_G_CLIENT_ID,
-		redirect_uri: import.meta.env.VITE_APP_G_REDIRECT_URI,
+		redirect_uri: import.meta.env.VITE_APP_URL + "/auth/callback",
 		response_type: "code",
 		scope: "email",
 		prompt: "select_account",

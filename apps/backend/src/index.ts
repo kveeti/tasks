@@ -1,6 +1,7 @@
 import { apiRouter, createContext } from "@tasks/api";
 import { createHTTPHandler } from "@trpc/server/adapters/standalone";
 import { createServer } from "http";
+import { env } from "./env.";
 
 const handler = createHTTPHandler({
 	router: apiRouter,
@@ -8,7 +9,7 @@ const handler = createHTTPHandler({
 });
 
 createServer((req, res) => {
-	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader("Access-Control-Allow-Origin", env.VITE_APP_URL);
 	res.setHeader("Access-Control-Allow-Methods", "GET,PUT,PATCH,POST,DELETE,OPTIONS,HEAD");
 	res.setHeader(
 		"Access-Control-Allow-Headers",
