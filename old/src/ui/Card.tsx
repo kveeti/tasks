@@ -8,9 +8,9 @@ import { forwardRefWithAs } from "./utils";
 const cardStyles = cva("border", {
 	variants: {
 		variant: {
-			1: "border-primary-800 bg-primary-1100",
-			2: "border-primary-700 bg-primary-1000",
-			3: "border-primary-600 bg-primary-900",
+			1: "border-gray-800 bg-gray-1100",
+			2: "border-gray-700 bg-gray-1000",
+			3: "border-gray-600 bg-gray-900",
 		},
 	},
 	defaultVariants: {

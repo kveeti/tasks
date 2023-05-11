@@ -6,7 +6,7 @@ export const ShowTag = () => {
 	if (!selectedTag) return null;
 
 	return (
-		<div className="mt-7 rounded-md border border-primary-600 bg-primary-800 px-3 py-2">
+		<div className="mt-7 rounded-md border border-gray-600 bg-gray-800 px-3 py-2">
 			{selectedTag.label}
 		</div>
 	);

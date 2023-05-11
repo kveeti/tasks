@@ -25,7 +25,7 @@ export const Modal = ({ title, children, isOpen, closeModal }: Props) => {
 					leaveFrom="opacity-100"
 					leaveTo="opacity-0"
 				>
-					<div className="fixed inset-0 bg-primary-1200/50 backdrop-blur-sm" />
+					<div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm" />
 				</Transition.Child>
 
 				<div className="fixed inset-0 mx-3 overflow-y-auto">

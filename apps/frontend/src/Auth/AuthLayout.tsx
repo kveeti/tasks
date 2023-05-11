@@ -1,11 +1,11 @@
-type Props = {
-	children: React.ReactNode;
-};
+import { Outlet } from "react-router-dom";
 
-export function AuthLayout(props: Props) {
+export function AuthLayout() {
 	return (
 		<div className="flex h-full flex-col justify-center">
-			<main className="flex flex-col items-center">{props.children}</main>
+			<main className="flex flex-col items-center">
+				<Outlet />
+			</main>
 		</div>
 	);
 }

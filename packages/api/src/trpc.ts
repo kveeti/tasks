@@ -6,8 +6,10 @@ import { db } from "./db/db";
 import { verifyToken } from "./token";
 
 export async function createContext(opts: CreateHTTPContextOptions) {
-	let token = opts.req.headers.authorization?.replace("Bearer ", "");
-	token ??= opts.req.headers.cookie?.split("=")[1] ?? "";
+	let token =
+		opts.req.headers.authorization?.replace("Bearer ", "") ||
+		opts.req.headers.cookie?.split("=")[1]?.split(";")?.[0] ||
+		"";
 
 	const userId = token
 		? await verifyToken(token)

@@ -1,16 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
 import { trpc } from "../api";
-import { AuthLayout } from "./AuthLayout";
 
 export function CallbackPage() {
 	const firstRenderAtRef = useRef(new Date());
 	const [status, setStatus] = useState<"loggingIn" | "failed" | "success">("loggingIn");
 	const [searchParams] = useSearchParams();
-	const navigate = useNavigate();
 
 	const code = searchParams.get("code");
 
@@ -39,7 +37,7 @@ export function CallbackPage() {
 
 				timeouts.push(
 					setTimeout(() => {
-						navigate("/");
+						window.location.href = "/app";
 					}, 2000 - timeSinceFirstRender)
 				);
 			} else {
@@ -47,7 +45,7 @@ export function CallbackPage() {
 
 				timeouts.push(
 					setTimeout(() => {
-						navigate("/");
+						window.location.href = "/app";
 					}, 1000)
 				);
 			}
@@ -61,47 +59,45 @@ export function CallbackPage() {
 	}, [verifyQuery.status]);
 
 	return (
-		<AuthLayout>
-			<Card>
-				<div className="flex flex-col items-center justify-center gap-4 p-4">
-					{status === "loggingIn" ? (
-						<>
-							<Loader />
-							Logging in...
-						</>
-					) : status === "failed" ? (
-						<>
-							<Loader />
-							failed
-						</>
-					) : status === "success" ? (
-						<>
-							<motion.div
-								initial={{ scale: 0.5, opacity: 0 }}
-								animate={{ scale: 1, opacity: 1 }}
-								transition={{
-									duration: 0.7,
-									ease: "easeInOut",
-									type: "spring",
-								}}
-								className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
-							>
-								<div className="relative flex items-center justify-center">
-									<Checkmark />
-								</div>
-							</motion.div>
-							Logged in!
-						</>
-					) : null}
-				</div>
-			</Card>
-		</AuthLayout>
+		<Card>
+			<div className="flex flex-col items-center justify-center gap-4 p-4">
+				{status === "loggingIn" ? (
+					<>
+						<Loader />
+						Logging in...
+					</>
+				) : status === "failed" ? (
+					<>
+						<Loader />
+						failed
+					</>
+				) : status === "success" ? (
+					<>
+						<motion.div
+							initial={{ scale: 0.5, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							transition={{
+								duration: 0.7,
+								ease: "easeInOut",
+								type: "spring",
+							}}
+							className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
+						>
+							<div className="relative flex items-center justify-center">
+								<Checkmark />
+							</div>
+						</motion.div>
+						Logged in!
+					</>
+				) : null}
+			</div>
+		</Card>
 	);
 }
 
 function Card(props: { children: ReactNode; keey?: string }) {
 	return (
-		<div className="mx-auto w-full max-w-[300px] rounded-xl border border-primary-800 bg-primary-1000">
+		<div className="mx-auto w-full max-w-[300px] rounded-xl border border-gray-800 bg-gray-1000">
 			<Resizeable>{props.children}</Resizeable>
 		</div>
 	);
@@ -136,7 +132,7 @@ function Resizeable(props: { children: ReactNode }) {
 
 function Loader() {
 	return (
-		<div className="animate-spin-slow box-border h-12 w-12 rounded-full border-2 border-primary-400 border-r-primary-600" />
+		<div className="animate-spin-slow box-border h-12 w-12 rounded-full border-2 border-gray-400 border-r-gray-600" />
 	);
 }
 

@@ -1,5 +1,4 @@
 import { Link } from "../Ui/Link";
-import { AuthLayout } from "./AuthLayout";
 
 const queryParams = new URLSearchParams({
 	client_id: import.meta.env.VITE_APP_G_CLIENT_ID,
@@ -13,12 +12,10 @@ const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${queryParams.
 
 export function LoginPage() {
 	return (
-		<AuthLayout>
-			<div className="flex flex-col items-center gap-10">
-				<h1 className="text-5xl">Login</h1>
+		<div className="flex flex-col items-center gap-10">
+			<h1 className="text-5xl">Login</h1>
 
-				<Link href={redirectUrl}>Login with Google</Link>
-			</div>
-		</AuthLayout>
+			<Link href={redirectUrl}>Login with Google</Link>
+		</div>
 	);
 }

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 import { trpc } from "./api";
 
@@ -7,10 +7,22 @@ export function Root() {
 	const me = trpc.users.me.useQuery(undefined, { retry: false });
 
 	if (!me.isLoading && me.error?.data?.code === "UNAUTHORIZED") {
-		navigate("/auth/login");
+		if (!window.location?.pathname.startsWith("/auth")) {
+			navigate("/auth/login");
+		}
 	} else if (!me.isLoading && me.data) {
-		navigate("/app");
+		if (!window.location?.pathname.startsWith("/app")) {
+			navigate("/app");
+		}
 	}
 
-	return null;
+	return (
+		<>
+			{!me.isLoading && (
+				<div className="fixed w-full h-full">
+					<Outlet />
+				</div>
+			)}
+		</>
+	);
 }

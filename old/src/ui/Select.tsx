@@ -57,7 +57,7 @@ const InnerSelect = forwardRef<HTMLSelectElement, InputProps & { invalid?: boole
 						"w-full appearance-none rounded-md border p-2 outline-none outline-[3px] transition-[outline,_color,_background,_border] duration-200 focus-visible:outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2",
 						invalid
 							? "border-red-400 bg-red-600 focus-visible:outline-red-400"
-							: "border-primary-400 bg-primary-600 hover:border-primary-200 focus-visible:outline-blue-400"
+							: "border-gray-400 bg-gray-600 hover:border-gray-200 focus-visible:outline-blue-400"
 					)}
 					{...rest}
 				>

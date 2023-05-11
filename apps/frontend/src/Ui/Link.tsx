@@ -2,6 +2,7 @@ import { FocusRing } from "@react-aria/focus";
 import { type AriaLinkOptions, useLink } from "@react-aria/link";
 import { motion, useAnimation } from "framer-motion";
 import { type ReactNode, useRef } from "react";
+import { Link as RRDLink } from "react-router-dom";
 
 import { colors } from "./_colors";
 
@@ -49,7 +50,7 @@ export function Link(
 				animate={controls}
 				href={props.href}
 				target={props.target}
-				className="select-none rounded-md bg-primary-700 px-2.5 py-1.5 outline-none focus:outline-none"
+				className="select-none rounded-md bg-gray-700 px-2.5 py-1.5 outline-none focus:outline-none"
 			>
 				{props.children}
 			</motion.a>
