@@ -151,9 +151,10 @@ export function Button3(props: { children: ReactNode; className?: string }) {
 					transition: { duration: 0.3, type: "spring" },
 				});
 
+				// this will log a warning in the console but it doesn't
+				// work any other way.
 				anotherControls.start({
 					boxShadow: "none",
-					transition: { duration: 0.3, type: "spring" },
 				});
 			},
 			onPressEnd: (e) => {

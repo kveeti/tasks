@@ -29,6 +29,7 @@ export function AppNav() {
 								<motion.div
 									layoutId="active-indicator"
 									className="absolute inset-0 hover:bg-blue-950/60 hover:border-blue-900/80 w-full rounded-xl bg-blue-900/40 border-2 border-blue-900"
+									transition={{ duration: 0.35, type: "spring" }}
 								/>
 							)}
 
