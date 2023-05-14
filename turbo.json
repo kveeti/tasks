@@ -2,9 +2,8 @@
 	"$schema": "https://turbo.build/schema.json",
 	"pipeline": {
 		"build": {
-			"outputs": ["dist/**", ".next/**", "!.next/cache/**", "public/dist/**"],
-			"dependsOn": ["^build"],
-			"env": ["NEXT_PUBLIC_API_HOST"]
+			"outputs": ["dist/**"],
+			"dependsOn": ["^build"]
 		},
 		"dev": {
 			"cache": false,
@@ -13,6 +12,10 @@
 		"dbpush": {
 			"cache": false,
 			"persistent": true
+		},
+		"preview": {
+			"outputs": ["dist/**"],
+			"dependsOn": ["build"]
 		}
 	}
 }

@@ -8,7 +8,7 @@
 	],
 	"main": "dist/index.js",
 	"scripts": {
-		"build": "tsup",
+		"build": "tsc",
 		"dev": "tsc --preserveWatchOutput --watch",
 		"dbpush": "drizzle-kit push:mysql"
 	},
@@ -23,9 +23,8 @@
 	},
 	"devDependencies": {
 		"@tasks/tsconfig": "*",
-		"drizzle-kit": "^0.17.6-76e73f3",
 		"@types/uuid": "^9.0.1",
 		"dotenv": "^16.0.3",
-		"tsup": "^6.7.0"
+		"drizzle-kit": "^0.17.6-76e73f3"
 	}
 }

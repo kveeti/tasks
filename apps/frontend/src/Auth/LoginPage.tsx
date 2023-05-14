@@ -15,7 +15,9 @@ export function LoginPage() {
 		<div className="flex flex-col items-center gap-10">
 			<h1 className="text-5xl">Login</h1>
 
-			<Link href={redirectUrl}>Login with Google</Link>
+			<Link href={redirectUrl} className="py-2 px-3">
+				Login with Google
+			</Link>
 		</div>
 	);
 }

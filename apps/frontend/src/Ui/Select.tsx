@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { cn } from "../classNames";
+import { cn } from "../utils/classNames";
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 
 const Select = SelectPrimitive.Root;
@@ -18,11 +18,12 @@ const SelectTrigger = React.forwardRef<
 	<SelectPrimitive.Trigger
 		ref={ref}
 		className={cn(
-			"flex items-center cursor-default justify-center focus-visible:shadow-outline outline-none gap-2 border-2 border-gray-700 px-3 py-2 rounded-xl border-b-4 text-sm"
+			"flex items-center cursor-default justify-center focus-visible:shadow-outline outline-none gap-2 border-2 border-gray-700 px-3 py-2 rounded-xl border-b-4 text-sm",
+			className
 		)}
 		{...props}
 	>
-		{children}
+		<span className="truncate max-w-[9rem]">{children}</span>
 		<SelectPrimitive.Icon asChild>
 			<ChevronDownIcon className="h-4 w-4 opacity-50" />
 		</SelectPrimitive.Icon>

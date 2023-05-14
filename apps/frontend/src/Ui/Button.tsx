@@ -4,7 +4,7 @@ import { motion, useAnimation } from "framer-motion";
 import { useRef, type ComponentProps, type ReactNode } from "react";
 import colors from "tailwindcss/colors";
 
-import { cn } from "../classNames";
+import { cn } from "../utils/classNames";
 
 export function Button(props: ComponentProps<"button"> & AriaButtonProps) {
 	const ref = useRef<HTMLButtonElement | null>(null);
@@ -62,7 +62,7 @@ export function Button(props: ComponentProps<"button"> & AriaButtonProps) {
 	);
 }
 
-export function Button2(props: { children: ReactNode; className?: string }) {
+export function Button2(props: { children: ReactNode; className?: string } & AriaButtonProps) {
 	const ref = useRef<HTMLButtonElement | null>(null);
 	const controls = useAnimation();
 	const anotherControls = useAnimation();
@@ -70,6 +70,7 @@ export function Button2(props: { children: ReactNode; className?: string }) {
 	const aria = useButton(
 		{
 			onPressStart: (e) => {
+				props.onPressStart?.(e);
 				controls.stop();
 				controls.set({
 					y: 2,
@@ -82,6 +83,7 @@ export function Button2(props: { children: ReactNode; className?: string }) {
 				});
 			},
 			onPressEnd: (e) => {
+				props.onPressEnd?.(e);
 				controls.start({
 					y: 0,
 					transition: { duration: 0.3, type: "spring" },
@@ -93,6 +95,7 @@ export function Button2(props: { children: ReactNode; className?: string }) {
 				});
 			},
 			onPress: (e) => {
+				props.onPress?.(e);
 				ref.current?.focus();
 				controls.start({
 					y: 0,
@@ -137,7 +140,7 @@ export function Button2(props: { children: ReactNode; className?: string }) {
 	);
 }
 
-export function Button3(props: { children: ReactNode; className?: string }) {
+export function Button3(props: { children: ReactNode; className?: string } & AriaButtonProps) {
 	const ref = useRef<HTMLButtonElement | null>(null);
 	const controls = useAnimation();
 	const anotherControls = useAnimation();
@@ -145,6 +148,7 @@ export function Button3(props: { children: ReactNode; className?: string }) {
 	const aria = useButton(
 		{
 			onPressStart: (e) => {
+				props.onPressStart?.(e);
 				controls.stop();
 				controls.set({
 					y: 2,
@@ -158,6 +162,7 @@ export function Button3(props: { children: ReactNode; className?: string }) {
 				});
 			},
 			onPressEnd: (e) => {
+				props.onPressEnd?.(e);
 				controls.start({
 					y: 0,
 					transition: { duration: 0.3, type: "spring" },
@@ -169,6 +174,7 @@ export function Button3(props: { children: ReactNode; className?: string }) {
 				});
 			},
 			onPress: (e) => {
+				props.onPress?.(e);
 				ref.current?.focus();
 				controls.start({
 					y: 0,
@@ -182,6 +188,7 @@ export function Button3(props: { children: ReactNode; className?: string }) {
 			},
 			// @ts-expect-error undocumented prop
 			preventFocusOnPress: true,
+			...props,
 		},
 		ref
 	);

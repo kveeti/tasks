@@ -1,16 +1,20 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
 import { trpc } from "../api";
+import { useUserIdContext } from "../App/UserIdContext";
 
 export function CallbackPage() {
 	const firstRenderAtRef = useRef(new Date());
 	const [status, setStatus] = useState<"loggingIn" | "failed" | "success">("loggingIn");
 	const [searchParams] = useSearchParams();
+	const navigate = useNavigate();
 
 	const code = searchParams.get("code");
+
+	const { setUserId } = useUserIdContext();
 
 	const verifyQuery = trpc.auth.verifyCode.useQuery({ code: code ?? "" }, { enabled: !!code });
 
@@ -32,20 +36,22 @@ export function CallbackPage() {
 				timeouts.push(
 					setTimeout(() => {
 						setStatus("success");
+						setUserId(verifyQuery.data.id);
 					}, 1000 - timeSinceFirstRender)
 				);
 
 				timeouts.push(
 					setTimeout(() => {
-						window.location.href = "/app";
+						navigate("/app");
 					}, 2000 - timeSinceFirstRender)
 				);
 			} else {
 				setStatus("success");
+				setUserId(verifyQuery.data.id);
 
 				timeouts.push(
 					setTimeout(() => {
-						window.location.href = "/app";
+						navigate("/app");
 					}, 1000)
 				);
 			}

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
+import { useTimerContext } from "./TimerContext";
 
 const links = [
 	{ id: "home", label: "home", href: "/app" },
@@ -38,10 +39,39 @@ export function AppNav() {
 					))}
 				</div>
 
-				<div className="w-full border-2 border-gray-800 justify-between items-center rounded-xl p-1.5 flex gap-2">
-					<span className="truncate">Coding</span>
-					<span className="bg-gray-800 border border-gray-700 p-1 rounded-md">56:43</span>
-				</div>
+				<ActiveTasks />
+			</div>
+		</div>
+	);
+}
+
+function ActiveTasks() {
+	const { activeTasks } = useTimerContext();
+
+	const taskPlural = activeTasks?.length === 1 ? "" : "s";
+
+	const noTimes = !activeTasks || activeTasks.length === 0;
+
+	return (
+		<div className="flex flex-col">
+			<h2 className="p-2 border-2 font-bold border-gray-800 bg-gray-900 rounded-tr-xl rounded-tl-xl">
+				Active task{taskPlural}
+			</h2>
+
+			<div className="py-2 border-b-2 border-l-2 border-r-2 border-gray-800 rounded-br-xl rounded-bl-xl">
+				{noTimes ? (
+					<span className="px-2">No active tasks</span>
+				) : (
+					activeTasks?.map((t) => (
+						<div
+							key={t.tag.id}
+							className="w-full justify-between items-center flex gap-2 px-2"
+						>
+							<span>{t.tag.label}</span>
+							<span className="tabular-nums">{`${t.timeUntilExpiry.minutes}:${t.timeUntilExpiry.seconds}`}</span>
+						</div>
+					))
+				)}
 			</div>
 		</div>
 	);
