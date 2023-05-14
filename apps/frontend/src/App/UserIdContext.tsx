@@ -4,6 +4,14 @@ import { createCtx } from "../utils/createContext";
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
 export const useUserIdContext = useContextInner;
 
+/**
+ * Should only be used in components that have
+ * a <UserIdProvider> ancestor
+ */
+export function useUserId() {
+	return useUserIdContext().userId!;
+}
+
 export function UserIdProvider(props: { children: ReactNode }) {
 	const contextValue = useContextValue();
 
@@ -15,14 +23,12 @@ export function UserIdProvider(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const [_userId, _setUserId] = useState<string | null>();
+	const [_userId, _setUserId] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
 	function checkUserId() {
 		setIsLoading(true);
 		const userId = localStorage.getItem("userId");
-
-		console.log("checkUserId", userId);
 
 		if (userId) {
 			setUserId(userId);
@@ -35,8 +41,6 @@ function useContextValue() {
 	}
 
 	function setUserId(userId: string) {
-		console.log("setUserId", userId);
-
 		localStorage.setItem("userId", userId);
 		_setUserId(userId);
 	}

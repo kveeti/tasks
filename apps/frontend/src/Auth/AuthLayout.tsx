@@ -5,7 +5,6 @@ export function AuthLayout() {
 	const { userId } = useUserIdContext();
 
 	if (userId) {
-		console.log("AuthLayout", "userId");
 		return <Navigate to="/app" />;
 	}
 

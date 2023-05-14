@@ -1,8 +1,8 @@
 import { Button3 } from "../Ui/Button";
 import { db } from "../db/db";
-import { useUserId } from "../utils/auth";
 import { useForm } from "../utils/useForm";
 import { uuid } from "../utils/uuid";
+import { useUserId } from "./UserIdContext";
 
 export function TagsPage() {
 	const userId = useUserId();
@@ -13,8 +13,6 @@ export function TagsPage() {
 			color: "#fff",
 		},
 		onSubmit: (values) => {
-			console.log(values);
-
 			db.tags.add({
 				id: uuid(),
 				userId,

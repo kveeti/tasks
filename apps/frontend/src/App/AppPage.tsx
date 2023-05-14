@@ -8,8 +8,8 @@ import { getMinutesAndSeconds } from "../utils/formatSeconds";
 import { uuid } from "../utils/uuid";
 import addSeconds from "date-fns/addSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useUserId } from "../utils/auth";
 import { Link } from "../Ui/Link";
+import { useUserId } from "./UserIdContext";
 
 export function AppPage() {
 	const { selectedTagTime } = useTimerContext();

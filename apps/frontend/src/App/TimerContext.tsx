@@ -5,7 +5,7 @@ import { useSetInterval } from "../utils/useSetInterval";
 import { db, type Task } from "../db/db";
 import { getMinutesAndSeconds } from "../utils/formatSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useUserId } from "../utils/auth";
+import { useUserId } from "./UserIdContext";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
 

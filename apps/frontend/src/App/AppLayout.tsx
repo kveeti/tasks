@@ -6,11 +6,7 @@ import { useUserIdContext } from "./UserIdContext";
 export function AppLayout() {
 	const { userId } = useUserIdContext();
 
-	console.log("AppLayout", userId);
-
 	if (!userId) {
-		console.log("AppLayout", "no userId");
-
 		return <Navigate to="/auth/login" />;
 	}
 
