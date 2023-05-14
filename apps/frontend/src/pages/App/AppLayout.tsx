@@ -1,15 +1,8 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { AppNav } from "./AppNav";
 import { TimerContext } from "./TimerContext";
-import { useUserIdContext } from "./UserIdContext";
 
 export function AppLayout() {
-	const { userId } = useUserIdContext();
-
-	if (!userId) {
-		return <Navigate to="/auth/login" />;
-	}
-
 	return (
 		<TimerContext>
 			<div className="w-full h-full flex items-center justify-center">

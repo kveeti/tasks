@@ -1,11 +1,11 @@
 import { useState, type ReactNode, useEffect } from "react";
-import { createCtx } from "../utils/createContext";
+import { createCtx } from "../../utils/createContext";
 import differenceInSeconds from "date-fns/differenceInSeconds";
-import { useSetInterval } from "../utils/useSetInterval";
-import { db, type Task } from "../db/db";
-import { getMinutesAndSeconds } from "../utils/formatSeconds";
+import { useSetInterval } from "../../utils/useSetInterval";
+import { db, type Task } from "../../db/db";
+import { getMinutesAndSeconds } from "../../utils/formatSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useUserId } from "./UserIdContext";
+import { useUserId } from "../../auth";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
 

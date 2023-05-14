@@ -1,16 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
-import { trpc } from "../api";
-import { useUserIdContext } from "../App/UserIdContext";
+import { trpc } from "../../api";
+import { useUserIdContext } from "../../auth";
 
 export function CallbackPage() {
 	const firstRenderAtRef = useRef(new Date());
 	const [status, setStatus] = useState<"loggingIn" | "failed" | "success">("loggingIn");
 	const [searchParams] = useSearchParams();
-	const navigate = useNavigate();
 
 	const code = searchParams.get("code");
 
@@ -36,22 +35,22 @@ export function CallbackPage() {
 				timeouts.push(
 					setTimeout(() => {
 						setStatus("success");
-						setUserId(verifyQuery.data.id);
 					}, 1000 - timeSinceFirstRender)
 				);
 
 				timeouts.push(
 					setTimeout(() => {
-						navigate("/app");
+						// Entrypoint.tsx will redirect to /app if userId is set
+						setUserId(verifyQuery.data.id);
 					}, 2000 - timeSinceFirstRender)
 				);
 			} else {
 				setStatus("success");
-				setUserId(verifyQuery.data.id);
 
 				timeouts.push(
 					setTimeout(() => {
-						navigate("/app");
+						// Entrypoint.tsx will redirect to /app if userId is set
+						setUserId(verifyQuery.data.id);
 					}, 1000)
 				);
 			}

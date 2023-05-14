@@ -1,13 +1,9 @@
 import { useState, type ReactNode, useEffect } from "react";
-import { createCtx } from "../utils/createContext";
+import { createCtx } from "./utils/createContext";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
 export const useUserIdContext = useContextInner;
 
-/**
- * Should only be used in components that have
- * a <UserIdProvider> ancestor
- */
 export function useUserId() {
 	return useUserIdContext().userId!;
 }
@@ -27,7 +23,6 @@ function useContextValue() {
 	const [isLoading, setIsLoading] = useState(true);
 
 	function checkUserId() {
-		setIsLoading(true);
 		const userId = localStorage.getItem("userId");
 
 		if (userId) {
@@ -36,8 +31,6 @@ function useContextValue() {
 			_setUserId(null);
 			localStorage.clear();
 		}
-
-		setIsLoading(false);
 	}
 
 	function setUserId(userId: string) {
@@ -46,7 +39,9 @@ function useContextValue() {
 	}
 
 	useEffect(() => {
+		setIsLoading(true);
 		checkUserId();
+		setIsLoading(false);
 
 		window.addEventListener("storage", checkUserId);
 		window.addEventListener("focus", checkUserId);

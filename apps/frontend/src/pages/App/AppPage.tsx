@@ -1,15 +1,15 @@
 import { PlayIcon, StopIcon } from "@radix-ui/react-icons";
-import { Button2, Button3 } from "../Ui/Button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../Ui/Select";
-import { db } from "../db/db";
+import { Button2, Button3 } from "../../Ui/Button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../Ui/Select";
+import { db } from "../../db/db";
 import { useTimerContext } from "./TimerContext";
 import { useState } from "react";
-import { getMinutesAndSeconds } from "../utils/formatSeconds";
-import { uuid } from "../utils/uuid";
+import { getMinutesAndSeconds } from "../../utils/formatSeconds";
+import { uuid } from "../../utils/uuid";
 import addSeconds from "date-fns/addSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Link } from "../Ui/Link";
-import { useUserId } from "./UserIdContext";
+import { Link } from "../../Ui/Link";
+import { useUserId } from "../../auth";
 
 export function AppPage() {
 	const { selectedTagTime } = useTimerContext();

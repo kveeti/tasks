@@ -1,4 +1,4 @@
-import { Link } from "../Ui/Link";
+import { Link } from "../../Ui/Link";
 
 const queryParams = new URLSearchParams({
 	client_id: import.meta.env.VITE_APP_G_CLIENT_ID,

@@ -1,8 +1,8 @@
-import { Button3 } from "../Ui/Button";
-import { db } from "../db/db";
-import { useForm } from "../utils/useForm";
-import { uuid } from "../utils/uuid";
-import { useUserId } from "./UserIdContext";
+import { Button3 } from "../../Ui/Button";
+import { useUserId } from "../../auth";
+import { db } from "../../db/db";
+import { useForm } from "../../utils/useForm";
+import { uuid } from "../../utils/uuid";
 
 export function TagsPage() {
 	const userId = useUserId();
