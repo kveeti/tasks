@@ -1,16 +1,17 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { publicProcedure, router } from "../trpc";
-import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { createId, users } from "@tasks/data";
 
-import { v4 as uuidv4 } from "uuid";
 import { createToken } from "../token";
+import { publicProcedure, router } from "../trpc";
 
 export const authEndpoints = router({
 	verifyCode: publicProcedure
 		.input(z.object({ code: z.string() }))
 		.query(async ({ input, ctx }) => {
+			console.log("verifyCode");
+
 			const tokenQueryParams = new URLSearchParams({
 				code: input.code,
 				client_id: process.env.VITE_APP_G_CLIENT_ID!,
@@ -18,6 +19,8 @@ export const authEndpoints = router({
 				redirect_uri: process.env.VITE_APP_URL + "/auth/callback",
 				grant_type: "authorization_code",
 			});
+
+			console.log("getting token response from google");
 
 			const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
 				method: "POST",
@@ -29,6 +32,10 @@ export const authEndpoints = router({
 
 			const accessToken = tokenRes.access_token;
 
+			console.log("got token response from google");
+
+			console.log("getting user's email from google");
+
 			const userInfo = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
 				method: "GET",
 				headers: { Authorization: `Bearer ${accessToken}` },
@@ -38,22 +45,25 @@ export const authEndpoints = router({
 
 			const email = userInfo.email;
 
+			console.log("got user's email from google");
+
 			let user = (
 				await ctx.db.select().from(users).where(eq(users.email, email)).limit(1)
 			)[0];
 
 			if (!user) {
-				const newUserId = uuidv4();
-				const newUser = {
-					id: newUserId,
-					email,
+				console.log("creating user");
+
+				user = {
+					id: createId(),
 					createdAt: new Date(),
+					email,
 				};
 
-				await ctx.db.insert(users).values(newUser);
-
-				user = newUser;
+				await ctx.db.insert(users).values(user);
 			}
+
+			console.log("upserted user", { user });
 
 			const token = await createToken(user.id);
 

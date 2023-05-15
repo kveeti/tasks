@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "tsc && vite build",
+		"buildprod": "tsc && vite build",
 		"lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview"
 	},
@@ -49,6 +49,7 @@
 		"postcss": "^8.4.23",
 		"tailwindcss": "^3.3.2",
 		"typescript": "^5.0.2",
-		"vite": "^4.3.2"
+		"vite": "^4.3.2",
+		"vite-plugin-pwa": "^0.14.7"
 	}
 }

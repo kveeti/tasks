@@ -1,5 +1,5 @@
 {
-	"name": "@tasks/api",
+	"name": "@tasks/data",
 	"version": "0.0.0",
 	"license": "MIT",
 	"type": "module",
@@ -10,22 +10,23 @@
 	"scripts": {
 		"build": "tsc",
 		"buildprod": "tsc",
-		"dev": "tsc --preserveWatchOutput --watch"
+		"dev": "tsc --preserveWatchOutput --watch",
+		"dbpush": "drizzle-kit push:mysql"
 	},
 	"dependencies": {
-		"@tasks/data": "*",
-		"@trpc/server": "^10.25.0",
-		"date-fns": "^2.30.0",
 		"drizzle-orm": "^0.25.4",
-		"jose": "^4.14.4",
+		"mysql2": "^3.3.1",
+		"pg": "^8.11.0",
 		"superjson": "^1.12.3",
+		"surrealdb.js": "^0.7.2",
+		"ulid": "^2.3.0",
 		"web-push": "^3.6.1",
+		"ws": "^8.13.0",
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
 		"@tasks/tsconfig": "*",
-		"@types/pg": "^8.6.6",
-		"@types/web-push": "^3.3.2",
-		"dotenv": "^16.0.3"
+		"dotenv": "^16.0.3",
+		"drizzle-kit": "^0.17.6-76e73f3"
 	}
 }

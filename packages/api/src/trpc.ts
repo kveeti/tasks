@@ -2,7 +2,8 @@ import { TRPCError, type inferAsyncReturnType, initTRPC } from "@trpc/server";
 import { type CreateHTTPContextOptions } from "@trpc/server/adapters/standalone";
 import superjson from "superjson";
 
-import { db } from "./db/db";
+import { db } from "@tasks/data";
+
 import { verifyToken } from "./token";
 
 export async function createContext(opts: CreateHTTPContextOptions) {

@@ -1,0 +1,11 @@
+{
+	"name": "Tasks app",
+	"short_name": "Tasks",
+	"theme_color": "#030712",
+	"background_color": "#030712",
+	"display": "standalone",
+	"orientation": "portrait",
+	"scope": "/",
+	"start_url": "/",
+	"icons": []
+}
