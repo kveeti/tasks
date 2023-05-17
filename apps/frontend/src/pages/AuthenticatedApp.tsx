@@ -1,14 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { registerSW } from "virtual:pwa-register";
+
 import { AppLayout } from "./App/AppLayout";
 import { AppPage } from "./App/AppPage";
-import { StatsPage } from "./App/StatsPage";
+import { AppSettingsPage } from "./App/AppSettings/AppSettings";
+import { StatsPage } from "./App/StatsPage/StatsPage";
 import { TagsPage } from "./App/TagsPage";
-import { registerSW } from "virtual:pwa-register";
-import { AppSettingsPage } from "./App/AppSettings";
 
 export function AuthenticatedApp() {
 	return (
-		<div className="fixed w-full h-full">
+		<div className="fixed h-full w-full">
 			<AppRoutes />
 		</div>
 	);

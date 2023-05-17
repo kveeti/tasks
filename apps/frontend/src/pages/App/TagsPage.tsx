@@ -1,8 +1,9 @@
-import { Button3 } from "../../Ui/Button";
-import { useUserId } from "../../auth";
-import { db } from "../../db/db";
-import { useForm } from "../../utils/useForm";
-import { uuid } from "../../utils/uuid";
+import { createId } from "@tasks/shared";
+
+import { Button3 } from "@/Ui/Button";
+import { useUserId } from "@/auth";
+import { db } from "@/db/db";
+import { useForm } from "@/utils/useForm";
 
 export function TagsPage() {
 	const userId = useUserId();
@@ -14,7 +15,7 @@ export function TagsPage() {
 		},
 		onSubmit: (values) => {
 			db.tags.add({
-				id: uuid(),
+				id: createId(),
 				userId,
 				createdAt: new Date(),
 				color: values.color,
@@ -24,7 +25,7 @@ export function TagsPage() {
 	});
 
 	return (
-		<div className="flex flex-col items-center justify-center h-full">
+		<div className="flex h-full flex-col items-center justify-center">
 			<newTagForm.Form>
 				<div className="flex flex-col gap-2">
 					<label htmlFor="label">

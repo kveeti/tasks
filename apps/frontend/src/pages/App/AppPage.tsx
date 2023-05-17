@@ -4,14 +4,16 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 
-import { Button2, Button3 } from "../../Ui/Button";
-import { Link } from "../../Ui/Link";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../Ui/Select";
-import { trpc } from "../../api";
-import { useUserId } from "../../auth";
-import { db } from "../../db/db";
-import { getMinutesAndSeconds } from "../../utils/formatSeconds";
-import { uuid } from "../../utils/uuid";
+import { createId } from "@tasks/shared";
+
+import { Button2, Button3 } from "@/Ui/Button";
+import { Link } from "@/Ui/Link";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Ui/Select";
+import { trpc } from "@/api";
+import { useUserId } from "@/auth";
+import { db } from "@/db/db";
+import { getMinutesAndSeconds } from "@/utils/formatSeconds";
+
 import { useTimerContext } from "./TimerContext";
 
 export function AppPage() {
@@ -109,7 +111,7 @@ function TaskNotRunning() {
 		const expiresAt = addSeconds(new Date(), time);
 
 		await db.tasks.add({
-			id: uuid(),
+			id: createId(),
 			tag: selectedTag,
 			userId,
 			createdAt: new Date(),
@@ -118,7 +120,7 @@ function TaskNotRunning() {
 		});
 
 		const notif = {
-			id: uuid(),
+			id: createId(),
 			title: "Timer expired",
 			message: `Timer for ${selectedTag.label} expired after ${minutes}:${seconds}`,
 			sendAt: expiresAt,

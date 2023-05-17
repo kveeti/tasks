@@ -24,6 +24,24 @@ export const notifsEndpoints = router({
 		.mutation(async ({ ctx, input }) => {
 			console.log("addSub");
 
+			const existingSub = (
+				await ctx.db
+					.select()
+					.from(notifSubs)
+					.where(
+						and(
+							eq(notifSubs.userId, ctx.userId),
+							eq(notifSubs.endpoint, input.endpoint)
+						)
+					)
+					.limit(1)
+			)[0];
+
+			if (existingSub) {
+				console.log("sub already exists");
+				return;
+			}
+
 			await ctx.db.insert(notifSubs).values({
 				id: createId(),
 				userId: ctx.userId,

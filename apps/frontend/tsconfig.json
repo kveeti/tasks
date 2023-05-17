@@ -1,8 +1,20 @@
 {
 	"extends": "@tasks/tsconfig/base.json",
 	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+
 		"target": "ESNext",
-		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext",
+			"WebWorker",
+			"WebWorker.ImportScripts",
+			"Webworker.Iterable"
+		],
 		"module": "ESNext",
 		"skipLibCheck": true,
 
