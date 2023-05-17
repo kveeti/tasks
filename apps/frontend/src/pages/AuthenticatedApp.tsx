@@ -4,10 +4,13 @@ import { registerSW } from "virtual:pwa-register";
 import { AppLayout } from "./App/AppLayout";
 import { AppPage } from "./App/AppPage";
 import { AppSettingsPage } from "./App/AppSettings/AppSettings";
+import { useDevActions } from "./App/DevActions";
 import { StatsPage } from "./App/StatsPage/StatsPage";
 import { TagsPage } from "./App/TagsPage";
 
 export function AuthenticatedApp() {
+	useDevActions();
+
 	return (
 		<div className="fixed h-full w-full">
 			<AppRoutes />
