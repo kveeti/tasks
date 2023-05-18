@@ -102,7 +102,7 @@ export function CallbackPage() {
 
 function Card(props: { children: ReactNode; keey?: string }) {
 	return (
-		<div className="mx-auto w-full max-w-[300px] rounded-xl border border-gray-800 bg-gray-1000">
+		<div className="bg-gray-1000 mx-auto w-full max-w-[300px] rounded-xl border border-gray-800">
 			<Resizeable>{props.children}</Resizeable>
 		</div>
 	);
