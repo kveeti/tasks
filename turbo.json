@@ -5,7 +5,12 @@
 			"outputs": ["dist/**"],
 			"dependsOn": ["^build"]
 		},
+        "buildprod": {
+			"outputs": ["dist/**"],
+			"dependsOn": ["^buildprod"]
+		},
 		"dev": {
+            "dependsOn": ["build"],
 			"cache": false,
 			"persistent": true
 		},
