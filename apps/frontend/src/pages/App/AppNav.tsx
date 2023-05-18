@@ -16,10 +16,6 @@ export function AppNav() {
 
 	return (
 		<div className=" flex h-full flex-col border-r-2 border-r-gray-800 text-sm">
-			<div className="border-b-2 border-b-gray-800 p-2">
-				<div className="w-max rounded-xl p-2 py-1 hover:bg-gray-900">username</div>
-			</div>
-
 			<div className="flex h-full w-full flex-col gap-2 p-1.5">
 				<div className="relative flex h-full w-full flex-col">
 					{links.map((link) => (
