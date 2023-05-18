@@ -1,17 +1,18 @@
 import { Outlet } from "react-router-dom";
+
 import { AppNav } from "./AppNav";
 import { TimerContext } from "./TimerContext";
 
 export function AppLayout() {
 	return (
 		<TimerContext>
-			<div className="w-full h-full flex items-center justify-center">
-				<div className="flex border-2 relative h-[35rem] border-b-4 shadow-xl border-gray-800 rounded-2xl">
-					<div className="w-[13rem] h-full">
+			<div className="flex h-full w-full items-center justify-center">
+				<div className="relative flex h-[35rem] overflow-hidden rounded-2xl border-2 border-b-4 border-gray-800 shadow-xl">
+					<div className="h-full w-[13rem]">
 						<AppNav />
 					</div>
 
-					<div className="overflow-auto h-full w-[25rem]">
+					<div className="h-full w-[25rem] overflow-auto">
 						<Outlet />
 					</div>
 				</div>
