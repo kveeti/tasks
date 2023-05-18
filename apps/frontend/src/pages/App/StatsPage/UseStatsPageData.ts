@@ -59,7 +59,7 @@ async function getData(date: Date) {
 		end: endOfMonth(date),
 	});
 
-	const barData = monthsDates
+	const hoursPerDayData = monthsDates
 		.map((d) => ({
 			id: format(d, "d.M"),
 			date: d,
@@ -89,7 +89,7 @@ async function getData(date: Date) {
 		}, [] as Record<string, number>[]);
 
 	const yMax = Math.max(
-		...barData.map((d) => {
+		...hoursPerDayData.map((d) => {
 			const daysTotal = Object.values(d)
 				.map((v) => (typeof v === "number" ? v : 0))
 				.reduce((acc, curr) => curr + acc, 0);
@@ -111,7 +111,7 @@ async function getData(date: Date) {
 		xFormatted.at(-1),
 	];
 
-	const pieData = monthsTasks?.reduce((acc, task) => {
+	const tagDistributionData = monthsTasks?.reduce((acc, task) => {
 		const tag = task.tag;
 
 		const tagIndex = acc.findIndex((tag) => tag.id === task.tag.id);
@@ -133,5 +133,15 @@ async function getData(date: Date) {
 		return acc;
 	}, [] as { id: string; label: string; value: number }[]);
 
-	return { barData, xAxisValues, yAxisValues, monthsTags, pieData };
+	return {
+		hoursPerDayData: {
+			data: hoursPerDayData,
+			xAxisValues,
+			yAxisValues,
+		},
+		monthsTags,
+		tagDistributionData,
+	};
 }
+
+export type StatsPageData = Awaited<ReturnType<typeof getData>>;
