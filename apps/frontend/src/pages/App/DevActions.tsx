@@ -13,7 +13,7 @@ export function useDevActions() {
 	const addTasks = useAddTasks();
 
 	useHotkeys([
-		["mod+m", addTasks],
+		["mod+o", addTasks],
 		["mod+p", purge],
 	]);
 }
