@@ -15,16 +15,19 @@ import { db } from "@/db/db";
 import { getMinutesAndSeconds } from "@/utils/formatSeconds";
 
 import { useTimerContext } from "./TimerContext";
+import { WithAnimation } from "./WithAnimation";
 
 export function AppPage() {
 	const { selectedTagTime } = useTimerContext();
 
 	return (
-		<div className="flex h-full w-full flex-col items-center justify-center gap-10 p-10">
-			<div className="flex flex-col items-center justify-center gap-10">
-				{selectedTagTime ? <TaskRunning /> : <TaskNotRunning />}
+		<WithAnimation>
+			<div className="flex h-full w-full flex-col items-center justify-center gap-10 p-10">
+				<div className="flex flex-col items-center justify-center gap-10">
+					{selectedTagTime ? <TaskRunning /> : <TaskNotRunning />}
+				</div>
 			</div>
-		</div>
+		</WithAnimation>
 	);
 }
 

@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import { Outlet } from "react-router-dom";
 
 import { AppNav } from "./AppNav";
@@ -13,7 +14,9 @@ export function AppLayout() {
 					</div>
 
 					<div className="h-full w-[25rem] overflow-auto">
-						<Outlet />
+						<AnimatePresence>
+							<Outlet />
+						</AnimatePresence>
 					</div>
 				</div>
 			</div>

@@ -5,6 +5,8 @@ import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 import { useForm } from "@/utils/useForm";
 
+import { WithAnimation } from "./WithAnimation";
+
 export function TagsPage() {
 	const userId = useUserId();
 
@@ -25,32 +27,32 @@ export function TagsPage() {
 	});
 
 	return (
-		<div className="flex h-full flex-col items-center justify-center">
-			<newTagForm.Form>
-				<div className="flex flex-col gap-2">
-					<label htmlFor="label">
-						Label
-						<input
-							type="text"
-							className="text-black"
-							{...newTagForm.register("label")}
-						/>
-					</label>
-
-					<label htmlFor="color">
-						Color
-						<input
-							type="text"
-							className="text-black"
-							{...newTagForm.register("color")}
-						/>
-					</label>
-
-					<Button3 type="submit" className="p-4">
-						Submit
-					</Button3>
-				</div>
-			</newTagForm.Form>
-		</div>
+		<WithAnimation>
+			<div className="flex h-full flex-col items-center justify-center">
+				<newTagForm.Form>
+					<div className="flex flex-col gap-2">
+						<label htmlFor="label">
+							Label
+							<input
+								type="text"
+								className="text-black"
+								{...newTagForm.register("label")}
+							/>
+						</label>
+						<label htmlFor="color">
+							Color
+							<input
+								type="text"
+								className="text-black"
+								{...newTagForm.register("color")}
+							/>
+						</label>
+						<Button3 type="submit" className="p-4">
+							Submit
+						</Button3>
+					</div>
+				</newTagForm.Form>
+			</div>
+		</WithAnimation>
 	);
 }
