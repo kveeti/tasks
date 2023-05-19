@@ -7,7 +7,8 @@ import isSameMonth from "date-fns/isSameMonth";
 import startOfMonth from "date-fns/startOfMonth";
 import { useEffect, useState } from "react";
 
-import { db } from "@/db/db";
+import { useUserId } from "@/auth";
+import { type DbTag, type DbTask, db } from "@/db/db";
 
 export function useStatsPageData(date: Date):
 	| {
@@ -21,11 +22,13 @@ export function useStatsPageData(date: Date):
 	const [status, setStatus] = useState<"loading" | "no-data" | "data">("no-data");
 	const [stateData, setStateData] = useState<Awaited<ReturnType<typeof getData>>>(undefined);
 
+	const userId = useUserId();
+
 	useEffect(() => {
 		(async () => {
 			setStatus("loading");
 
-			const data = await getData(date);
+			const data = await getData(date, userId);
 
 			if (!data) {
 				setStatus("no-data");
@@ -43,16 +46,31 @@ export function useStatsPageData(date: Date):
 	}
 }
 
-async function getData(date: Date) {
-	const monthsTasks = await db.tasks
+async function getData(date: Date, userId: string) {
+	const dbMonthsTasks = await db.tasks
 		.filter((task) => isSameMonth(date, task.createdAt))
 		.toArray();
 
-	if (!monthsTasks.length) {
-		return undefined;
-	}
+	if (!dbMonthsTasks.length) return undefined;
 
-	const monthsTags = [...new Set(monthsTasks?.map((task) => task.tag.label) ?? [])];
+	const tags = await db.tags.filter((t) => t.userId === userId).toArray();
+	const monthsTags = tags.filter((tag) => dbMonthsTasks.some((task) => task.tagId === tag.id));
+
+	const uniqueMonthsTagLabels = [...new Set(monthsTags.map((tag) => tag.label))];
+
+	let monthsTasks: (DbTask & { tag: DbTag })[] = [];
+
+	for (let i = 0; i < dbMonthsTasks.length; i++) {
+		const task = dbMonthsTasks[i]!;
+
+		const tag = monthsTags.find((tag) => tag.id === task.tagId);
+		if (!tag) continue;
+
+		monthsTasks[i] = {
+			...task,
+			tag,
+		};
+	}
 
 	const monthsDates = eachDayOfInterval({
 		start: startOfMonth(date),
@@ -64,7 +82,7 @@ async function getData(date: Date) {
 			id: format(d, "d.M"),
 			date: d,
 			...monthsTags.reduce((acc, tag) => {
-				acc[tag] = 0;
+				acc[tag.label] = 0;
 				return acc;
 			}, {} as Record<string, number>),
 		}))
@@ -141,6 +159,7 @@ async function getData(date: Date) {
 		},
 		monthsTags,
 		tagDistributionData,
+		uniqueMonthsTagLabels,
 	};
 }
 

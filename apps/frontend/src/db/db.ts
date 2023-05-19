@@ -1,23 +1,22 @@
 import Dexie, { type Table } from "dexie";
 
-export type Task = {
+export type DbTask = {
 	id: string;
-	tag: Pick<Tag, "id" | "label">;
+	tagId: string | null;
 	userId: string;
 	expiresAt: Date;
 	createdAt: Date;
 	stoppedAt: Date | null;
 };
 
-export type Tag = {
+export type DbTag = {
 	id: string;
 	label: string;
 	userId: string;
-	color: string;
 	createdAt: Date;
 };
 
-export type NotifSub = {
+export type DbNotifSub = {
 	id: string;
 	endpoint: string;
 	p256dh: string;
@@ -26,7 +25,7 @@ export type NotifSub = {
 	createdAt: Date;
 };
 
-export type Notif = {
+export type DbNotif = {
 	id: string;
 	title: string;
 	message: string;
@@ -36,10 +35,10 @@ export type Notif = {
 };
 
 export class Db extends Dexie {
-	tasks!: Table<Task>;
-	tags!: Table<Tag>;
-	notifSubs!: Table<NotifSub>;
-	notifs!: Table<Notif>;
+	tasks!: Table<DbTask>;
+	tags!: Table<DbTag>;
+	notifSubs!: Table<DbNotifSub>;
+	notifs!: Table<DbNotif>;
 
 	constructor() {
 		super("db");

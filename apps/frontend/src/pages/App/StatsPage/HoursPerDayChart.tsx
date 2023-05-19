@@ -4,7 +4,7 @@ import type { StatsPageData } from "./UseStatsPageData";
 
 type Props = {
 	hoursPerDayData: NonNullable<StatsPageData>["hoursPerDayData"];
-	monthsTags: NonNullable<StatsPageData>["monthsTags"];
+	uniqueMonthsTagLabels: NonNullable<StatsPageData>["uniqueMonthsTagLabels"];
 };
 
 export function HoursPerDayChart(props: Props) {
@@ -29,7 +29,7 @@ export function HoursPerDayChart(props: Props) {
 			isInteractive={false}
 			enableLabel={false}
 			data={props.hoursPerDayData.data}
-			keys={[...props.monthsTags]}
+			keys={[...props.uniqueMonthsTagLabels]}
 			margin={{ top: 10, right: 0, bottom: 20, left: 35 }}
 			padding={0.2}
 			borderRadius={2}

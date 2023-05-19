@@ -44,7 +44,7 @@ export function StatsPage() {
 							) : (
 								<HoursPerDayChart
 									hoursPerDayData={data.hoursPerDayData}
-									monthsTags={data.monthsTags}
+									uniqueMonthsTagLabels={data.uniqueMonthsTagLabels}
 								/>
 							)}
 						</Card.Body>

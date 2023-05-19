@@ -47,7 +47,7 @@ function useAddTasks() {
 
 		const tasks = lastWeekToNowDays.map((day) => ({
 			id: createId(),
-			tag,
+			tagId: tag.id,
 			userId,
 			createdAt: day,
 			expiresAt: addHours(day, 2),

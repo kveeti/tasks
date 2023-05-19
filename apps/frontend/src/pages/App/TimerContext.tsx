@@ -1,11 +1,12 @@
-import { useState, type ReactNode, useEffect } from "react";
-import { createCtx } from "../../utils/createContext";
 import differenceInSeconds from "date-fns/differenceInSeconds";
-import { useSetInterval } from "../../utils/useSetInterval";
-import { db, type Task } from "../../db/db";
-import { getMinutesAndSeconds } from "../../utils/formatSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
+import { type ReactNode, useEffect, useState } from "react";
+
 import { useUserId } from "../../auth";
+import { type DbTask, db } from "../../db/db";
+import { createCtx } from "../../utils/createContext";
+import { getMinutesAndSeconds } from "../../utils/formatSeconds";
+import { useSetInterval } from "../../utils/useSetInterval";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
 
@@ -56,7 +57,7 @@ function useContextValue() {
 	};
 }
 
-function getTimes(activeTasks?: Task[]) {
+function getTimes(activeTasks?: DbTask[]) {
 	return (
 		activeTasks
 			?.map((task) => {
