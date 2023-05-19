@@ -1,57 +1,37 @@
-import { createId } from "@tasks/shared";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { Button3 } from "@/Ui/Button";
 import { useUserId } from "@/auth";
 import { db } from "@/db/db";
-import { useForm } from "@/utils/useForm";
 
+import { NewTag } from "./TagsPage/NewTag";
+import { Tag } from "./TagsPage/Tag";
 import { WithAnimation } from "./WithAnimation";
 
 export function TagsPage() {
 	const userId = useUserId();
 
-	const newTagForm = useForm({
-		defaultValues: {
-			label: "",
-			color: "#fff",
-		},
-		onSubmit: (values) => {
-			db.tags.add({
-				id: createId(),
-				userId,
-				createdAt: new Date(),
-				color: values.color,
-				label: values.label,
-			});
-		},
-	});
+	const tags = useLiveQuery(() => db.tags.filter((t) => t.userId === userId).toArray());
+
+	const tasks = useLiveQuery(() => db.tasks.filter((t) => t.userId === userId).toArray());
+
+	const tagsWithTaskAmount = tags?.map((tag) => ({
+		...tag,
+		taskAmount: tasks?.filter((t) => t.tagId === tag.id).length,
+	}));
 
 	return (
 		<WithAnimation>
-			<div className="flex h-full flex-col items-center justify-center">
-				<newTagForm.Form>
-					<div className="flex flex-col gap-2">
-						<label htmlFor="label">
-							Label
-							<input
-								type="text"
-								className="text-black"
-								{...newTagForm.register("label")}
-							/>
-						</label>
-						<label htmlFor="color">
-							Color
-							<input
-								type="text"
-								className="text-black"
-								{...newTagForm.register("color")}
-							/>
-						</label>
-						<Button3 type="submit" className="p-4">
-							Submit
-						</Button3>
-					</div>
-				</newTagForm.Form>
+			<div className="sticky top-0 flex items-center justify-between border-b-2 border-b-gray-800 bg-gray-900 p-2">
+				<h1 className="text-xl font-bold">Tags</h1>
+				<div>
+					<NewTag />
+				</div>
+			</div>
+
+			<div className="flex flex-col">
+				{tagsWithTaskAmount?.map((tag) => (
+					<Tag key={tag.id} tag={tag} />
+				))}
 			</div>
 		</WithAnimation>
 	);
