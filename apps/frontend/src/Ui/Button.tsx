@@ -1,7 +1,7 @@
 import { type AriaButtonProps, useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
 import { motion, useAnimation } from "framer-motion";
-import { useRef, type ComponentProps, type ReactNode } from "react";
+import { type ComponentProps, type ReactNode, useRef } from "react";
 import colors from "tailwindcss/colors";
 
 import { cn } from "../utils/classNames";
@@ -52,7 +52,7 @@ export function Button(props: ComponentProps<"button"> & AriaButtonProps) {
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"select-none rounded-md cursor-default bg-gray-800 border border-gray-600 px-2.5 py-1.5 outline-none focus:outline-none",
+					"cursor-default select-none rounded-md border border-gray-600 bg-gray-800 px-2.5 py-1.5 outline-none focus:outline-none",
 					props.className
 				)}
 			>
@@ -121,7 +121,7 @@ export function Button2(props: { children: ReactNode; className?: string } & Ari
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"relative grow w-full cursor-default border-2 border-b-4 border-transparent outline-none rounded-xl",
+					"relative w-full grow cursor-default rounded-xl border-2 border-b-4 border-transparent outline-none",
 					props.className
 				)}
 			>
@@ -129,7 +129,7 @@ export function Button2(props: { children: ReactNode; className?: string } & Ari
 					tabIndex={-1}
 					aria-hidden="true"
 					animate={anotherControls}
-					className="border-gray-700 border-2 -bottom-0.5 absolute -z-10 -inset-[2px] rounded-xl"
+					className="absolute -inset-[2px] -bottom-0.5 -z-10 rounded-xl border-2 border-gray-700"
 					style={{
 						boxShadow: `0 2px 0 ${colors.gray[700]}`,
 					}}
@@ -201,7 +201,7 @@ export function Button3(props: { children: ReactNode; className?: string } & Ari
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"relative grow w-full cursor-default border-b-2 border-b-transparent outline-none rounded-xl",
+					"relative w-full grow cursor-default rounded-xl border-b-2 border-b-transparent outline-none",
 					props.className
 				)}
 			>
@@ -209,7 +209,7 @@ export function Button3(props: { children: ReactNode; className?: string } & Ari
 					tabIndex={-1}
 					aria-hidden="true"
 					animate={anotherControls}
-					className="bg-blue-500 inset-0 absolute -z-10 rounded-xl"
+					className="absolute inset-0 -z-10 rounded-xl bg-blue-500"
 					style={{
 						boxShadow: `0 2px 0 ${colors.blue[900]}`,
 					}}
