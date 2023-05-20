@@ -1,6 +1,5 @@
 import { PlayIcon, StopIcon } from "@radix-ui/react-icons";
 import addSeconds from "date-fns/addSeconds";
-import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 
@@ -115,9 +114,10 @@ function TaskNotRunning() {
 
 		await db.tasks.add({
 			id: createId(),
-			tag: selectedTag,
+			tagId: selectedTag.id,
 			userId,
 			createdAt: new Date(),
+			updatedAt: new Date(),
 			expiresAt,
 			stoppedAt: null,
 		});
@@ -129,24 +129,12 @@ function TaskNotRunning() {
 			sendAt: expiresAt,
 			userId,
 			createdAt: new Date(),
+			updatedAt: new Date(),
 		};
 
 		await db.notifs.add(notif);
 
 		await addNotifMutation.mutateAsync(notif);
-
-		navigator.serviceWorker.ready.then((registration) => {
-			registration.active?.postMessage(
-				JSON.stringify({
-					type: "START_TIMER",
-					payload: {
-						title: notif.title,
-						message: notif.message,
-						sendAfter: differenceInMilliseconds(notif.sendAt, new Date()),
-					},
-				})
-			);
-		});
 	}
 
 	return (

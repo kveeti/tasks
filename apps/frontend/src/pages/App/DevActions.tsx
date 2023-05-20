@@ -38,6 +38,7 @@ function useAddTasks() {
 				label: `Test-tag-${createId().slice(0, 5)}`,
 				userId,
 				createdAt: new Date(),
+				updatedAt: new Date(),
 			};
 
 			db.tags.add(newTag);
@@ -50,6 +51,7 @@ function useAddTasks() {
 			tagId: tag.id,
 			userId,
 			createdAt: day,
+			updatedAt: day,
 			expiresAt: addHours(day, 2),
 			stoppedAt: addHours(day, 1.8),
 		}));

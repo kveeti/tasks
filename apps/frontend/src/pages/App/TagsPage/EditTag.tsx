@@ -16,6 +16,7 @@ export function EditTag(props: { tag: DbTag }) {
 		onSubmit: (values) => {
 			db.tags.update(props.tag.id, {
 				label: values.label,
+				updatedAt: new Date(),
 			});
 		},
 	});

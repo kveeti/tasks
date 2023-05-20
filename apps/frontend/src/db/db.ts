@@ -6,6 +6,7 @@ export type DbTask = {
 	userId: string;
 	expiresAt: Date;
 	createdAt: Date;
+	updatedAt: Date;
 	stoppedAt: Date | null;
 };
 
@@ -14,7 +15,10 @@ export type DbTag = {
 	label: string;
 	userId: string;
 	createdAt: Date;
+	updatedAt: Date;
 };
+
+export type DbTaskWithTag = DbTask & { tag: DbTag };
 
 export type DbNotifSub = {
 	id: string;
@@ -23,6 +27,7 @@ export type DbNotifSub = {
 	auth: string;
 	userId: string;
 	createdAt: Date;
+	updatedAt: Date;
 };
 
 export type DbNotif = {
@@ -32,6 +37,7 @@ export type DbNotif = {
 	sendAt: Date;
 	userId: string;
 	createdAt: Date;
+	updatedAt: Date;
 };
 
 export class Db extends Dexie {

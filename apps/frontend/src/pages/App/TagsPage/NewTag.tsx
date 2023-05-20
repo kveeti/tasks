@@ -22,8 +22,9 @@ export function NewTag() {
 			db.tags.add({
 				id: createId(),
 				userId,
-				createdAt: new Date(),
 				label: values.label,
+				createdAt: new Date(),
+				updatedAt: new Date(),
 			});
 		},
 	});

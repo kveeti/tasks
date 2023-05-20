@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { type ReactNode, useEffect, useState } from "react";
 
 import { useUserId } from "../../auth";
-import { type DbTask, db } from "../../db/db";
+import { type DbTaskWithTag, db } from "../../db/db";
 import { createCtx } from "../../utils/createContext";
 import { getMinutesAndSeconds } from "../../utils/formatSeconds";
 import { useSetInterval } from "../../utils/useSetInterval";
@@ -21,12 +21,23 @@ export function TimerContext(props: { children: ReactNode }) {
 function useContextValue() {
 	const userId = useUserId();
 
-	const dbActiveTasks = useLiveQuery(() => {
+	const dbActiveTasks = useLiveQuery(async () => {
 		const now = new Date();
 
-		return db.tasks
-			.filter((task) => task.userId === userId && task.expiresAt > now && !task.stoppedAt)
-			.toArray();
+		const dbTags = await db.tags.where("userId").equals(userId).toArray();
+
+		const tasks = (
+			await db.tasks
+				.where("userId")
+				.equals(userId)
+				.and((task) => task.expiresAt > now && !task.stoppedAt)
+				.toArray()
+		).map((task) => ({
+			...task,
+			tag: dbTags.find((tag) => tag.id === task.tagId)!,
+		}));
+
+		return tasks;
 	});
 
 	const [activeTasks, setActiveTasks] = useState<ReturnType<typeof getTimes>>([]);
@@ -57,7 +68,7 @@ function useContextValue() {
 	};
 }
 
-function getTimes(activeTasks?: DbTask[]) {
+function getTimes(activeTasks?: DbTaskWithTag[]) {
 	return (
 		activeTasks
 			?.map((task) => {
