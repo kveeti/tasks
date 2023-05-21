@@ -7,7 +7,6 @@ import isSameMonth from "date-fns/isSameMonth";
 import startOfMonth from "date-fns/startOfMonth";
 import { useEffect, useState } from "react";
 
-import { useUserId } from "@/auth";
 import { type DbTag, type DbTask, db } from "@/db/db";
 
 export function useStatsPageData(date: Date):
@@ -22,13 +21,11 @@ export function useStatsPageData(date: Date):
 	const [status, setStatus] = useState<"loading" | "no-data" | "data">("no-data");
 	const [stateData, setStateData] = useState<Awaited<ReturnType<typeof getData>>>(undefined);
 
-	const userId = useUserId();
-
 	useEffect(() => {
 		(async () => {
 			setStatus("loading");
 
-			const data = await getData(date, userId);
+			const data = await getData(date);
 
 			if (!data) {
 				setStatus("no-data");
@@ -46,14 +43,14 @@ export function useStatsPageData(date: Date):
 	}
 }
 
-async function getData(date: Date, userId: string) {
+async function getData(date: Date) {
 	const dbMonthsTasks = await db.tasks
 		.filter((task) => isSameMonth(date, task.createdAt))
 		.toArray();
 
 	if (!dbMonthsTasks.length) return undefined;
 
-	const tags = await db.tags.filter((t) => t.userId === userId).toArray();
+	const tags = await db.tags.toArray();
 	const monthsTags = tags.filter((tag) => dbMonthsTasks.some((task) => task.tagId === tag.id));
 
 	const uniqueMonthsTagLabels = [...new Set(monthsTags.map((tag) => tag.label))];

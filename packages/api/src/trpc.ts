@@ -18,7 +18,7 @@ export async function createContext(opts: CreateHTTPContextOptions) {
 				.catch(() => null)
 		: null;
 
-	return { db, userId, res: opts.res };
+	return { db, userId, res: opts.res, req: opts.req };
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;

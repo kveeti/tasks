@@ -17,6 +17,7 @@
 		"@trpc/server": "^10.25.0",
 		"date-fns": "^2.30.0",
 		"drizzle-orm": "^0.25.4",
+		"drizzle-zod": "^0.4.1",
 		"jose": "^4.14.4",
 		"superjson": "^1.12.3",
 		"web-push": "^3.6.1",

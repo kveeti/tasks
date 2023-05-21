@@ -6,13 +6,11 @@ import { Button2, Button3 } from "@/Ui/Button";
 import { Input } from "@/Ui/Input";
 import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
-import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 import { useForm } from "@/utils/useForm";
 
 export function NewTag() {
 	const [isOpen, setIsOpen] = useState(false);
-	const userId = useUserId();
 
 	const newTagForm = useForm({
 		defaultValues: {
@@ -21,7 +19,6 @@ export function NewTag() {
 		onSubmit: (values) => {
 			db.tags.add({
 				id: createId(),
-				userId,
 				label: values.label,
 				createdAt: new Date(),
 				updatedAt: new Date(),

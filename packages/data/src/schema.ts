@@ -15,24 +15,24 @@ export const tags = mysqlTable("tags", {
 	userId: varchar("user_id", { length: 26 })
 		.notNull()
 		.references(() => users.id),
-	color: varchar("color", { length: 255 }).notNull(),
 	createdAt: timestamp("created_at").notNull(),
+	ogCreatedAt: timestamp("og_created_at").notNull(),
+	updatedAt: timestamp("updated_at").notNull(),
 });
 
 export type Tag = InferModel<typeof tags>;
 
 export const tasks = mysqlTable("tasks", {
 	id: varchar("id", { length: 26 }).primaryKey(),
-	label: varchar("label", { length: 255 }).notNull(),
 	userId: varchar("user_id", { length: 26 })
 		.notNull()
 		.references(() => users.id),
-	tagId: varchar("tag_id", { length: 26 })
-		.notNull()
-		.references(() => tags.id),
+	tagId: varchar("tag_id", { length: 26 }).references(() => tags.id),
 	createdAt: timestamp("created_at").notNull(),
 	expiresAt: timestamp("expires_at").notNull(),
 	stoppedAt: timestamp("stopped_at"),
+	ogCreatedAt: timestamp("og_created_at").notNull(),
+	updatedAt: timestamp("updated_at").notNull(),
 });
 
 export type Task = InferModel<typeof tasks>;

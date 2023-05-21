@@ -20,6 +20,7 @@ export function Tag(props: { tag: DbTag & { taskAmount?: number } }) {
 		onSubmit: (values) => {
 			db.tags.update(props.tag.id, {
 				label: values.label,
+				updatedAt: new Date(),
 			});
 		},
 	});

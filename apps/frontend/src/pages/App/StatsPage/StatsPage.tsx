@@ -15,6 +15,8 @@ export function StatsPage() {
 	const [date, setDate] = useState(new Date());
 	const { data, status } = useStatsPageData(date);
 
+	console.log({ data });
+
 	return (
 		<WithAnimation>
 			<div className="flex flex-col">

@@ -1,6 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 
 import { NewTag } from "./TagsPage/NewTag";
@@ -8,11 +7,9 @@ import { Tag } from "./TagsPage/Tag";
 import { WithAnimation } from "./WithAnimation";
 
 export function TagsPage() {
-	const userId = useUserId();
+	const tags = useLiveQuery(() => db.tags.toArray());
 
-	const tags = useLiveQuery(() => db.tags.filter((t) => t.userId === userId).toArray());
-
-	const tasks = useLiveQuery(() => db.tasks.filter((t) => t.userId === userId).toArray());
+	const tasks = useLiveQuery(() => db.tasks.toArray());
 
 	const tagsWithTaskAmount = tags?.map((tag) => ({
 		...tag,

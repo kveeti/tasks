@@ -2,7 +2,6 @@ import differenceInSeconds from "date-fns/differenceInSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
 import { type ReactNode, useEffect, useState } from "react";
 
-import { useUserId } from "../../auth";
 import { type DbTaskWithTag, db } from "../../db/db";
 import { createCtx } from "../../utils/createContext";
 import { getMinutesAndSeconds } from "../../utils/formatSeconds";
@@ -19,19 +18,13 @@ export function TimerContext(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const userId = useUserId();
-
 	const dbActiveTasks = useLiveQuery(async () => {
 		const now = new Date();
 
-		const dbTags = await db.tags.where("userId").equals(userId).toArray();
+		const dbTags = await db.tags.toArray();
 
 		const tasks = (
-			await db.tasks
-				.where("userId")
-				.equals(userId)
-				.and((task) => task.expiresAt > now && !task.stoppedAt)
-				.toArray()
+			await db.tasks.filter((task) => task.expiresAt > now && !task.stoppedAt).toArray()
 		).map((task) => ({
 			...task,
 			tag: dbTags.find((tag) => tag.id === task.tagId)!,

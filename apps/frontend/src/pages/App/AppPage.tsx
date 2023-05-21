@@ -9,7 +9,6 @@ import { Button2, Button3 } from "@/Ui/Button";
 import { Link } from "@/Ui/Link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Ui/Select";
 import { trpc } from "@/api";
-import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 import { getMinutesAndSeconds } from "@/utils/formatSeconds";
 
@@ -82,16 +81,14 @@ function TaskNotRunning() {
 	const [selectedTagId, setSelectedTagId] = useState<string>();
 
 	const addNotifMutation = trpc.notifs.addNotif.useMutation();
+	const addTaskMutation = trpc.tasks.add.useMutation();
 
-	const userId = useUserId();
-
-	const tags = useLiveQuery(() => db.tags.filter((tag) => tag.userId === userId).toArray());
+	const tags = useLiveQuery(() => db.tags.toArray());
 
 	const { minutes, seconds } = getMinutesAndSeconds(time);
 
 	function addTime(seconds: number) {
-		setTime(5);
-		//setTime(time + seconds);
+		setTime(time + seconds);
 	}
 
 	function subtractTime(seconds: number) {
@@ -112,29 +109,29 @@ function TaskNotRunning() {
 
 		const expiresAt = addSeconds(new Date(), time);
 
-		await db.tasks.add({
+		const task = {
 			id: createId(),
 			tagId: selectedTag.id,
-			userId,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			expiresAt,
 			stoppedAt: null,
-		});
+		};
 
 		const notif = {
 			id: createId(),
 			title: "Timer expired",
 			message: `Timer for ${selectedTag.label} expired after ${minutes}:${seconds}`,
 			sendAt: expiresAt,
-			userId,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
 
-		await db.notifs.add(notif);
-
-		await addNotifMutation.mutateAsync(notif);
+		await Promise.all([
+			db.tasks.add(task),
+			addTaskMutation.mutateAsync(task),
+			addNotifMutation.mutateAsync(notif),
+		]);
 	}
 
 	return (

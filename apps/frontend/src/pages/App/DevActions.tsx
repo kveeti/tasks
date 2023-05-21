@@ -5,7 +5,6 @@ import { createToast } from "vercel-toast";
 
 import { createId } from "@tasks/shared";
 
-import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 import { useHotkeys } from "@/utils/useHotkeys";
 
@@ -19,8 +18,6 @@ export function useDevActions() {
 }
 
 function useAddTasks() {
-	const userId = useUserId();
-
 	return async () => {
 		const now = new Date();
 
@@ -36,7 +33,6 @@ function useAddTasks() {
 				id: createId(),
 				color: "#fff",
 				label: `Test-tag-${createId().slice(0, 5)}`,
-				userId,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};
@@ -49,7 +45,6 @@ function useAddTasks() {
 		const tasks = lastWeekToNowDays.map((day) => ({
 			id: createId(),
 			tagId: tag.id,
-			userId,
 			createdAt: day,
 			updatedAt: day,
 			expiresAt: addHours(day, 2),

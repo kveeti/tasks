@@ -4,11 +4,9 @@ import { createId } from "@tasks/shared";
 
 import { Button3 } from "@/Ui/Button";
 import { trpc } from "@/api";
-import { useUserId } from "@/auth";
 import { db } from "@/db/db";
 
 export function TurnOnNotifications() {
-	const userId = useUserId();
 	const addNotifSubMutation = trpc.notifs.addSub.useMutation();
 
 	return (
@@ -40,7 +38,6 @@ export function TurnOnNotifications() {
 
 					await db.notifSubs.add({
 						id: createId(),
-						userId,
 						endpoint: subJson.endpoint,
 						auth: subJson.keys.auth,
 						p256dh: subJson.keys.p256dh,
