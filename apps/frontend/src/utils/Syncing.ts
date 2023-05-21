@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { trpc } from "@/api";
 import { db } from "@/db/db";
 
@@ -6,7 +8,7 @@ import { useSetInterval } from "./useSetInterval";
 export function Syncing() {
 	const syncMutation = trpc.sync.sync.useMutation();
 
-	useSetInterval(async () => {
+	async function sync() {
 		const storageLastSyncedAt = localStorage.getItem("lastSyncedAt");
 		const lastSyncedAt = storageLastSyncedAt ? new Date(storageLastSyncedAt) : null;
 
@@ -37,7 +39,12 @@ export function Syncing() {
 		}
 
 		localStorage.setItem("lastSyncedAt", new Date().toISOString());
-	}, 10000);
+	}
+
+	useSetInterval(sync, 10000);
+	useEffect(() => {
+		sync();
+	}, []);
 
 	return null;
 }
