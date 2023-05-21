@@ -26,6 +26,9 @@ export function NewTag() {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			});
+
+			newTagForm.reset();
+			setIsOpen(false);
 		},
 	});
 
