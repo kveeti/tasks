@@ -4,5 +4,5 @@ import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-	plugins: [react(), VitePWA(), tsconfigPaths()],
+	plugins: [react(), VitePWA({ devOptions: { enabled: true } }), tsconfigPaths()],
 });

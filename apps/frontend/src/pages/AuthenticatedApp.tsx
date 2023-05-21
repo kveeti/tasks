@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { registerSW } from "virtual:pwa-register";
 
 import { AppLayout } from "./App/AppLayout";
 import { AppPage } from "./App/AppPage";
@@ -24,8 +23,4 @@ export function AuthenticatedApp() {
 			</Routes>
 		</div>
 	);
-}
-
-if ("serviceWorker" in navigator) {
-	registerSW();
 }
