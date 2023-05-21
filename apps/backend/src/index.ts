@@ -10,6 +10,8 @@ const handler = createHTTPHandler({
 	createContext,
 });
 
+const port = process.env.PORT || 8000;
+
 createServer((req, res) => {
 	res.setHeader("Access-Control-Allow-Origin", env.VITE_APP_URL);
 	res.setHeader("Access-Control-Allow-Methods", "GET,PUT,PATCH,POST,DELETE,OPTIONS,HEAD");
@@ -26,4 +28,4 @@ createServer((req, res) => {
 	}
 
 	handler(req, res);
-}).listen(8000, () => console.log("Server started on port 8000"));
+}).listen(port, () => console.log(`Server started on port ${port}`));
