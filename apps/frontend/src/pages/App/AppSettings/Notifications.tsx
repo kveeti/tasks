@@ -19,7 +19,7 @@ export function TurnOnNotifications() {
 
 				await navigator.serviceWorker.ready;
 
-				const result = await Notification.requestPermission();
+				const result = await window.Notification.requestPermission();
 
 				if (result === "granted") {
 					const subscription = await reg.pushManager.subscribe({
@@ -52,7 +52,9 @@ export function TurnOnNotifications() {
 
 					createToast("Turned on notifications", { type: "success", timeout: 4000 });
 				} else {
-					createToast("You need to allow notifications to turn them on, crazy, right?");
+					createToast("You need to allow notifications to turn them on, crazy, right?", {
+						timeout: 2000,
+					});
 				}
 			}}
 		>

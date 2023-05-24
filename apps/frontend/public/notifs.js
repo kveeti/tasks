@@ -7,7 +7,3 @@ self.addEventListener("push", (e) => {
 
 	e.waitUntil(self.registration.showNotification(title, { body: message }));
 });
-
-self.addEventListener("install", (e) => {
-	self.skipWaiting();
-});
