@@ -14,3 +14,4 @@ tracing = { workspace = true }
 sea-orm = { workspace = true }
 entity = { path = "../entity" }
 config = { path = "../config" }
+ulid = "1"

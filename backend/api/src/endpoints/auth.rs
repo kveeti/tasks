@@ -8,11 +8,11 @@ use axum::{
     Json,
 };
 use config::CONFIG;
+use data::create_id;
 use entity::users::{self, Entity as UserEntity};
 use hyper::{header, HeaderMap, StatusCode};
 use sea_orm::{sea_query::OnConflict, EntityTrait};
 use serde_json::json;
-use ulid::Ulid;
 
 use crate::types::{ApiError, RequestContext};
 
@@ -101,7 +101,7 @@ pub async fn auth_verify_code_endpoint(
         .context("Failed to parse user response body")?;
 
     let user_upsert_result = UserEntity::insert(users::ActiveModel {
-        id: sea_orm::ActiveValue::set(Ulid::new().to_string()),
+        id: sea_orm::ActiveValue::set(create_id()),
         email: sea_orm::ActiveValue::Set(oauth_me_response_body.email),
         created_at: sea_orm::ActiveValue::set(chrono::Utc::now().naive_utc()),
     })

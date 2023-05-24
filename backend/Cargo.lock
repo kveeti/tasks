@@ -63,7 +63,6 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
- "ulid",
 ]
 
 [[package]]
@@ -485,6 +484,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tracing",
+ "ulid",
  "uuid",
 ]
 

@@ -3,7 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use axum::http::HeaderValue;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
 use config::CONFIG;
-use data::get_db;
+use data::{create_id, get_db};
 use hyper::{Method, Request};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
@@ -12,7 +12,6 @@ use tracing_subscriber::{
     filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
 use types::RequestContextStruct;
-use ulid::Ulid;
 
 mod auth;
 mod endpoints;
@@ -59,10 +58,13 @@ async fn main() {
 
     let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 
+    let v1_tasks_routes = Router::new().route("/", post(endpoints::tasks::add_task_endpoint));
+
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
-        .nest("/sync", v1_sync_routes);
+        .nest("/sync", v1_sync_routes)
+        .nest("/tasks", v1_tasks_routes);
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 
@@ -74,7 +76,7 @@ async fn main() {
                 .make_span_with(|request: &Request<Body>| {
                     info_span!(
                         "request",
-                        id = %Ulid::new(),
+                        id = %create_id(),
                         method = %request.method(),
                         uri = %request.uri(),
                     )
