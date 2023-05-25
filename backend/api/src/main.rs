@@ -112,7 +112,7 @@ async fn main() {
         )
         .layer(cors);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], CONFIG.port));
 
     tracing::info!("App started in {}, listening at {}", CONFIG.env, addr);
 
