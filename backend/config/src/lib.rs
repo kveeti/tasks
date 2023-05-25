@@ -29,6 +29,7 @@ pub struct Config {
     pub google_client_secret: String,
     pub google_redirect_url: String,
     pub port: u16,
+    pub front_url: String,
 }
 
 impl Config {

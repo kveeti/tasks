@@ -1,7 +1,7 @@
 use axum::http::HeaderValue;
 use axum::routing::patch;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
-use config::CONFIG;
+use config::{Config, CONFIG};
 use data::{create_id, get_db};
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
@@ -43,9 +43,10 @@ async fn main() {
             header::ACCEPT_LANGUAGE,
         ])
         .allow_origin(
-            "http://localhost:5173"
+            CONFIG
+                .front_url
                 .parse::<HeaderValue>()
-                .expect("Invalid origin"),
+                .expect("Invalid allow_origin value"),
         )
         .allow_credentials(true);
 
