@@ -28,7 +28,7 @@ pub async fn add_notif_sub_endpoint(
         auth: sea_orm::ActiveValue::Set(body.auth),
         endpoint: sea_orm::ActiveValue::Set(body.endpoint),
         p256dh: sea_orm::ActiveValue::Set(body.p256dh),
-        created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().naive_utc()),
+        created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().into()),
     })
     .on_conflict(
         OnConflict::column(notif_subs::Column::Endpoint)

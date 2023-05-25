@@ -9,6 +9,7 @@ import { Link } from "@/Ui/Link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Ui/Select";
 import { type DbTask, db } from "@/db/db";
 import { apiRequest } from "@/utils/api/apiRequest";
+import type { ApiTask } from "@/utils/api/types";
 import { createId } from "@/utils/createId";
 import { getMinutesAndSeconds } from "@/utils/formatSeconds";
 
@@ -31,12 +32,22 @@ export function AppPage() {
 
 function TaskRunning() {
 	const { selectedTagTime, activeTasks, setSelectedTagId, selectedTagId } = useTimerContext();
+	const editTaskMutation = useEditTaskMutation();
 
 	const tags = activeTasks?.map((t) => t.tag);
 
 	function stopTimer() {
 		if (!selectedTagTime) return;
-		db.tasks.update(selectedTagTime.id, { stoppedAt: new Date() });
+
+		const stoppedAt = new Date();
+
+		Promise.all([
+			db.tasks.update(selectedTagTime.id, { stopped_at: stoppedAt }),
+			editTaskMutation.mutateAsync({
+				task_id: selectedTagTime.id,
+				body: { stopped_at: stoppedAt.toISOString() },
+			}),
+		]);
 	}
 
 	return (
@@ -77,7 +88,7 @@ function TaskRunning() {
 }
 
 function TaskNotRunning() {
-	const [time, setTime] = useState(0); // seconds
+	const [time, setTime] = useState(0);
 	const [selectedTagId, setSelectedTagId] = useState<string>();
 
 	const addTaskMutation = useAddTaskMutation();
@@ -106,15 +117,17 @@ function TaskNotRunning() {
 		const selectedTag = tags?.find((tag) => tag.id === selectedTagId);
 		if (!selectedTag) return;
 
-		const expiresAt = addSeconds(new Date(), time);
+		const expires_at = addSeconds(new Date(), time);
+
+		console.log({ expires_at });
 
 		const task = {
 			id: createId(),
-			tagId: selectedTag.id,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			expiresAt,
-			stoppedAt: null,
+			tag_id: selectedTag.id,
+			created_at: new Date(),
+			updated_at: new Date(),
+			expires_at,
+			stopped_at: null,
 		};
 
 		await Promise.all([db.tasks.add(task), addTaskMutation.mutateAsync(task)]);
@@ -191,6 +204,16 @@ function useAddTaskMutation() {
 			method: "POST",
 			path: "/tasks",
 			body,
+		})
+	);
+}
+
+function useEditTaskMutation() {
+	return useMutation((props: { task_id: string; body: Partial<ApiTask> }) =>
+		apiRequest<void>({
+			method: "PATCH",
+			path: `/tasks/${props.task_id}`,
+			body: props.body,
 		})
 	);
 }

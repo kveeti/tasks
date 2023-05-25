@@ -32,8 +32,8 @@ function useAddTasks() {
 				id: createId(),
 				color: "#fff",
 				label: `Test-tag-${createId().slice(0, 5)}`,
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				created_at: new Date(),
+				updated_at: new Date(),
 			};
 
 			db.tags.add(newTag);
@@ -43,11 +43,11 @@ function useAddTasks() {
 
 		const tasks = lastWeekToNowDays.map((day) => ({
 			id: createId(),
-			tagId: tag.id,
-			createdAt: day,
-			updatedAt: day,
-			expiresAt: addHours(day, 2),
-			stoppedAt: addHours(day, 1.8),
+			tag_id: tag.id,
+			created_at: day,
+			updated_at: day,
+			expires_at: addHours(day, 2),
+			stopped_at: addHours(day, 1.8),
 		}));
 
 		await db.tasks.bulkAdd(tasks);
@@ -58,4 +58,5 @@ function useAddTasks() {
 
 function purge() {
 	db.delete();
+	localStorage.clear();
 }

@@ -4,7 +4,6 @@ use axum::{
     Json,
 };
 use data::types::Db;
-use handlers::types::HandlerError;
 use hyper::StatusCode;
 use serde_json::json;
 
@@ -32,6 +31,9 @@ pub enum ApiError {
     #[error("{0}")]
     UnauthorizedError(String),
 
+    #[error("{0}")]
+    NotFoundError(String),
+
     #[error("Forbidden")]
     ForbiddenError,
 }
@@ -55,6 +57,7 @@ impl IntoResponse for ApiError {
             ApiError::UnauthorizedError(err) => {
                 (StatusCode::UNAUTHORIZED, json!({ "message": err }))
             }
+            ApiError::NotFoundError(err) => (StatusCode::NOT_FOUND, json!({ "message": err })),
             ApiError::ForbiddenError => (StatusCode::FORBIDDEN, json!({ "message": "Forbidden" })),
         };
 
@@ -63,14 +66,5 @@ impl IntoResponse for ApiError {
         }));
 
         return (status_code, body).into_response();
-    }
-}
-
-impl From<HandlerError> for ApiError {
-    fn from(err: HandlerError) -> Self {
-        match err {
-            HandlerError::UnexpectedError(err) => ApiError::UnexpectedError(err),
-            HandlerError::BadRequestError(err) => ApiError::BadRequestError(err),
-        }
     }
 }

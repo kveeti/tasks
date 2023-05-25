@@ -30,4 +30,4 @@ dist-ssr
 .next
 dev-dist
 target
-db
+backend/db

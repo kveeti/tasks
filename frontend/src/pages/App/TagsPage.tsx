@@ -13,7 +13,7 @@ export function TagsPage() {
 
 	const tagsWithTaskAmount = tags?.map((tag) => ({
 		...tag,
-		taskAmount: tasks?.filter((t) => t.tagId === tag.id).length,
+		taskAmount: tasks?.filter((t) => t.tag_id === tag.id).length,
 	}));
 
 	return (

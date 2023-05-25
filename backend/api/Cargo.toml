@@ -15,7 +15,6 @@ sea-orm = { workspace = true }
 chrono = { workspace = true }
 data = { path = "../data" }
 entity = { path = "../entity" }
-handlers = { path = "../handlers" }
 config = { path = "../config" }
 auth = { path = "../auth" }
 axum = { version = "0.6.18", features = [ "headers" ]}

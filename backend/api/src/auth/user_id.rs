@@ -37,8 +37,7 @@ where
 
             let token = from_cookie
                 .or(from_bearer)
-                .ok_or_else(|| ApiError::UnauthorizedError("No auth provided".to_string()))
-                .context("Failed to get token")?;
+                .ok_or_else(|| ApiError::UnauthorizedError("No auth provided".to_string()))?;
 
             decode_token(&token).context("Failed to decode token")?
         };

@@ -53,6 +53,8 @@ pub async fn auth_verify_code_endpoint(
         ))?
         .to_string();
 
+    tracing::info!("Verifying code: {}", code);
+
     let access_token_response = client
         .post("https://oauth2.googleapis.com/token")
         .form(&[
@@ -100,17 +102,17 @@ pub async fn auth_verify_code_endpoint(
         .await
         .context("Failed to parse user response body")?;
 
-    let user_upsert_result = UserEntity::insert(users::ActiveModel {
+    let user = UserEntity::insert(users::ActiveModel {
         id: sea_orm::ActiveValue::set(create_id()),
         email: sea_orm::ActiveValue::Set(oauth_me_response_body.email),
-        created_at: sea_orm::ActiveValue::set(chrono::Utc::now().naive_utc()),
+        created_at: sea_orm::ActiveValue::set(chrono::Utc::now().into()),
     })
     .on_conflict(
         OnConflict::column(users::Column::Email)
-            .do_nothing()
+            .update_column(users::Column::Email)
             .to_owned(),
     )
-    .exec(&state.db)
+    .exec_with_returning(&state.db)
     .await
     .context("Failed to upsert user")?;
 
@@ -120,7 +122,7 @@ pub async fn auth_verify_code_endpoint(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-            create_token(&user_upsert_result.last_insert_id, expires_at)?,
+            create_token(&user.id, expires_at)?,
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
@@ -131,7 +133,7 @@ pub async fn auth_verify_code_endpoint(
         StatusCode::OK,
         headers,
         Json(json!({
-            "user_id": user_upsert_result.last_insert_id,
+            "user_id": user.id,
         })),
     ));
 }

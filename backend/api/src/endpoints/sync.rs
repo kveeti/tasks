@@ -1,13 +1,13 @@
 use anyhow::Context;
 use axum::{extract::State, response::IntoResponse, Json};
-use chrono::NaiveDateTime;
 use entity::{
     tags::{self, Entity as TagsEntity},
     tasks::{self, Entity as TasksEntity},
 };
 use hyper::StatusCode;
 use sea_orm::{
-    sea_query::OnConflict, ColumnTrait, Condition, EntityTrait, QueryFilter, QueryTrait,
+    prelude::DateTimeWithTimeZone, sea_query::OnConflict, ActiveValue, ColumnTrait, Condition,
+    EntityTrait, QueryFilter, QueryTrait,
 };
 use serde_json::json;
 
@@ -20,22 +20,23 @@ use crate::{
 pub struct SyncEndpointTask {
     pub id: String,
     pub tag_id: String,
-    pub created_at: NaiveDateTime,
-    pub stopped_at: Option<NaiveDateTime>,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub stopped_at: Option<DateTimeWithTimeZone>,
+    pub updated_at: DateTimeWithTimeZone,
+    pub expires_at: DateTimeWithTimeZone,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointTag {
     pub id: String,
     pub label: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointBody {
-    pub last_synced_at: Option<chrono::NaiveDateTime>,
+    pub last_synced_at: Option<DateTimeWithTimeZone>,
     pub tasks: Vec<SyncEndpointTask>,
     pub tags: Vec<SyncEndpointTag>,
 }
@@ -49,12 +50,12 @@ pub async fn sync_endpoint(
         tracing::info!("Upserting {} tags", body.tasks.len());
 
         TagsEntity::insert_many(body.tags.into_iter().map(|task| tags::ActiveModel {
-            id: sea_orm::ActiveValue::Set(task.id),
-            user_id: sea_orm::ActiveValue::Set(user_id.to_owned()),
-            label: sea_orm::ActiveValue::Set(task.label),
-            created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().naive_utc()),
-            updated_at: sea_orm::ActiveValue::Set(task.updated_at),
-            og_created_at: sea_orm::ActiveValue::Set(task.created_at),
+            id: ActiveValue::Set(task.id),
+            user_id: ActiveValue::Set(user_id.to_owned()),
+            label: ActiveValue::Set(task.label),
+            created_at: ActiveValue::Set(chrono::Utc::now().into()),
+            updated_at: ActiveValue::Set(task.updated_at),
+            og_created_at: ActiveValue::Set(task.created_at),
         }))
         .on_conflict(
             OnConflict::column(tasks::Column::Id)
@@ -70,13 +71,17 @@ pub async fn sync_endpoint(
         tracing::info!("Upserting {} tasks", body.tasks.len());
 
         TasksEntity::insert_many(body.tasks.into_iter().map(|task| tasks::ActiveModel {
-            id: sea_orm::ActiveValue::Set(task.id),
-            user_id: sea_orm::ActiveValue::Set(user_id.to_owned()),
-            tag_id: sea_orm::ActiveValue::Set(task.tag_id),
-            created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().naive_utc()),
-            stopped_at: sea_orm::ActiveValue::Set(task.stopped_at),
-            updated_at: sea_orm::ActiveValue::Set(task.updated_at),
-            og_created_at: sea_orm::ActiveValue::Set(task.created_at),
+            id: ActiveValue::Set(task.id),
+            user_id: ActiveValue::Set(user_id.to_owned()),
+            tag_id: ActiveValue::Set(task.tag_id),
+            created_at: ActiveValue::Set(chrono::Utc::now().into()),
+            stopped_at: match task.stopped_at {
+                Some(stopped_at) => ActiveValue::Set(Some(stopped_at)),
+                None => ActiveValue::NotSet,
+            },
+            expires_at: ActiveValue::Set(task.expires_at),
+            updated_at: ActiveValue::Set(task.updated_at),
+            og_created_at: ActiveValue::Set(task.created_at),
         }))
         .on_conflict(
             OnConflict::column(tasks::Column::Id)
@@ -115,7 +120,7 @@ pub async fn sync_endpoint(
         .context("Failed to find tasks out of date on client")?;
 
     return Ok((
-        StatusCode::CREATED,
+        StatusCode::OK,
         Json(json!({
             "tags": tags_out_of_date_on_client.into_iter().map(|tag| SyncEndpointTag {
                 id: tag.id,
@@ -128,6 +133,7 @@ pub async fn sync_endpoint(
                 tag_id: task.tag_id,
                 created_at: task.og_created_at,
                 stopped_at: task.stopped_at,
+                expires_at: task.expires_at,
                 updated_at: task.updated_at,
             }).collect::<Vec<_>>(),
         })),

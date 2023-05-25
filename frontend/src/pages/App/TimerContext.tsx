@@ -24,11 +24,21 @@ function useContextValue() {
 		const dbTags = await db.tags.toArray();
 
 		const tasks = (
-			await db.tasks.filter((task) => task.expiresAt > now && !task.stoppedAt).toArray()
+			await db.tasks
+				.filter((task) => {
+					const condition = task.expires_at > now && !task.stopped_at;
+
+					console.log({ task, condition });
+
+					return condition;
+				})
+				.toArray()
 		).map((task) => ({
 			...task,
-			tag: dbTags.find((tag) => tag.id === task.tagId)!,
+			tag: dbTags.find((tag) => tag.id === task.tag_id)!,
 		}));
+
+		console.log({ tasks });
 
 		return tasks;
 	});
@@ -65,7 +75,7 @@ function getTimes(activeTasks?: DbTaskWithTag[]) {
 	return (
 		activeTasks
 			?.map((task) => {
-				const timeUntilExpiryValue = differenceInSeconds(task.expiresAt, new Date());
+				const timeUntilExpiryValue = differenceInSeconds(task.expires_at, new Date());
 
 				return {
 					id: task.id,

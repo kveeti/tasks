@@ -45,13 +45,13 @@ export function useStatsPageData(date: Date):
 
 async function getData(date: Date) {
 	const dbMonthsTasks = await db.tasks
-		.filter((task) => isSameMonth(date, task.createdAt))
+		.filter((task) => isSameMonth(date, task.created_at))
 		.toArray();
 
 	if (!dbMonthsTasks.length) return undefined;
 
 	const tags = await db.tags.toArray();
-	const monthsTags = tags.filter((tag) => dbMonthsTasks.some((task) => task.tagId === tag.id));
+	const monthsTags = tags.filter((tag) => dbMonthsTasks.some((task) => task.tag_id === tag.id));
 
 	const uniqueMonthsTagLabels = [...new Set(monthsTags.map((tag) => tag.label))];
 
@@ -60,7 +60,7 @@ async function getData(date: Date) {
 	for (let i = 0; i < dbMonthsTasks.length; i++) {
 		const task = dbMonthsTasks[i]!;
 
-		const tag = monthsTags.find((tag) => tag.id === task.tagId);
+		const tag = monthsTags.find((tag) => tag.id === task.tag_id);
 		if (!tag) continue;
 
 		monthsTasks[i] = {
@@ -84,7 +84,7 @@ async function getData(date: Date) {
 			}, {} as Record<string, number>),
 		}))
 		.reduce((acc, curr) => {
-			const tasks = monthsTasks?.filter((task) => isSameDay(task.createdAt, curr.date));
+			const tasks = monthsTasks?.filter((task) => isSameDay(task.created_at, curr.date));
 
 			if (!tasks) return acc;
 
@@ -92,9 +92,9 @@ async function getData(date: Date) {
 				const tag = task.tag;
 
 				// @ts-expect-error hmm
-				curr[tag.label] += task.stoppedAt
-					? differenceInMinutes(task.stoppedAt, task.createdAt)
-					: differenceInMinutes(task.expiresAt, task.createdAt);
+				curr[tag.label] += task.stopped_at
+					? differenceInMinutes(task.stopped_at, task.created_at)
+					: differenceInMinutes(task.expires_at, task.created_at);
 			});
 
 			// @ts-expect-error hmm
@@ -131,9 +131,9 @@ async function getData(date: Date) {
 
 		const tagIndex = acc.findIndex((tag) => tag.id === task.tag.id);
 
-		const currentTaskMinutes = task.stoppedAt
-			? differenceInMinutes(task.stoppedAt, task.createdAt)
-			: differenceInMinutes(task.expiresAt, task.createdAt);
+		const currentTaskMinutes = task.stopped_at
+			? differenceInMinutes(task.stopped_at, task.created_at)
+			: differenceInMinutes(task.expires_at, task.created_at);
 
 		if (tagIndex === -1) {
 			acc.push({

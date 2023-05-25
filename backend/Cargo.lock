@@ -51,7 +51,6 @@ dependencies = [
  "config",
  "data",
  "entity",
- "handlers",
  "hyper",
  "reqwest",
  "sea-orm",
@@ -746,18 +745,6 @@ dependencies = [
  "slab",
  "tokio",
  "tokio-util",
- "tracing",
-]
-
-[[package]]
-name = "handlers"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "data",
- "serde",
- "serde_json",
- "thiserror",
  "tracing",
 ]
 

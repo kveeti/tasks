@@ -1,16 +1,15 @@
-use std::{net::SocketAddr, time::Duration};
-
 use axum::http::HeaderValue;
+use axum::routing::patch;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
 use config::CONFIG;
 use data::{create_id, get_db};
-use hyper::{Method, Request};
+use hyper::{header, Method, Request};
+use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
-use tracing_subscriber::{
-    filter, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
-};
+use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 use types::RequestContextStruct;
 
 mod auth;
@@ -20,7 +19,9 @@ pub mod types;
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
-        .with(filter::LevelFilter::DEBUG)
+        .with(EnvFilter::from(
+            "api=debug,auth=debug,data=debug,sea_orm=error".to_string(),
+        ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -34,8 +35,15 @@ async fn main() {
             Method::PUT,
             Method::HEAD,
         ])
+        .allow_headers([
+            header::CONTENT_TYPE,
+            header::AUTHORIZATION,
+            header::ACCEPT,
+            header::ACCEPT_ENCODING,
+            header::ACCEPT_LANGUAGE,
+        ])
         .allow_origin(
-            "http://localhost:3000"
+            "http://localhost:5173"
                 .parse::<HeaderValue>()
                 .expect("Invalid origin"),
         )
@@ -58,13 +66,23 @@ async fn main() {
 
     let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 
-    let v1_tasks_routes = Router::new().route("/", post(endpoints::tasks::add_task_endpoint));
+    let v1_tasks_routes = Router::new()
+        .route("/", post(endpoints::tasks::add_task_endpoint))
+        .route("/:task_id", patch(endpoints::tasks::update_task_endpoint));
+
+    let v1_tags_routes = Router::new()
+        .route(
+            "/",
+            post(endpoints::tags::add_tag_endpoint).delete(endpoints::tags::delete_tag_endpoint),
+        )
+        .route("/:tag_id", patch(endpoints::tags::update_tag_endpoint));
 
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
         .nest("/sync", v1_sync_routes)
-        .nest("/tasks", v1_tasks_routes);
+        .nest("/tasks", v1_tasks_routes)
+        .nest("/tags", v1_tags_routes);
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 

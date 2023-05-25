@@ -9,6 +9,8 @@ pub struct TokenClaims {
     pub sub: String,
     pub exp: usize,
     pub iat: usize,
+    pub aud: String,
+    pub iss: String,
 }
 
 pub fn create_token(
@@ -21,6 +23,8 @@ pub fn create_token(
             sub: user_id.to_string(),
             exp: expires_at.timestamp() as usize,
             iat: chrono::Utc::now().timestamp() as usize,
+            aud: CONFIG.jwt_aud.to_string(),
+            iss: CONFIG.jwt_iss.to_string(),
         },
         &EncodingKey::from_secret(&CONFIG.jwt_secret.as_ref()),
     )

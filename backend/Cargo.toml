@@ -5,9 +5,9 @@ lto = true
 [workspace]
 
 members = [
-    "data",
-    "handlers",
     "api",
+    "data",
+    "config"
 ]
 
 [workspace.dependencies]
