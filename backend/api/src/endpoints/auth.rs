@@ -140,3 +140,40 @@ pub async fn auth_verify_code_endpoint(
         })),
     ));
 }
+
+pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
+    let user = UserEntity::insert(users::ActiveModel {
+        id: sea_orm::ActiveValue::set(create_id()),
+        email: sea_orm::ActiveValue::Set("test@test.test".to_string()),
+        created_at: sea_orm::ActiveValue::set(chrono::Utc::now().into()),
+    })
+    .on_conflict(
+        OnConflict::column(users::Column::Email)
+            .update_column(users::Column::Email)
+            .to_owned(),
+    )
+    .exec_with_returning(&ctx.db)
+    .await
+    .context("Failed to upsert user")?;
+
+    let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
+
+    let headers: HeaderMap = HeaderMap::from_iter(vec![(
+        header::SET_COOKIE,
+        format!(
+            "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
+            create_token(&user.id, expires_at)?,
+            expires_at.format("%a, %d %b %Y %T GMT")
+        )
+        .parse()
+        .context("Failed to create cookie header")?,
+    )]);
+
+    return Ok((
+        StatusCode::OK,
+        headers,
+        Json(json!({
+            "user_id": user.id,
+        })),
+    ));
+}

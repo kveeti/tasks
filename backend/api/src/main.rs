@@ -1,7 +1,7 @@
 use axum::http::HeaderValue;
 use axum::routing::patch;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
-use config::CONFIG;
+use config::{Env, CONFIG};
 use data::{create_id, get_db};
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
@@ -53,7 +53,7 @@ async fn main() {
     let db = get_db().await;
     let state = RequestContextStruct::new(db);
 
-    let v1_auth_routes = Router::new().merge(
+    let mut v1_auth_routes = Router::new().merge(
         Router::new()
             .route("/google-init", get(endpoints::auth::auth_init_endpoint))
             .route(
@@ -61,6 +61,12 @@ async fn main() {
                 get(endpoints::auth::auth_verify_code_endpoint),
             ),
     );
+
+    if CONFIG.env == Env::Dev {
+        v1_auth_routes = v1_auth_routes
+            .route("/dev-login", get(endpoints::auth::dev_login))
+            .to_owned();
+    }
 
     let v1_notif_subs_routes =
         Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
