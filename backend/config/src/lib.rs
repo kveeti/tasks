@@ -21,13 +21,12 @@ impl std::fmt::Display for Env {
 #[derive(Clone, serde::Deserialize)]
 pub struct Config {
     pub env: Env,
-    pub database_url: String,
+    pub db_url: String,
     pub jwt_secret: String,
     pub jwt_aud: String,
     pub jwt_iss: String,
     pub google_client_id: String,
     pub google_client_secret: String,
-    pub google_redirect_url: String,
     pub port: u16,
     pub front_url: String,
 }

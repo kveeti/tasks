@@ -23,7 +23,7 @@ pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
         .path_and_query(format!(
             "/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope=email&prompt=select_account",
             CONFIG.google_client_id,
-            CONFIG.google_redirect_url,
+            format!("{}/auth/callback", CONFIG.front_url),
         ))
         .build().context("Failed to build auth url")?;
 
@@ -61,7 +61,10 @@ pub async fn auth_verify_code_endpoint(
             ("code", code),
             ("client_id", CONFIG.google_client_id.to_string()),
             ("client_secret", CONFIG.google_client_secret.to_string()),
-            ("redirect_uri", CONFIG.google_redirect_url.to_string()),
+            (
+                "redirect_uri",
+                format!("{}/auth/callback", CONFIG.front_url),
+            ),
             ("grant_type", "authorization_code".to_string()),
         ])
         .send()

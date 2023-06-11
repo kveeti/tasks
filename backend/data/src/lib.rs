@@ -7,7 +7,7 @@ pub use create_id::create_id;
 pub mod types;
 
 pub async fn get_db() -> Db {
-    let pool = Database::connect(&CONFIG.database_url)
+    let pool = Database::connect(&CONFIG.db_url)
         .await
         .expect("Failed to connect to database");
 
