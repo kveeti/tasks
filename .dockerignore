@@ -1,1 +1,4 @@
-.*
+DB_DATA
+
+node_modules
+target
