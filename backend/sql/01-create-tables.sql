@@ -27,7 +27,7 @@ CREATE TABLE "tasks" (
 CREATE TABLE "notif_subs" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id"),
-    "endpoint" VARCHAR(255) NOT NULL,
+    "endpoint" VARCHAR(255) NOT NULL UNIQUE,
     "p256dh" VARCHAR(255) NOT NULL,
     "auth" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
