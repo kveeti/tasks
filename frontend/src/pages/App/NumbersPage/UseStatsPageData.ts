@@ -55,7 +55,7 @@ async function getData(date: Date) {
 
 	const uniqueMonthsTagLabels = [...new Set(monthsTags.map((tag) => tag.label))];
 
-	let monthsTasks: (DbTask & { tag: DbTag })[] = [];
+	const monthsTasks: (DbTask & { tag: DbTag })[] = [];
 
 	for (let i = 0; i < dbMonthsTasks.length; i++) {
 		const task = dbMonthsTasks[i]!;

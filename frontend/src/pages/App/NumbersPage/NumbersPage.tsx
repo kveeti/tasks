@@ -11,7 +11,7 @@ import { HoursPerDayChart } from "./HoursPerDayChart";
 import { TagDistributionChart } from "./TagDistributionChart";
 import { useStatsPageData } from "./UseStatsPageData";
 
-export function StatsPage() {
+export function NumbersPage() {
 	const [date, setDate] = useState(new Date());
 	const { data, status } = useStatsPageData(date);
 

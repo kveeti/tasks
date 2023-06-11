@@ -4,7 +4,7 @@ import { AppLayout } from "./App/AppLayout";
 import { AppPage } from "./App/AppPage";
 import { AppSettingsPage } from "./App/AppSettings/AppSettings";
 import { useDevActions } from "./App/DevActions";
-import { StatsPage } from "./App/StatsPage/StatsPage";
+import { NumbersPage } from "./App/NumbersPage/NumbersPage";
 import { TagsPage } from "./App/TagsPage";
 
 export function AuthenticatedApp() {
@@ -15,7 +15,7 @@ export function AuthenticatedApp() {
 			<Routes>
 				<Route path="/app" element={<AppLayout />}>
 					<Route index element={<AppPage />} />
-					<Route path="stats" element={<StatsPage />} />
+					<Route path="stats" element={<NumbersPage />} />
 					<Route path="tags" element={<TagsPage />} />
 					<Route path="settings" element={<AppSettingsPage />} />
 				</Route>
