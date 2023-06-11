@@ -1,4 +1,8 @@
 DB_DATA
 
 node_modules
+
 target
+dev-dist
+dist
+.swc
