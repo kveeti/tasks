@@ -1,7 +1,7 @@
 use axum::http::HeaderValue;
 use axum::routing::patch;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
-use config::{Config, CONFIG};
+use config::CONFIG;
 use data::{create_id, get_db};
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
