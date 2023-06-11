@@ -15,7 +15,7 @@ export function AppNav() {
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
 	return (
-		<div className=" flex h-full flex-col border-r-2 border-r-gray-800 text-sm">
+		<div className=" flex h-full flex-col border-r-2 border-r-gray-800">
 			<div className="flex h-full w-full flex-col gap-2 p-1.5">
 				<div className="relative flex h-full w-full flex-col">
 					{links.map((link) => (
@@ -38,6 +38,35 @@ export function AppNav() {
 				</div>
 
 				<ActiveTasks />
+			</div>
+		</div>
+	);
+}
+
+export function MobileAppNav() {
+	const location = useLocation();
+	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
+
+	return (
+		<div className="fixed bottom-0 flex w-full justify-center p-2">
+			<div className="flex w-full max-w-[19rem] rounded-[16px] border-2 border-gray-800 bg-gray-950 p-1.5">
+				{links.map((link) => (
+					<Link
+						key={link.id}
+						to={link.href}
+						className="relative flex w-full items-center justify-center rounded-[10px] px-3 py-2"
+					>
+						{activeLinkId === link.id && (
+							<motion.div
+								layoutId="active-indicator-mobile"
+								className="absolute inset-0 w-full rounded-[10px] border-2 border-blue-900 bg-blue-900/40"
+								transition={{ duration: 0.3, bounce: 0.2, type: "spring" }}
+							/>
+						)}
+
+						<span className="relative">{link.label}</span>
+					</Link>
+				))}
 			</div>
 		</div>
 	);

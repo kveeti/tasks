@@ -7,7 +7,7 @@ import { apiRequest } from "./api/apiRequest";
 import type { ApiTag, ApiTask } from "./api/types";
 import { useSetInterval } from "./useSetInterval";
 
-export function Syncing() {
+export function useSyncing() {
 	const syncMutation = useMutation(
 		(syncBody: { last_synced_at: Date | null; tasks: DbTask[]; tags: DbTag[] }) =>
 			apiRequest<{ tags: ApiTag[]; tasks: ApiTask[] }>({
@@ -68,6 +68,4 @@ export function Syncing() {
 	useEffect(() => {
 		sync();
 	}, []);
-
-	return null;
 }

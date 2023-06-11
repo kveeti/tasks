@@ -2,10 +2,10 @@ import { FocusRing } from "@react-aria/focus";
 import { type AriaLinkOptions, useLink } from "@react-aria/link";
 import { motion, useAnimation } from "framer-motion";
 import { type ReactNode, useRef } from "react";
-import colors from "tailwindcss/colors";
-import { cn } from "../utils/classNames";
-
 import { Link as RRDLink } from "react-router-dom";
+import colors from "tailwindcss/colors";
+
+import { cn } from "../utils/classNames";
 
 const MotionLink = motion(RRDLink);
 
@@ -76,7 +76,7 @@ export function Link(
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"relative w-full cursor-default border-2 border-b-4 border-transparent outline-none rounded-xl",
+					"relative w-full cursor-default rounded-xl border-2 border-b-4 border-transparent text-center outline-none",
 					props.className
 				)}
 			>
@@ -84,7 +84,7 @@ export function Link(
 					tabIndex={-1}
 					aria-hidden="true"
 					animate={anotherControls}
-					className="border-gray-700 border-2 -bottom-0.5 absolute -z-10 -inset-[2px] rounded-xl"
+					className="absolute -inset-[2px] -bottom-0.5 -z-10 rounded-xl border-2 border-gray-700"
 					style={{
 						boxShadow: `0 2px 0 ${colors.gray[700]}`,
 					}}

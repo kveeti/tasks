@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
-import * as SelectPrimitive from "@radix-ui/react-select";
-import { cn } from "../utils/classNames";
 import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import * as React from "react";
+
+import { cn } from "../utils/classNames";
 
 const Select = SelectPrimitive.Root;
 
@@ -18,12 +19,12 @@ const SelectTrigger = React.forwardRef<
 	<SelectPrimitive.Trigger
 		ref={ref}
 		className={cn(
-			"flex items-center cursor-default justify-center focus-visible:shadow-outline outline-none gap-2 border-2 border-gray-700 px-3 py-2 rounded-xl border-b-4 text-sm",
+			"flex cursor-default items-center justify-center gap-2 rounded-xl border-2 border-b-4 border-gray-700 px-3 py-2 outline-none focus-visible:shadow-outline",
 			className
 		)}
 		{...props}
 	>
-		<span className="truncate max-w-[9rem]">{children}</span>
+		<span className="max-w-[9rem] truncate">{children}</span>
 		<SelectPrimitive.Icon asChild>
 			<ChevronDownIcon className="h-4 w-4 opacity-50" />
 		</SelectPrimitive.Icon>
@@ -38,7 +39,7 @@ const SelectContent = React.forwardRef<
 	<SelectPrimitive.Portal>
 		<SelectPrimitive.Content
 			ref={ref}
-			className={cn("bg-gray-950 rounded-xl border-2 border-gray-800", className)}
+			className={cn("rounded-xl border-2 border-gray-800 bg-gray-950", className)}
 			{...props}
 		>
 			<SelectPrimitive.Viewport className={cn("p-1.5")}>{children}</SelectPrimitive.Viewport>
@@ -53,7 +54,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<SelectPrimitive.Label
 		ref={ref}
-		className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+		className={cn("py-1.5 pl-8 pr-2 font-semibold", className)}
 		{...props}
 	/>
 ));
@@ -66,7 +67,7 @@ const SelectItem = React.forwardRef<
 	<SelectPrimitive.Item
 		ref={ref}
 		className={cn(
-			"relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-800/70 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+			"relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2 outline-none focus:bg-gray-800/70 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
 			className
 		)}
 		{...props}

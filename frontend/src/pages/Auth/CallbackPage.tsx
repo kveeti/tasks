@@ -103,15 +103,23 @@ export function CallbackPage() {
 }
 
 function useVerifyCodeQuery(code: string | null) {
+	const isProd = import.meta.env.PROD;
+
 	return useQuery(
 		["verify-code"],
 		() =>
 			apiRequest<{ user_id: string }>({
 				method: "GET",
-				path: "/auth/google-verify-code",
-				query: new URLSearchParams({ code: code! }),
+				...(isProd
+					? {
+							path: "/auth/google-verify-code",
+							query: new URLSearchParams({ code: code! }),
+					  }
+					: {
+							path: "/auth/dev-login",
+					  }),
 			}),
-		{ enabled: !!code }
+		isProd ? { enabled: !!code } : undefined
 	);
 }
 

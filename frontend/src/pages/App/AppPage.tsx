@@ -21,8 +21,8 @@ export function AppPage() {
 
 	return (
 		<WithAnimation>
-			<div className="flex h-full w-full flex-col items-center justify-center gap-10 p-10">
-				<div className="flex flex-col items-center justify-center gap-10">
+			<div className="flex h-full w-full flex-col items-center justify-center gap-10">
+				<div className="flex w-full flex-col items-center justify-center gap-10 pt-16 not-mobile:pt-0">
 					{selectedTagTime ? <TaskRunning /> : <TaskNotRunning />}
 				</div>
 			</div>
@@ -52,13 +52,11 @@ function TaskRunning() {
 
 	return (
 		<>
-			<span className="line bg-gray-1000 flex w-full justify-center rounded-xl border-2 border-b-4 border-gray-800 px-3 py-4 text-[4.4rem] font-semibold leading-[1] transition-all duration-200">
-				<h2 className="tabular-nums">
-					<span>{selectedTagTime?.timeUntilExpiry.minutes}</span>
-					<span>:</span>
-					<span>{selectedTagTime?.timeUntilExpiry.seconds}</span>
-				</h2>
-			</span>
+			<h2 className="tabular-nums">
+				<span>{selectedTagTime?.timeUntilExpiry.minutes}</span>
+				<span>:</span>
+				<span>{selectedTagTime?.timeUntilExpiry.seconds}</span>
+			</h2>
 
 			<div>
 				<Select value={selectedTagId} onValueChange={setSelectedTagId}>
@@ -119,8 +117,6 @@ function TaskNotRunning() {
 
 		const expires_at = addSeconds(new Date(), time);
 
-		console.log({ expires_at });
-
 		const task = {
 			id: createId(),
 			tag_id: selectedTag.id,
@@ -135,29 +131,27 @@ function TaskNotRunning() {
 
 	return (
 		<>
-			<span className="line bg-gray-1000 flex w-full justify-center rounded-xl border-2 border-b-4 border-gray-800 px-3 py-4 text-[4.4rem] font-semibold leading-[1] transition-all duration-200">
-				<h2 className="tabular-nums">
-					<span>{minutes}</span>
-					<span>:</span>
-					<span>{seconds}</span>
-				</h2>
-			</span>
+			<h2 className="text-[6rem] font-semibold leading-[1]">
+				<span>{minutes}</span>
+				<span>:</span>
+				<span>{seconds}</span>
+			</h2>
 
-			<div className="flex w-full gap-1.5">
+			<div className="flex w-full max-w-[16rem] gap-1.5">
 				<div className="flex w-full flex-col gap-1.5 rounded-2xl border-2 border-gray-800/80 p-1.5">
-					<Button2 className="py-2 text-sm" onPress={() => addTime(1800)}>
+					<Button2 className="py-2 " onPress={() => addTime(1800)}>
 						+ 30 min
 					</Button2>
-					<Button2 className="py-2 text-sm" onPress={() => subtractTime(1800)}>
+					<Button2 className="py-2 " onPress={() => subtractTime(1800)}>
 						- 30 min
 					</Button2>
 				</div>
 
 				<div className="flex w-full flex-col gap-1.5 rounded-2xl border-2 border-gray-800/80 p-1.5">
-					<Button2 className="py-2 text-sm" onPress={() => addTime(300)}>
+					<Button2 className="py-2 " onPress={() => addTime(300)}>
 						+ 5 min
 					</Button2>
-					<Button2 className="py-2 text-sm" onPress={() => subtractTime(300)}>
+					<Button2 className="py-2 " onPress={() => subtractTime(300)}>
 						- 5 min
 					</Button2>
 				</div>
@@ -178,13 +172,13 @@ function TaskNotRunning() {
 						</SelectContent>
 					</Select>
 				) : (
-					<Link className="px-3 py-2 text-sm" href="/app/tags">
+					<Link className="px-3 py-2" href="/app/tags">
 						Create tag
 					</Link>
 				)}
 			</div>
 
-			<div className="w-full">
+			<div className="w-full max-w-[16rem]">
 				<Button3
 					className="flex h-full grow items-start justify-center p-4"
 					onPress={() => {
