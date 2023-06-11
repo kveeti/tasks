@@ -6,3 +6,4 @@ target
 dev-dist
 dist
 .swc
+.env
