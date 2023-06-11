@@ -4,7 +4,8 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev --host",
+		"dev": "vite dev --port 3000",
+		"dev-env": "VITE_APP_API_URL=http://localhost:11000/api/v1 vite dev --port 3000",
 		"buildprod": "tsc && vite build",
 		"lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview"
@@ -33,9 +34,9 @@
 		"react-hook-form": "^7.43.9",
 		"react-router-dom": "^6.11.1",
 		"react-use-measure": "^2.1.1",
+		"sonner": "^0.4.0",
 		"superjson": "^1.12.3",
 		"ulid": "^2.3.0",
-		"vercel-toast": "^1.7.1",
 		"vite-tsconfig-paths": "^4.2.0",
 		"zod": "^3.21.4"
 	},

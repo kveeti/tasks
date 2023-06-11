@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { createToast } from "vercel-toast";
+import { toast } from "sonner";
 
 import { Button3 } from "@/Ui/Button";
 import { apiRequest } from "@/utils/api/apiRequest";
@@ -30,21 +30,20 @@ export function TurnOnNotifications() {
 					const subJson = subscription.toJSON();
 
 					if (!subJson.keys?.auth || !subJson.keys?.p256dh || !subJson.endpoint) {
-						createToast("Failed to turn on notifications", { type: "error" });
+						toast.error("Failed to turn on notifications");
 						return;
 					}
 
-					await addNotifSubMutation.mutateAsync({
-						endpoint: subJson.endpoint,
-						auth: subJson.keys.auth,
-						p256dh: subJson.keys.p256dh,
-					});
-
-					createToast("Turned on notifications", { type: "success", timeout: 4000 });
+					await addNotifSubMutation
+						.mutateAsync({
+							endpoint: subJson.endpoint,
+							auth: subJson.keys.auth,
+							p256dh: subJson.keys.p256dh,
+						})
+						.then(() => toast.success("Turned on notifications"))
+						.catch(() => toast.error("Failed to turn on notifications"));
 				} else {
-					createToast("You need to allow notifications to turn them on, crazy, right?", {
-						timeout: 2000,
-					});
+					toast.error("You need to allow notifications to turn them on, crazy, right?");
 				}
 			}}
 		>
@@ -54,13 +53,13 @@ export function TurnOnNotifications() {
 }
 
 function urlBase64ToUint8Array(base64String: string) {
-	var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-	var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+	const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+	const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
 
-	var rawData = window.atob(base64);
-	var outputArray = new Uint8Array(rawData.length);
+	const rawData = window.atob(base64);
+	const outputArray = new Uint8Array(rawData.length);
 
-	for (var i = 0; i < rawData.length; ++i) {
+	for (let i = 0; i < rawData.length; ++i) {
 		outputArray[i] = rawData.charCodeAt(i);
 	}
 	return outputArray;
