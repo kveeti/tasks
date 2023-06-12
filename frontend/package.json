@@ -36,6 +36,7 @@
 		"react-use-measure": "^2.1.1",
 		"sonner": "^0.4.0",
 		"superjson": "^1.12.3",
+		"tabler-icons-react": "^1.56.0",
 		"ulid": "^2.3.0",
 		"vite-tsconfig-paths": "^4.2.0",
 		"zod": "^3.21.4"

@@ -6,6 +6,59 @@ import colors from "tailwindcss/colors";
 
 import { cn } from "../utils/classNames";
 
+export function TestButton(props: ComponentProps<"button"> & AriaButtonProps) {
+	const ref = useRef<HTMLButtonElement | null>(null);
+	const controls = useAnimation();
+
+	const aria = useButton(
+		{
+			onPressStart: (e) => {
+				props.onPressStart?.(e);
+				controls.stop();
+				controls.set({
+					// background: colors.primary[700],
+					// border: `1px solid ${colors.primary[600]}`,
+				});
+			},
+			onPressEnd: (e) => {
+				props.onPressEnd?.(e);
+				controls.start({
+					// background: colors.primary[700],
+					// border: `1px solid ${colors.primary[600]}`,
+					transition: { duration: 0.4 },
+				});
+			},
+			onPress: (e) => {
+				ref.current?.focus();
+				props.onPress?.(e);
+				controls.start({
+					// background: [null, colors.primary[900]],
+					// border: [null, `1px solid ${colors.primary[700]}`],
+					transition: { duration: 0.4 },
+				});
+			},
+		},
+		ref
+	);
+
+	return (
+		<FocusRing focusRingClass="shadow-outline">
+			{/* @ts-expect-error dont know how to fix this */}
+			<motion.button
+				{...aria.buttonProps}
+				ref={ref}
+				animate={controls}
+				className={cn(
+					"cursor-default select-none border-2 border-gray-700 bg-gray-800 px-2.5 py-1.5 outline-none focus:outline-none",
+					props.className
+				)}
+			>
+				{props.children}
+			</motion.button>
+		</FocusRing>
+	);
+}
+
 export function Button(props: ComponentProps<"button"> & AriaButtonProps) {
 	const ref = useRef<HTMLButtonElement | null>(null);
 	const controls = useAnimation();

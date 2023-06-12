@@ -3,9 +3,17 @@
 @tailwind utilities;
 
 body {
-	@apply bg-gray-950 text-gray-100;
+	color: white;
+	user-select: none;
+	cursor: default;
 
 	-webkit-font-smoothing: antialiased;
 	-webkit-tap-highlight-color: transparent;
 	text-rendering: optimizeLegibility;
+
+	background: url(/bg1.jpeg) no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
 }

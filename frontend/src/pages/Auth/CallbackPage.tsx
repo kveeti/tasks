@@ -29,7 +29,9 @@ export function CallbackPage() {
 			return;
 		}
 
-		let timeouts: number[] = [];
+		const timeouts: number[] = [];
+
+		console.log(verifyQuery.data);
 
 		if (verifyQuery.data) {
 			const timeSinceFirstRender = new Date().getTime() - firstRenderAtRef.current.getTime();
