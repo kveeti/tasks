@@ -5,7 +5,7 @@ import { useSyncing } from "@/utils/Syncing";
 import { useIsMobile } from "@/utils/useMediaQuery";
 
 import { AppNav, MobileAppNav } from "./AppNav";
-import { TimerContext } from "./TimerContext";
+import { TimerContextProvider } from "./TimerContext";
 
 export function AppLayout() {
 	useSyncing();
@@ -16,7 +16,7 @@ export function AppLayout() {
 
 function DesktopAppLayout() {
 	return (
-		<TimerContext>
+		<TimerContextProvider>
 			<div className="flex h-full w-full items-center justify-center">
 				<div className="flex h-[38rem] overflow-hidden rounded-2xl border-2 border-b-4 border-gray-800 shadow-xl">
 					<div className="h-full w-[13rem]">
@@ -30,13 +30,13 @@ function DesktopAppLayout() {
 					</div>
 				</div>
 			</div>
-		</TimerContext>
+		</TimerContextProvider>
 	);
 }
 
 function MobileAppLayout() {
 	return (
-		<TimerContext>
+		<TimerContextProvider>
 			<div className="flex w-full justify-center">
 				<div className="flex w-full max-w-[22rem]">
 					<AnimatePresence>
@@ -46,6 +46,6 @@ function MobileAppLayout() {
 			</div>
 
 			<MobileAppNav />
-		</TimerContext>
+		</TimerContextProvider>
 	);
 }

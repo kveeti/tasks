@@ -11,31 +11,22 @@ const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>
 
 export const useTimerContext = useContextInner;
 
-export function TimerContext(props: { children: ReactNode }) {
+export function TimerContextProvider(props: { children: ReactNode }) {
 	const contextValue = useContextValue();
 
 	return <Context.Provider value={contextValue}>{props.children}</Context.Provider>;
 }
 
 function useContextValue() {
+	const dbTags = useLiveQuery(() => db.tags.toArray());
 	const dbActiveTasks = useLiveQuery(async () => {
 		const now = new Date();
 
-		const dbTags = await db.tags.toArray();
-
 		const tasks = (
-			await db.tasks
-				.filter((task) => {
-					const condition = task.expires_at > now && !task.stopped_at;
-
-					console.log({ task, condition });
-
-					return condition;
-				})
-				.toArray()
+			await db.tasks.filter((task) => task.expires_at > now && !task.stopped_at).toArray()
 		).map((task) => ({
 			...task,
-			tag: dbTags.find((tag) => tag.id === task.tag_id)!,
+			tag: dbTags!.find((tag) => tag.id === task.tag_id)!,
 		}));
 
 		console.log({ tasks });
@@ -46,6 +37,8 @@ function useContextValue() {
 	const [activeTasks, setActiveTasks] = useState<ReturnType<typeof getTimes>>([]);
 	const [selectedTagId, setSelectedTagId] = useState<string>();
 
+	const selectedTag = dbTags?.find((tag) => tag.id === selectedTagId);
+
 	function updateTimes() {
 		if (dbActiveTasks) {
 			setActiveTasks(getTimes(dbActiveTasks));
@@ -53,7 +46,7 @@ function useContextValue() {
 	}
 
 	useEffect(updateTimes, [dbActiveTasks]);
-	useSetInterval(updateTimes, !!activeTasks.length ? 1000 : null);
+	useSetInterval(updateTimes, activeTasks.length ? 1000 : null);
 
 	useEffect(() => {
 		if (activeTasks.length) {
@@ -68,6 +61,8 @@ function useContextValue() {
 		selectedTagId,
 		setSelectedTagId,
 		selectedTagTime,
+		selectedTag,
+		dbTags,
 	};
 }
 
