@@ -22,6 +22,7 @@ export default {
 			},
 			colors: {
 				glassGray: "rgba(20, 20, 20, 0.2)",
+				gray: colors.neutral,
 			},
 			blur: {
 				glass: "16px",
