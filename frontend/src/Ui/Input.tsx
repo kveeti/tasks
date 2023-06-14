@@ -51,10 +51,10 @@ const InnerInput = forwardRef<HTMLInputElement, InputProps & { invalid?: boolean
 			<input
 				ref={ref}
 				className={cn(
-					"w-full rounded-xl border-2 px-2 py-3 outline-none outline-[3px] transition-[outline,_color,_background,_border] duration-200 focus-visible:outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2",
+					"w-full rounded-xl border px-2 py-3 outline-none outline-2 transition-[outline,_color,_background,_border] duration-200 focus-visible:outline",
 					invalid
 						? "border-red-400 bg-red-600 focus-visible:outline-red-400"
-						: "border-gray-800 bg-gray-900 focus-visible:outline-gray-700"
+						: "border-gray-600 bg-gray-800 focus-visible:outline-gray-500"
 				)}
 				{...rest}
 			/>
