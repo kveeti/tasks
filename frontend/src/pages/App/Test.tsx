@@ -1,11 +1,11 @@
 import { type AriaButtonProps, useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
+import { useLink } from "@react-aria/link";
 import { useMutation } from "@tanstack/react-query";
 import addSeconds from "date-fns/addSeconds";
-import { useLiveQuery } from "dexie-react-hooks";
 import { motion, useAnimation } from "framer-motion";
-import { type ComponentProps, useRef, useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { type ComponentProps, type ReactNode, useRef, useState } from "react";
+import { Outlet, Link as RRDLink, useLocation } from "react-router-dom";
 import { Minus, Plus } from "tabler-icons-react";
 
 import { Modal } from "@/Ui/Modal";
@@ -55,7 +55,7 @@ function TestInner() {
 
 				<div className="flex rounded-[30px] border border-gray-50/20 bg-glassGray p-2 backdrop-blur-glass">
 					{links.map((l) => (
-						<Link
+						<RRDLink
 							key={l.id}
 							to={l.href}
 							className="relative flex items-center justify-center rounded-full px-4 py-2"
@@ -72,7 +72,7 @@ function TestInner() {
 								/>
 							)}
 							<span className="relative">{l.label}</span>
-						</Link>
+						</RRDLink>
 					))}
 				</div>
 			</div>
@@ -82,9 +82,8 @@ function TestInner() {
 
 export function Index() {
 	const addTaskMutation = useAddTaskMutation();
-	const tags = useLiveQuery(() => db.tags.toArray());
 
-	const { selectedTagTime, selectedTag } = useTimerContext();
+	const { selectedTagTime, selectedTag, dbTags } = useTimerContext();
 
 	const [time, setTime] = useState(0);
 	const { minutes, seconds } = getMinutesAndSeconds(time);
@@ -140,10 +139,12 @@ export function Index() {
 				</Button>
 			</div>
 
-			{!selectedTag ? (
+			{!selectedTag && dbTags?.length ? (
 				<SelectTag />
 			) : isRunning ? null : (
-				<Link to={"/tags"}>Create a tag</Link>
+				<Link className="p-2" to={"/app/tags"}>
+					Create a tag
+				</Link>
 			)}
 
 			<Button
@@ -263,6 +264,64 @@ function Button(props: { className?: string } & AriaButtonProps) {
 			>
 				{props.children}
 			</motion.button>
+		</FocusRing>
+	);
+}
+
+const MotionRRDLink = motion(RRDLink);
+
+function Link(props: { children: ReactNode; to: string; className?: string }) {
+	const ref = useRef<HTMLLinkElement | null>(null);
+	const controls = useAnimation();
+
+	const aria = useLink(
+		{
+			onPressStart: () => {
+				controls.stop();
+				controls.set({
+					backgroundColor: "rgb(209 213 219 / 0.6)",
+					boxShadow:
+						"rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px",
+					y: 1,
+				});
+			},
+			onPressEnd: () => {
+				controls.start({
+					backgroundColor: "rgb(156 163 175 / 0.5)",
+					boxShadow: "rgba(0, 0, 0, 0.1) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
+					y: 0,
+				});
+			},
+			onPress: () => {
+				ref.current?.focus();
+				controls.start({
+					backgroundColor: "rgb(156 163 175 / 0.5)",
+					boxShadow: "rgba(0, 0, 0, 0.1) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px",
+					y: 0,
+				});
+			},
+			// @ts-expect-error undocumented prop
+			preventFocusOnPress: true,
+		},
+		ref
+	);
+
+	return (
+		<FocusRing>
+			{/* @ts-expect-error dont know how to fix this */}
+			<MotionRRDLink
+				{...aria.linkProps}
+				to={props.to}
+				ref={ref}
+				animate={controls}
+				transition={{ duration: 0.2 }}
+				className={cn(
+					"flex cursor-default select-none items-center justify-center gap-2 rounded-full bg-gray-400/50 px-4 shadow-up outline-none outline-2 outline-offset-2 backdrop-blur-[17.2px] transition-[outline,opacity] duration-200 disabled:opacity-40 disabled:shadow-none",
+					props.className
+				)}
+			>
+				{props.children}
+			</MotionRRDLink>
 		</FocusRing>
 	);
 }
