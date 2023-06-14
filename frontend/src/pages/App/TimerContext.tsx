@@ -29,8 +29,6 @@ function useContextValue() {
 			tag: dbTags!.find((tag) => tag.id === task.tag_id)!,
 		}));
 
-		console.log({ tasks });
-
 		return tasks;
 	});
 
