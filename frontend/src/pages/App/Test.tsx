@@ -54,7 +54,7 @@ function TestInner() {
 				</div>
 
 				<div className="h-full max-h-[500px] w-full max-w-[400px] rounded-[30px] border border-gray-800 bg-gray-900">
-					<AnimatePresence>
+					<AnimatePresence initial={false}>
 						<Outlet />
 					</AnimatePresence>
 				</div>
