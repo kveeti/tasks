@@ -31,8 +31,6 @@ export function CallbackPage() {
 
 		const timeouts: number[] = [];
 
-		console.log(verifyQuery.data);
-
 		if (verifyQuery.data) {
 			const timeSinceFirstRender = new Date().getTime() - firstRenderAtRef.current.getTime();
 			if (timeSinceFirstRender < 1000) {
@@ -127,7 +125,7 @@ function useVerifyCodeQuery(code: string | null) {
 
 function Card(props: { children: ReactNode; keey?: string }) {
 	return (
-		<div className="bg-gray-1000 mx-auto w-full max-w-[300px] rounded-xl border border-gray-800">
+		<div className="mx-auto w-full max-w-[300px] rounded-xl border border-gray-800 bg-gray-900">
 			<Resizeable>{props.children}</Resizeable>
 		</div>
 	);
