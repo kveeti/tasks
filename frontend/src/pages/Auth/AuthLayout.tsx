@@ -1,10 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useUserId } from "../../auth";
+
+import { useUser } from "@/auth";
 
 export function AuthLayout() {
-	const userId = useUserId();
+	const user = useUser();
 
-	if (userId) {
+	if (user) {
 		return <Navigate to="/app" />;
 	}
 

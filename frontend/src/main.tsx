@@ -5,12 +5,12 @@ import { Toaster } from "sonner";
 
 import { Entrypoint } from "./Entrypoint";
 import { ApiProvider } from "./api";
-import { UserIdProvider } from "./auth";
+import { UserCtxProvider } from "./auth";
 import "./main.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>
-		<UserIdProvider>
+		<UserCtxProvider>
 			<ApiProvider>
 				<Toaster richColors />
 
@@ -18,6 +18,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 					<Entrypoint />
 				</BrowserRouter>
 			</ApiProvider>
-		</UserIdProvider>
+		</UserCtxProvider>
 	</React.StrictMode>
 );

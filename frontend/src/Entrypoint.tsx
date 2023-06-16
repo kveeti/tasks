@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { registerSW } from "virtual:pwa-register";
 
-import { useUserId } from "./auth";
+import { useUser } from "./auth";
 
 const AuthenticatedApp = lazy(() =>
 	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))
@@ -12,9 +12,9 @@ const UnauthenticatedApp = lazy(() =>
 );
 
 export function Entrypoint() {
-	const userId = useUserId();
+	const user = useUser();
 
-	return userId ? <AuthenticatedApp /> : <UnauthenticatedApp />;
+	return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
 }
 
 if ("serviceWorker" in navigator) {

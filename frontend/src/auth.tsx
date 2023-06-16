@@ -1,14 +1,24 @@
-import { useState, type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { z } from "zod";
+
 import { createCtx } from "./utils/createContext";
+import { safeJsonParse } from "./utils/safeJsonParse";
+
+const userSchema = z.object({
+	id: z.string(),
+	email: z.string(),
+});
+
+export type User = z.infer<typeof userSchema>;
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
-export const useUserIdContext = useContextInner;
+export const useUserContext = useContextInner;
 
-export function useUserId() {
-	return useUserIdContext().userId!;
+export function useUser() {
+	return useUserContext().user!;
 }
 
-export function UserIdProvider(props: { children: ReactNode }) {
+export function UserCtxProvider(props: { children: ReactNode }) {
 	const contextValue = useContextValue();
 
 	return (
@@ -19,44 +29,44 @@ export function UserIdProvider(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const [_userId, _setUserId] = useState<string | null>(null);
+	const [_user, _setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	function checkUserId() {
-		const userId = localStorage.getItem("userId");
+	function setUser(user: User) {
+		localStorage.setItem("user", JSON.stringify(user));
+		_setUser(user);
+	}
 
-		if (userId) {
-			setUserId(userId);
+	function checkUser() {
+		const user = userSchema.safeParse(safeJsonParse(localStorage.getItem("user") ?? ""));
+
+		if (user.success) {
+			setUser(user.data);
 		} else {
-			_setUserId(null);
+			_setUser(null);
 			localStorage.clear();
 		}
 	}
 
-	function setUserId(userId: string) {
-		localStorage.setItem("userId", userId);
-		_setUserId(userId);
-	}
-
 	useEffect(() => {
 		setIsLoading(true);
-		checkUserId();
+		checkUser();
 		setIsLoading(false);
 
-		window.addEventListener("storage", checkUserId);
-		window.addEventListener("focus", checkUserId);
-		window.addEventListener("blur", checkUserId);
+		window.addEventListener("storage", checkUser);
+		window.addEventListener("focus", checkUser);
+		window.addEventListener("blur", checkUser);
 
 		return () => {
-			window.removeEventListener("storage", checkUserId);
-			window.removeEventListener("focus", checkUserId);
-			window.removeEventListener("blur", checkUserId);
+			window.removeEventListener("storage", checkUser);
+			window.removeEventListener("focus", checkUser);
+			window.removeEventListener("blur", checkUser);
 		};
 	}, []);
 
 	return {
-		userId: _userId,
-		setUserId,
 		isLoading,
+		user: _user,
+		setUser,
 	};
 }

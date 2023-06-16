@@ -6,7 +6,7 @@ import useMeasure from "react-use-measure";
 
 import { apiRequest } from "@/utils/api/apiRequest";
 
-import { useUserIdContext } from "../../auth";
+import { type User, useUserContext } from "../../auth";
 
 export function CallbackPage() {
 	const firstRenderAtRef = useRef(new Date());
@@ -15,7 +15,7 @@ export function CallbackPage() {
 
 	const code = searchParams.get("code");
 
-	const { setUserId } = useUserIdContext();
+	const { setUser } = useUserContext();
 
 	const verifyQuery = useVerifyCodeQuery(code);
 
@@ -43,7 +43,7 @@ export function CallbackPage() {
 				timeouts.push(
 					setTimeout(() => {
 						// Entrypoint.tsx will redirect to /app if userId is set
-						setUserId(verifyQuery.data.user_id);
+						setUser(verifyQuery.data);
 					}, 2000 - timeSinceFirstRender)
 				);
 			} else {
@@ -52,7 +52,7 @@ export function CallbackPage() {
 				timeouts.push(
 					setTimeout(() => {
 						// Entrypoint.tsx will redirect to /app if userId is set
-						setUserId(verifyQuery.data.user_id);
+						setUser(verifyQuery.data);
 					}, 1000)
 				);
 			}
@@ -108,7 +108,7 @@ function useVerifyCodeQuery(code: string | null) {
 	return useQuery(
 		["verify-code"],
 		() =>
-			apiRequest<{ user_id: string }>({
+			apiRequest<User>({
 				method: "GET",
 				...(isProd
 					? {

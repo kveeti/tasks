@@ -12,6 +12,7 @@ import colors from "tailwindcss/colors";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
+import { useUser } from "@/auth";
 import { type DbTask, db } from "@/db/db";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { cn } from "@/utils/classNames";
@@ -22,10 +23,10 @@ import { TimerContextProvider, useTimerContext } from "./TimerContext";
 import { WithAnimation } from "./WithAnimation";
 
 const links = [
-	{ id: "home", label: "Home", href: "/app" },
-	{ id: "stats", label: "Stats", href: "/app/stats" },
-	{ id: "tags", label: "Tags", href: "/app/tags" },
-	{ id: "settings", label: "Settings", href: "/app/settings" },
+	{ id: "home", label: "home", href: "/app" },
+	{ id: "stats", label: "stats", href: "/app/stats" },
+	{ id: "tags", label: "tags", href: "/app/tags" },
+	{ id: "settings", label: "settings", href: "/app/settings" },
 ];
 
 export function Test() {
@@ -37,6 +38,8 @@ export function Test() {
 }
 
 function TestInner() {
+	const user = useUser();
+
 	const location = useLocation();
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
@@ -44,11 +47,10 @@ function TestInner() {
 		<div className="fixed h-full w-full overflow-auto">
 			<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-1">
 				<div className="flex w-full max-w-[400px] items-center justify-between rounded-full border border-gray-800 bg-gray-900 p-2">
-					<h1 className="pl-2 text-lg font-bold">Tasks</h1>
+					<h1 className="pl-2 text-lg font-bold">tasks</h1>
 					<div className="flex items-center justify-center gap-2 rounded-full">
-						username
 						<div className="rounded-full border border-gray-50/20 bg-gray-400/70 px-4 py-2">
-							u
+							{user.email.charAt(0).toUpperCase()}
 						</div>
 					</div>
 				</div>
@@ -158,11 +160,11 @@ export function Index() {
 					</div>
 				</div>
 
-				{!selectedTag && dbTags?.length ? (
+				{dbTags?.length ? (
 					<SelectTag />
 				) : isRunning ? null : (
 					<LinkButton className="p-2" to={"/app/tags"}>
-						Create a tag
+						create a tag
 					</LinkButton>
 				)}
 
@@ -171,7 +173,7 @@ export function Index() {
 					isDisabled={isStartingDisabled}
 					className="px-[4rem] py-4"
 				>
-					Start
+					start
 				</Button>
 			</div>
 		</WithAnimation>
@@ -195,12 +197,12 @@ function SelectTag() {
 	return (
 		<>
 			<Button className="px-6 py-2" onPress={() => setIsOpen(true)}>
-				{selectedTag ? selectedTag.label : "Select a tag"}
+				{selectedTag ? selectedTag.label : "select a tag"}
 			</Button>
 
 			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
 				<div className="flex flex-col gap-4">
-					<h1 className="text-3xl font-bold">Select a tag</h1>
+					<h1 className="text-3xl font-bold">select a tag</h1>
 
 					<div className="flex w-full flex-col gap-2">
 						{dbTags?.map((tag) => (

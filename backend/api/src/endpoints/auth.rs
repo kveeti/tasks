@@ -12,7 +12,6 @@ use data::create_id;
 use entity::users::{self, Entity as UserEntity};
 use hyper::{header, HeaderMap, StatusCode};
 use sea_orm::{sea_query::OnConflict, EntityTrait};
-use serde_json::json;
 
 use crate::types::{ApiError, RequestContext};
 
@@ -37,6 +36,12 @@ struct AccessTokenResponseBody {
 
 #[derive(serde::Deserialize)]
 struct OAuthUserInfoResponseBody {
+    pub email: String,
+}
+
+#[derive(serde::Serialize)]
+struct AuthVerifyCodeResponseBody {
+    pub id: String,
     pub email: String,
 }
 
@@ -135,9 +140,10 @@ pub async fn auth_verify_code_endpoint(
     return Ok((
         StatusCode::OK,
         headers,
-        Json(json!({
-            "user_id": user.id,
-        })),
+        Json(AuthVerifyCodeResponseBody {
+            id: user.id,
+            email: user.email,
+        }),
     ));
 }
 
@@ -172,8 +178,9 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
     return Ok((
         StatusCode::OK,
         headers,
-        Json(json!({
-            "user_id": user.id,
-        })),
+        Json(AuthVerifyCodeResponseBody {
+            id: user.id,
+            email: user.email,
+        }),
     ));
 }
