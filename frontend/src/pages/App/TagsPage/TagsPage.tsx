@@ -1,23 +1,26 @@
-import { useMutation } from "@tanstack/react-query";
+import { useButton } from "@react-aria/button";
+import { FocusRing } from "@react-aria/focus";
+import type { AriaButtonProps } from "@react-types/button";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
+import colors from "tailwindcss/colors";
 
 import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { type DbTag, db } from "@/db/db";
-import { apiRequest } from "@/utils/api/apiRequest";
-import type { ApiTag } from "@/utils/api/types";
+import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
+import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
 import { WithAnimation } from "../WithAnimation";
 
 export function TagsPage() {
 	const dbTags = useLiveQuery(() => db.tags.toArray());
-
-	const [selectedTagId, setSelectedTagId] = useState<string>();
-	const selectedTag = dbTags?.find((tag) => tag.id === selectedTagId);
+	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
+	const [createdTag, setCreatedTag] = useState<DbTag | null>(null);
 
 	return (
 		<WithAnimation>
@@ -28,30 +31,29 @@ export function TagsPage() {
 					</div>
 
 					<div className="px-4 pt-4">
-						<NewTag />
+						<NewTag setCreatedTag={setCreatedTag} />
 					</div>
 				</div>
 
 				<div className="flex flex-col gap-2 p-4">
 					{dbTags?.map((tag) => (
-						<div className="rounded-lg bg-gray-950/60 p-4">{tag.label}</div>
+						<Tag
+							createdTag={createdTag?.id === tag.id}
+							onPress={() => setTagInEdit(tag)}
+						>
+							{tag.label}
+						</Tag>
 					))}
 				</div>
+
+				{tagInEdit && <EditTag tagInEdit={tagInEdit} setTagInEdit={setTagInEdit} />}
 			</div>
 		</WithAnimation>
 	);
 }
 
-function NewTag() {
+function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-
-	const addTagMutation = useMutation((newTag: ApiTag) =>
-		apiRequest({
-			method: "POST",
-			path: "/tags",
-			body: newTag,
-		})
-	);
 
 	const newTagForm = useForm({
 		defaultValues: {
@@ -65,32 +67,37 @@ function NewTag() {
 				updated_at: new Date(),
 			};
 
-			await Promise.all([
-				db.tags.add(newTag),
-				addTagMutation.mutateAsync({
-					...newTag,
-					updated_at: newTag.updated_at.toISOString(),
-					created_at: newTag.created_at.toISOString(),
-				}),
-			]);
+			await db.tags.add(newTag);
 
 			newTagForm.reset();
 			setIsModalOpen(false);
+			props.setCreatedTag(newTag);
 		},
 	});
+
+	useEffect(() => {
+		(async () => {
+			const createTagParam = new URLSearchParams(window.location.search).get("create_tag");
+
+			if (createTagParam) {
+				setIsModalOpen(true);
+				window.history.replaceState({}, "", window.location.pathname);
+			}
+		})();
+	}, []);
 
 	return (
 		<>
 			<Button className="px-4 py-1" onPress={() => setIsModalOpen(true)}>
-				New tag
+				new tag
 			</Button>
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<newTagForm.Form className="flex h-full w-full flex-col justify-between gap-4">
-					<h1 className="text-3xl font-bold">Create a tag</h1>
+					<h1 className="text-3xl font-bold">create a tag</h1>
 
 					<div className="flex flex-col gap-2">
-						<Input label="Label" {...newTagForm.register("label")} />
+						<Input label="label" {...newTagForm.register("label")} />
 					</div>
 
 					<div className="flex w-full gap-2">
@@ -99,14 +106,113 @@ function NewTag() {
 							className="flex-1 p-4"
 							isSecondary
 						>
-							Cancel
+							cancel
 						</Button>
 						<Button className="flex-1 p-4" type="submit">
-							Create
+							create
 						</Button>
 					</div>
 				</newTagForm.Form>
 			</Modal>
 		</>
+	);
+}
+
+function EditTag(props: { tagInEdit: DbTag; setTagInEdit: (tag: DbTag | null) => void }) {
+	const editTagForm = useForm({
+		defaultValues: {
+			label: props.tagInEdit.label,
+		},
+		onSubmit: async (values) => {
+			const newTag: DbTag = {
+				...props.tagInEdit,
+				label: values.label,
+				updated_at: new Date(),
+			};
+
+			await db.tags.put(newTag);
+			editTagForm.reset();
+			props.setTagInEdit(null);
+		},
+	});
+
+	return (
+		<Modal isOpen={true} onClose={() => props.setTagInEdit(null)}>
+			<editTagForm.Form className="flex h-full w-full flex-col justify-between gap-4">
+				<h1 className="text-3xl font-bold">edit tag</h1>
+
+				<div className="flex flex-col gap-2">
+					<Input label="label" {...editTagForm.register("label")} />
+				</div>
+
+				<div className="flex w-full gap-2">
+					<Button
+						onPress={() => props.setTagInEdit(null)}
+						className="flex-1 p-4"
+						isSecondary
+					>
+						cancel
+					</Button>
+					<Button className="flex-1 p-4" type="submit">
+						save
+					</Button>
+				</div>
+			</editTagForm.Form>
+		</Modal>
+	);
+}
+
+function Tag(props: ComponentProps<"button"> & AriaButtonProps & { createdTag: boolean }) {
+	const ref = useRef<HTMLButtonElement | null>(null);
+	const controls = useAnimation();
+
+	const aria = useButton(
+		{
+			...props,
+			onPress: async (e) => {
+				controls.set({ backgroundColor: colors.neutral[800] });
+
+				controls.start({
+					backgroundColor: "rgb(10 10 10 / 0.5)",
+					transition: { duration: 0.3 },
+				});
+
+				await sleep(100);
+
+				props.onPress?.(e);
+			},
+			// @ts-expect-error undocumented prop
+			preventFocusOnPress: true,
+		},
+		ref
+	);
+
+	useEffect(() => {
+		if (!props.createdTag) return;
+
+		controls.set({ backgroundColor: colors.neutral[700] });
+
+		controls.start({
+			backgroundColor: "rgb(10 10 10 / 0.5)",
+			transition: { duration: 0.5 },
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	return (
+		<FocusRing focusRingClass="outline-gray-300">
+			{/* @ts-expect-error dont know how to fix this */}
+			<motion.button
+				{...aria.buttonProps}
+				ref={ref}
+				animate={controls}
+				className={cn(
+					"w-full cursor-default rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
+					props.className
+				)}
+			>
+				{props.children}
+			</motion.button>
+		</FocusRing>
 	);
 }

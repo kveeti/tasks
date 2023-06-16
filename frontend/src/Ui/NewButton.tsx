@@ -15,6 +15,7 @@ export function Button(props: { className?: string; isSecondary?: boolean } & Ar
 
 	const aria = useButton(
 		{
+			...props,
 			onPressStart: (e) => {
 				props.onPressStart?.(e);
 				controls.stop();
@@ -27,15 +28,14 @@ export function Button(props: { className?: string; isSecondary?: boolean } & Ar
 					transition: { duration: 0.4 },
 				});
 			},
-			onPress: (e) => {
+			onPress: async (e) => {
 				ref.current?.focus();
-				props.onPress?.(e);
 				controls.start({
 					backgroundColor: baseColor,
 					transition: { duration: 0.4 },
 				});
+				props.onPress?.(e);
 			},
-			...props,
 			// @ts-expect-error undocumented prop
 			preventFocusOnPress: true,
 		},

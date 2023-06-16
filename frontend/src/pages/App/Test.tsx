@@ -89,8 +89,6 @@ function TestInner() {
 }
 
 export function Index() {
-	const addTaskMutation = useAddTaskMutation();
-
 	const { selectedTagTime, selectedTag, dbTags } = useTimerContext();
 
 	const [time, setTime] = useState(0);
@@ -127,7 +125,7 @@ export function Index() {
 			stopped_at: null,
 		};
 
-		await Promise.all([db.tasks.add(task), addTaskMutation.mutateAsync(task)]);
+		await db.tasks.add(task);
 	}
 
 	return (
@@ -163,7 +161,7 @@ export function Index() {
 				{dbTags?.length ? (
 					<SelectTag />
 				) : isRunning ? null : (
-					<LinkButton className="p-2" to={"/app/tags"}>
+					<LinkButton className="p-2" to={"/app/tags?create_tag=1"}>
 						create a tag
 					</LinkButton>
 				)}
@@ -177,16 +175,6 @@ export function Index() {
 				</Button>
 			</div>
 		</WithAnimation>
-	);
-}
-
-function useAddTaskMutation() {
-	return useMutation((body: DbTask) =>
-		apiRequest<void>({
-			method: "POST",
-			path: "/tasks",
-			body,
-		})
 	);
 }
 
