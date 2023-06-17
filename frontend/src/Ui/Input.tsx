@@ -19,7 +19,13 @@ export const Input = forwardRef<HTMLInputElement, Props>(
 		const innerId = useId();
 
 		if (!label)
-			return <InnerInput ref={ref} required={required} id={id ?? innerId} {...rest} />;
+			return (
+				<div className="flex flex-col">
+					<InnerInput ref={ref} required={required} id={id ?? innerId} {...rest} />
+
+					<Error message={error} />
+				</div>
+			);
 
 		const hasError = !!error;
 
@@ -49,14 +55,14 @@ const InnerInput = forwardRef<HTMLInputElement, InputProps & { invalid?: boolean
 	({ invalid, ...rest }, ref) => {
 		return (
 			<input
+				{...rest}
 				ref={ref}
 				className={cn(
 					"w-full rounded-xl border px-2 py-3 outline-none outline-2 transition-[outline,_color,_background,_border] duration-200 focus-visible:outline",
 					invalid
-						? "border-red-400 bg-red-600 focus-visible:outline-red-400"
+						? "border-red-600 bg-red-900 focus-visible:outline-red-500"
 						: "border-gray-600 bg-gray-800 focus-visible:outline-gray-500"
 				)}
-				{...rest}
 			/>
 		);
 	}

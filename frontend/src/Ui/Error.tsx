@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
+import { XCircle } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/utils/classNames";
@@ -20,10 +20,10 @@ export const Error = ({ message, htmlFor, className }: Props) => {
 					initial={{ opacity: 0, height: 0 }}
 					animate={{ opacity: 1, height: "auto", transition: { duration: 0.15 } }}
 					exit={{ opacity: 0, height: 0, transition: { duration: 0.15 } }}
-					className={cn(className, "text-[15px] font-medium text-red-400")}
+					className={cn(className, "text-[15px] font-medium leading-[1] text-red-400")}
 				>
 					<label htmlFor={htmlFor} className="flex items-center gap-1 pt-2">
-						<ExclamationTriangleIcon /> {message}
+						<XCircle strokeWidth={1} className="h-[1.2rem] w-[1.2rem]" /> {message}
 					</label>
 				</motion.span>
 			)}
