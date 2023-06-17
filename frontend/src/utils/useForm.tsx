@@ -10,18 +10,14 @@ export function useForm<TFieldValues extends FieldValues = FieldValues>(
 ) {
 	const { onSubmit, ...restProps } = props;
 
-	const inner_onSubmit = (values: TFieldValues) => {
-		onSubmit(values);
-	};
-
 	const { handleSubmit: RHF_form_handleSubmit, ...restOfForm } =
 		RHF_useForm<TFieldValues>(restProps);
 
 	return {
 		...restOfForm,
-		handleSubmit: RHF_form_handleSubmit(inner_onSubmit),
+		handleSubmit: RHF_form_handleSubmit(onSubmit),
 		Form: ({ children, ...rest }: Omit<ComponentProps<"form">, "onSubmit">) => (
-			<form onSubmit={RHF_form_handleSubmit(inner_onSubmit)} {...rest}>
+			<form onSubmit={RHF_form_handleSubmit(onSubmit)} {...rest}>
 				{children}
 			</form>
 		),

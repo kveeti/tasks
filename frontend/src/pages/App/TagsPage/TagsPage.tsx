@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
 import type { AriaButtonProps } from "@react-types/button";
@@ -5,6 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import colors from "tailwindcss/colors";
+import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
@@ -18,7 +20,9 @@ import { useForm } from "@/utils/useForm";
 import { WithAnimation } from "../WithAnimation";
 
 export function TagsPage() {
-	const dbTags = useLiveQuery(() => db.tags.toArray());
+	const dbTags = useLiveQuery(() => db.tags.toArray())?.sort(
+		(a, b) => +b.created_at - +a.created_at
+	);
 	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
 	const [createdTag, setCreatedTag] = useState<DbTag | null>(null);
 
@@ -35,18 +39,30 @@ export function TagsPage() {
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-2 p-4">
-					{dbTags?.map((tag) => (
-						<Tag
-							createdTag={createdTag?.id === tag.id}
-							onPress={() => setTagInEdit(tag)}
-						>
-							{tag.label}
-						</Tag>
-					))}
+				<div className="flex flex-col gap-2 overflow-auto p-4">
+					<AnimatePresence initial={false}>
+						{dbTags?.map((tag) => (
+							<motion.div
+								key={tag.id}
+								initial={{ opacity: 0, height: 0 }}
+								animate={{ opacity: 1, height: "auto" }}
+								exit={{ opacity: 0, height: 0 }}
+							>
+								<Tag
+									key={tag.id}
+									createdTag={createdTag?.id === tag.id}
+									onPress={() => setTagInEdit(tag)}
+								>
+									{tag.label}
+								</Tag>
+							</motion.div>
+						))}
+					</AnimatePresence>
 				</div>
 
-				{tagInEdit && <EditTag tagInEdit={tagInEdit} setTagInEdit={setTagInEdit} />}
+				{tagInEdit && (
+					<EditTag tagInEdit={tagInEdit} setTagInEdit={setTagInEdit} dbTags={dbTags} />
+				)}
 			</div>
 		</WithAnimation>
 	);
@@ -56,6 +72,11 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const newTagForm = useForm({
+		resolver: zodResolver(
+			z.object({
+				label: z.string().nonempty(),
+			})
+		),
 		defaultValues: {
 			label: "",
 		},
@@ -93,7 +114,10 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 			</Button>
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-				<newTagForm.Form className="flex h-full w-full flex-col justify-between gap-4">
+				<form
+					onSubmit={newTagForm.handleSubmit}
+					className="flex h-full w-full flex-col justify-between gap-4"
+				>
 					<h1 className="text-3xl font-bold">create a tag</h1>
 
 					<div className="flex flex-col gap-2">
@@ -112,17 +136,33 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 							create
 						</Button>
 					</div>
-				</newTagForm.Form>
+				</form>
 			</Modal>
 		</>
 	);
 }
 
-function EditTag(props: { tagInEdit: DbTag; setTagInEdit: (tag: DbTag | null) => void }) {
+function EditTag(props: {
+	tagInEdit: DbTag;
+	setTagInEdit: (tag: DbTag | null) => void;
+	dbTags?: DbTag[];
+}) {
 	const editTagForm = useForm({
-		defaultValues: {
-			label: props.tagInEdit.label,
-		},
+		resolver: zodResolver(
+			z.object({
+				label: z
+					.string()
+					.min(2, { message: "too short! must be at least 2 chars" })
+					.refine(
+						(label) =>
+							!props.dbTags?.some(
+								(tag) => tag.label === label && tag.id !== props.tagInEdit.id
+							),
+						"label in use! two tags can't have the same label"
+					),
+			})
+		),
+		defaultValues: { label: props.tagInEdit.label },
 		onSubmit: async (values) => {
 			const newTag: DbTag = {
 				...props.tagInEdit,
@@ -138,12 +178,17 @@ function EditTag(props: { tagInEdit: DbTag; setTagInEdit: (tag: DbTag | null) =>
 
 	return (
 		<Modal isOpen={true} onClose={() => props.setTagInEdit(null)}>
-			<editTagForm.Form className="flex h-full w-full flex-col justify-between gap-4">
+			<form
+				onSubmit={editTagForm.handleSubmit}
+				className="flex h-full w-full flex-col justify-between gap-4"
+			>
 				<h1 className="text-3xl font-bold">edit tag</h1>
 
-				<div className="flex flex-col gap-2">
-					<Input label="label" {...editTagForm.register("label")} />
-				</div>
+				<Input
+					label="label"
+					error={editTagForm.formState.errors.label?.message}
+					{...editTagForm.register("label")}
+				/>
 
 				<div className="flex w-full gap-2">
 					<Button
@@ -157,7 +202,7 @@ function EditTag(props: { tagInEdit: DbTag; setTagInEdit: (tag: DbTag | null) =>
 						save
 					</Button>
 				</div>
-			</editTagForm.Form>
+			</form>
 		</Modal>
 	);
 }
@@ -174,7 +219,7 @@ function Tag(props: ComponentProps<"button"> & AriaButtonProps & { createdTag: b
 
 				controls.start({
 					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.3 },
+					transition: { duration: 0.4 },
 				});
 
 				await sleep(100);
