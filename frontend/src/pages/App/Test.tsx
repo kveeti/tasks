@@ -15,6 +15,7 @@ import { db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { getMinutesAndSeconds } from "@/utils/formatSeconds";
+import { sleep } from "@/utils/sleep";
 
 import { TimerContextProvider, useTimerContext } from "./TimerContext";
 import { WithAnimation } from "./WithAnimation";
@@ -224,10 +225,12 @@ function Tag(props: ComponentProps<"button"> & AriaButtonProps) {
 			onPress: async (e) => {
 				controls.set({ backgroundColor: colors.neutral[800] });
 
-				await controls.start({
+				controls.start({
 					backgroundColor: "rgb(10 10 10 / 0.5)",
 					transition: { duration: 0.3 },
 				});
+
+				await sleep(200);
 
 				props.onPress?.(e);
 			},
