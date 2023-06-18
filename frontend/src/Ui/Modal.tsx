@@ -30,7 +30,7 @@ export function Modal(props: Props) {
 							leaveFrom="opacity-100 scale-100"
 							leaveTo="opacity-0 scale-95"
 						>
-							<Dialog.Panel className="h-full max-h-[300px] w-full max-w-md transform overflow-auto rounded-[25px] border border-gray-800 bg-gray-900 p-5 shadow-2xl transition-all">
+							<Dialog.Panel className="h-full max-h-[500px] w-full max-w-[420px] transform overflow-auto rounded-[25px] border border-gray-800 bg-gray-900 p-5 shadow-2xl transition-all">
 								{props.children}
 							</Dialog.Panel>
 						</Transition.Child>
