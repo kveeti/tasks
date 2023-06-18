@@ -9,6 +9,7 @@ pub struct Model {
     pub id: String,
     pub user_id: String,
     pub label: String,
+    pub color: String,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
     pub og_created_at: DateTimeWithTimeZone,

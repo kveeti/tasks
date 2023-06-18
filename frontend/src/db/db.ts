@@ -12,6 +12,7 @@ export type DbTask = {
 export type DbTag = {
 	id: string;
 	label: string;
+	color: string;
 	created_at: Date;
 	updated_at: Date;
 };
