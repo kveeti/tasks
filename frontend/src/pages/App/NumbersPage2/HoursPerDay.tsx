@@ -45,14 +45,14 @@ export function Chart(props: { width: number; height: number; selectedDate: Date
 						(!!t.stopped_at || !!t.expires_at)
 				)
 				.toArray(),
-		[]
+		[props.selectedDate]
 	);
 
 	if (!dbTasks?.length) {
-		return <div>No data</div>;
+		return <div>no data</div>;
 	}
 
-	const data2 = eachDayOfInterval({
+	const data = eachDayOfInterval({
 		start: startOfMonthSelectedDate,
 		end: endOfMonthSelectedDate,
 	}).reduce((acc, cur) => {
@@ -74,7 +74,7 @@ export function Chart(props: { width: number; height: number; selectedDate: Date
 		return acc;
 	}, [] as { date: Date; dateLabel: string; hours: number }[]);
 
-	const dates = data2.map((d) => d.date);
+	const dates = data.map((d) => d.date);
 
 	const datesToShow = [
 		dates.at(0),
@@ -96,7 +96,7 @@ export function Chart(props: { width: number; height: number; selectedDate: Date
 		.domain([startOfMonth(new Date()), endOfMonth(new Date())])
 		.range([margin.left, props.width - margin.right]);
 
-	const yMax = d3.max(data2, (d) => d.hours) ?? 0;
+	const yMax = d3.max(data, (d) => d.hours) ?? 0;
 
 	const y = d3
 		.scaleLinear()
@@ -138,12 +138,12 @@ export function Chart(props: { width: number; height: number; selectedDate: Date
 			))}
 
 			{/* Bars */}
-			{data2.map((d, i) => (
+			{data.map((d, i) => (
 				<Fragment key={i}>
 					<rect
 						x={x(d.date)}
 						y={y(d.hours)}
-						width={(props.width - 15) / data2.length - 3 ?? 0}
+						width={(props.width - 15) / data.length - 3 ?? 0}
 						height={y(0) - y(d.hours)}
 						rx={2.5}
 						fill="currentColor"
