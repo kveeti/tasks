@@ -1,4 +1,3 @@
-import { type ComponentProps } from "react";
 import { type FieldValues, useForm as RHF_useForm, type UseFormProps } from "react-hook-form";
 
 type Props<TFieldValues extends FieldValues = FieldValues> = {
@@ -16,10 +15,9 @@ export function useForm<TFieldValues extends FieldValues = FieldValues>(
 	return {
 		...restOfForm,
 		handleSubmit: RHF_form_handleSubmit(onSubmit),
-		Form: ({ children, ...rest }: Omit<ComponentProps<"form">, "onSubmit">) => (
-			<form onSubmit={RHF_form_handleSubmit(onSubmit)} {...rest}>
-				{children}
-			</form>
-		),
 	};
 }
+
+export type UseFormReturn<TFieldValues extends FieldValues = FieldValues> = ReturnType<
+	typeof useForm<TFieldValues>
+>;
