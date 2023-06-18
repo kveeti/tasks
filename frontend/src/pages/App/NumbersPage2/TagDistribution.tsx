@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 import differenceInSeconds from "date-fns/differenceInSeconds";
+import endOfMonth from "date-fns/endOfMonth";
 import secondsToHours from "date-fns/secondsToHours";
+import startOfMonth from "date-fns/startOfMonth";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Fragment } from "react";
 import useMeasure from "react-use-measure";
@@ -12,36 +14,21 @@ export function TagDistributionChart(props: { selectedDate: Date }) {
 
 	const data = useData(props.selectedDate);
 
-	const color = getColor(data.map((d) => d.tag.label));
-
 	return (
 		<>
 			<h2 className="text-lg font-bold">tag distribution</h2>
 
 			<div className="my-2 border-b border-b-gray-800/70" />
 
-			<div ref={ref} className="h-[200px] p-2">
-				<Chart data={data} width={bounds.width} height={bounds.height} />
+			<div ref={ref} className="h-[200px]">
+				{data.length ? (
+					<Chart data={data} width={bounds.width} height={bounds.height} />
+				) : (
+					<span>no data</span>
+				)}
 			</div>
 
-			<div className="flex flex-col divide-y divide-solid divide-gray-800/70 text-sm">
-				{data.map((d, i) => (
-					<div key={i} className="flex items-center gap-2 py-2">
-						<div
-							className="h-3 w-3 rounded-full"
-							style={{ backgroundColor: color(d.tag.label) }}
-						/>
-						<div className="flex w-full justify-between gap-2">
-							<span>{d.tag.label}</span>
-
-							<div className="flex gap-8">
-								<span>{d.percentage}%</span>
-								<span>{secondsToHours(d.seconds)} h</span>
-							</div>
-						</div>
-					</div>
-				))}
-			</div>
+			<Labels data={data} />
 		</>
 	);
 }
@@ -89,13 +76,57 @@ function Chart(props: { data: Data; width: number; height: number }) {
 	);
 }
 
+function Labels(props: { data: Data }) {
+	if (!props.data.length) return null;
+
+	const color = getColor(props.data.map((d) => d.tag.label));
+
+	return (
+		<div className="flex flex-col divide-y divide-solid divide-gray-800/70 text-sm">
+			{props.data.map((d, i) => (
+				<div key={i} className="flex items-center gap-2 py-2">
+					<div
+						className="h-3 w-3 rounded-full"
+						style={{ backgroundColor: color(d.tag.label) }}
+					/>
+					<div className="flex w-full justify-between gap-2">
+						<span>{d.tag.label}</span>
+
+						<div className="flex gap-8">
+							<span>{d.percentage}%</span>
+							<span>{secondsToHours(d.seconds)} h</span>
+						</div>
+					</div>
+				</div>
+			))}
+		</div>
+	);
+}
+
 function useData(selectedDate: Date) {
-	const dbTasks = useLiveQuery(() => db.tasks.toArray(), []);
-	const dbTags = useLiveQuery(() => db.tags.toArray(), []);
+	const startOfMonthSelectedDate = startOfMonth(selectedDate);
+	const endOfMonthSelectedDate = endOfMonth(selectedDate);
+
+	const dbTasks = useLiveQuery(
+		() =>
+			db.tasks
+				.filter(
+					(t) =>
+						t.created_at >= startOfMonthSelectedDate &&
+						t.created_at <= endOfMonthSelectedDate &&
+						(!!t.stopped_at || !!t.expires_at)
+				)
+				.toArray(),
+		[selectedDate]
+	);
+
+	const dbTags = useLiveQuery(() => db.tags.toArray(), [dbTasks]);
 	const dbTasksWith = dbTasks?.map((task) => ({
 		...task,
 		seconds: differenceInSeconds(task.stopped_at ?? task.expires_at, task.created_at),
 	}));
+
+	if (!dbTasks?.length) return [];
 
 	const totalSeconds = dbTasksWith?.reduce((acc, cur) => acc + cur.seconds, 0) || 0;
 
