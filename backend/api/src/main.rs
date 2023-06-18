@@ -112,9 +112,6 @@ async fn main() {
                         latency,
                         response.status()
                     );
-                })
-                .on_request(|request: &Request<Body>, _span: &Span| {
-                    tracing::info!("request: {:?}", request);
                 }),
         )
         .layer(cors);
