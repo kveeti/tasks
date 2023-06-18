@@ -25,7 +25,7 @@ export function NumbersPage() {
 						<Card.Body className="h-[8rem]">
 							{status !== "data" ? (
 								<div className="flex h-full w-full items-center justify-center">
-									{status === "loading" ? "Loading..." : "No data"}
+									{status === "loading" ? "Loading..." : "no data"}
 								</div>
 							) : (
 								<HoursPerDayChart
@@ -40,7 +40,7 @@ export function NumbersPage() {
 						<Card.Body className="h-[14rem] p-2">
 							{status !== "data" ? (
 								<div className="flex h-full w-full items-center justify-center">
-									{status === "loading" ? "Loading..." : "No data"}
+									{status === "loading" ? "Loading..." : "no data"}
 								</div>
 							) : (
 								<TagDistributionChart data={data.tagDistributionData} />
