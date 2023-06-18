@@ -41,18 +41,9 @@ function TestInner() {
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
 	return (
-		<div className="fixed h-full w-full overflow-auto">
+		<div className="fixed h-full w-full">
 			<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-1">
-				<div className="flex w-full max-w-[400px] items-center justify-between rounded-full border border-gray-800 bg-gray-900 p-2">
-					<h1 className="pl-2 text-lg font-bold">tasks</h1>
-					<div className="flex items-center justify-center gap-2 rounded-full">
-						<div className="rounded-full border border-gray-50/20 bg-gray-400/70 px-4 py-2">
-							{user.email.charAt(0).toUpperCase()}
-						</div>
-					</div>
-				</div>
-
-				<div className="h-full max-h-[500px] w-full max-w-[400px] rounded-[30px] border border-gray-800 bg-gray-900">
+				<div className="h-full max-h-[500px] w-full max-w-[400px] overflow-hidden rounded-3xl border border-gray-800 bg-gray-900">
 					<AnimatePresence initial={false}>
 						<Outlet />
 					</AnimatePresence>
@@ -125,6 +116,15 @@ export function Index() {
 		await db.tasks.add(task);
 	}
 
+	function stopTimer() {
+		if (!selectedTagTime) return;
+
+		db.tasks.update(selectedTagTime.id, {
+			stopped_at: new Date(),
+			updated_at: new Date(),
+		});
+	}
+
 	return (
 		<WithAnimation>
 			<div className="flex h-full w-full flex-col items-center justify-center gap-8">
@@ -163,13 +163,19 @@ export function Index() {
 					</LinkButton>
 				)}
 
-				<Button
-					onPress={() => startTimer()}
-					isDisabled={isStartingDisabled}
-					className="px-[4rem] py-4"
-				>
-					start
-				</Button>
+				{isRunning ? (
+					<Button onPress={() => stopTimer()} className="px-[4rem] py-4">
+						stop
+					</Button>
+				) : (
+					<Button
+						onPress={() => startTimer()}
+						isDisabled={isStartingDisabled}
+						className="px-[4rem] py-4"
+					>
+						start
+					</Button>
+				)}
 			</div>
 		</WithAnimation>
 	);

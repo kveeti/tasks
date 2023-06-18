@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useDevActions } from "./App/DevActions";
+import { NumbersPage } from "./App/NumbersPage2/NumbersPage2";
 import { TagsPage } from "./App/TagsPage/TagsPage";
 import { Index, Test } from "./App/Test";
 
@@ -18,7 +19,7 @@ export function AuthenticatedApp() {
 			<Routes>
 				<Route path="/app" element={<Test />}>
 					<Route index element={<Index />} />
-					<Route path="stats" element={<div />} />
+					<Route path="stats" element={<NumbersPage />} />
 					<Route path="tags" element={<TagsPage />} />
 					<Route path="settings" element={<div />} />
 				</Route>
