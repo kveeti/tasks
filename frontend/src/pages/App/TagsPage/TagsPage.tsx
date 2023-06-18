@@ -4,11 +4,14 @@ import { FocusRing } from "@react-aria/focus";
 import type { AriaButtonProps } from "@react-types/button";
 import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { LucidePlusCircle, Mail, Plus, PlusCircle } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import colors from "tailwindcss/colors";
 import { z } from "zod";
 
+import { Error } from "@/Ui/Error";
 import { Input } from "@/Ui/Input";
+import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { type DbTag, db } from "@/db/db";
@@ -18,6 +21,7 @@ import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
 import { WithAnimation } from "../WithAnimation";
+import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
 
 export function TagsPage() {
 	const dbTags = useLiveQuery(() => db.tags.toArray())?.sort(
@@ -68,22 +72,25 @@ export function TagsPage() {
 	);
 }
 
+const newTagFormSchema = z.object({
+	label: z.string().nonempty(),
+	color: zodTagColors,
+});
+
 function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	const newTagForm = useForm({
-		resolver: zodResolver(
-			z.object({
-				label: z.string().nonempty(),
-			})
-		),
+	const newTagForm = useForm<z.infer<typeof newTagFormSchema>>({
+		resolver: zodResolver(newTagFormSchema),
 		defaultValues: {
 			label: "",
+			color: tagColors.at(2),
 		},
 		onSubmit: async (values) => {
 			const newTag: DbTag = {
 				id: createId(),
 				label: values.label,
+				color: values.color,
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -109,8 +116,8 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 
 	return (
 		<>
-			<Button className="px-4 py-1" onPress={() => setIsModalOpen(true)}>
-				new tag
+			<Button className="rounded-full p-2" onPress={() => setIsModalOpen(true)}>
+				<Plus className="h-4 w-4" />
 			</Button>
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -118,13 +125,19 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 					onSubmit={newTagForm.handleSubmit}
 					className="flex h-full w-full flex-col justify-between gap-4"
 				>
-					<h1 className="text-3xl font-bold">create a tag</h1>
+					<h1 className="text-2xl font-bold">create a tag</h1>
 
-					<div className="flex flex-col gap-2">
-						<Input label="label" {...newTagForm.register("label")} />
+					<Input label="label" required {...newTagForm.register("label")} />
+
+					<div className="flex flex-col">
+						<Label required>color</Label>
+
+						<ColorSelector form={newTagForm} />
+
+						<Error message={newTagForm.formState.errors.color?.message} />
 					</div>
 
-					<div className="flex w-full gap-2">
+					<div className="flex w-full gap-2 pt-2">
 						<Button
 							onPress={() => setIsModalOpen(false)}
 							className="flex-1 p-4"
@@ -221,8 +234,6 @@ function Tag(props: ComponentProps<"button"> & AriaButtonProps & { createdTag: b
 					backgroundColor: "rgb(10 10 10 / 0.5)",
 					transition: { duration: 0.4 },
 				});
-
-				await sleep(100);
 
 				props.onPress?.(e);
 			},
