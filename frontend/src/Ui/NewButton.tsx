@@ -5,8 +5,6 @@ import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import colors from "tailwindcss/colors";
 
-import { cn } from "@/utils/classNames";
-
 export function Button(props: { className?: string; isSecondary?: boolean } & AriaButtonProps) {
 	const ref = useRef<HTMLButtonElement | null>(null);
 	const controls = useAnimation();
