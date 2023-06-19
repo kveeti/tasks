@@ -24,14 +24,17 @@ pub struct SyncEndpointTask {
     pub stopped_at: Option<DateTimeWithTimeZone>,
     pub updated_at: DateTimeWithTimeZone,
     pub expires_at: DateTimeWithTimeZone,
+    pub deleted_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointTag {
     pub id: String,
     pub label: String,
+    pub color: String,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
+    pub deleted_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -49,13 +52,18 @@ pub async fn sync_endpoint(
     if body.tags.len() > 0 {
         tracing::info!("Upserting {} tags", body.tasks.len());
 
-        TagsEntity::insert_many(body.tags.into_iter().map(|task| tags::ActiveModel {
-            id: ActiveValue::Set(task.id),
+        TagsEntity::insert_many(body.tags.into_iter().map(|tag| tags::ActiveModel {
+            id: ActiveValue::Set(tag.id),
             user_id: ActiveValue::Set(user_id.to_owned()),
-            label: ActiveValue::Set(task.label),
+            label: ActiveValue::Set(tag.label),
+            color: ActiveValue::Set(tag.color.to_owned()),
             created_at: ActiveValue::Set(chrono::Utc::now().into()),
-            updated_at: ActiveValue::Set(task.updated_at),
-            og_created_at: ActiveValue::Set(task.created_at),
+            updated_at: ActiveValue::Set(tag.updated_at),
+            deleted_at: match tag.deleted_at {
+                Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
+                None => ActiveValue::NotSet,
+            },
+            og_created_at: ActiveValue::Set(tag.created_at),
         }))
         .on_conflict(
             OnConflict::column(tasks::Column::Id)
@@ -81,6 +89,10 @@ pub async fn sync_endpoint(
             },
             expires_at: ActiveValue::Set(task.expires_at),
             updated_at: ActiveValue::Set(task.updated_at),
+            deleted_at: match task.deleted_at {
+                Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
+                None => ActiveValue::NotSet,
+            },
             og_created_at: ActiveValue::Set(task.created_at),
         }))
         .on_conflict(
@@ -125,8 +137,10 @@ pub async fn sync_endpoint(
             "tags": tags_out_of_date_on_client.into_iter().map(|tag| SyncEndpointTag {
                 id: tag.id,
                 label: tag.label,
+                color: tag.color,
                 created_at: tag.og_created_at,
                 updated_at: tag.updated_at,
+                deleted_at: tag.deleted_at,
             }).collect::<Vec<_>>(),
             "tasks": tasks_out_of_date_on_client .into_iter().map(|task| SyncEndpointTask {
                 id: task.id,
@@ -135,6 +149,7 @@ pub async fn sync_endpoint(
                 stopped_at: task.stopped_at,
                 expires_at: task.expires_at,
                 updated_at: task.updated_at,
+                deleted_at: task.deleted_at,
             }).collect::<Vec<_>>(),
         })),
     ));

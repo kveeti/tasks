@@ -40,6 +40,7 @@ export function Chart(props: { width: number; height: number; selectedDate: Date
 			db.tasks
 				.filter(
 					(t) =>
+						!t.deleted_at &&
 						t.created_at >= startOfMonthSelectedDate &&
 						t.created_at <= endOfMonthSelectedDate &&
 						(!!t.stopped_at || !!t.expires_at)

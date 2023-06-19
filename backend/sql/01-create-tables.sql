@@ -11,6 +11,7 @@ CREATE TABLE "tags" (
     "color" VARCHAR(7) NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "deleted_at" TIMESTAMP WITH TIME ZONE,
     "og_created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
@@ -22,6 +23,7 @@ CREATE TABLE "tasks" (
     "stopped_at" TIMESTAMP WITH TIME ZONE,
     "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL,
     "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "deleted_at" TIMESTAMP WITH TIME ZONE,
     "og_created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 

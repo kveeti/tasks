@@ -45,6 +45,7 @@ export function useSyncing() {
 					...t,
 					created_at: new Date(t.created_at),
 					updated_at: new Date(t.updated_at),
+					deleted_at: t.deleted_at ? new Date(t.deleted_at) : null,
 				}))
 			);
 		}
@@ -57,6 +58,7 @@ export function useSyncing() {
 					updated_at: new Date(t.updated_at),
 					expires_at: new Date(t.expires_at),
 					stopped_at: t.stopped_at ? new Date(t.stopped_at) : null,
+					deleted_at: t.deleted_at ? new Date(t.deleted_at) : null,
 				}))
 			);
 		}

@@ -13,6 +13,7 @@ pub struct Model {
     pub stopped_at: Option<DateTimeWithTimeZone>,
     pub expires_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
+    pub deleted_at: Option<DateTimeWithTimeZone>,
     pub og_created_at: DateTimeWithTimeZone,
 }
 

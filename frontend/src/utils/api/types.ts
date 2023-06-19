@@ -5,13 +5,16 @@ export type ApiTask = {
 	created_at: string;
 	updated_at: string;
 	stopped_at: string | null;
+	deleted_at: string | null;
 };
 
 export type ApiTag = {
 	id: string;
 	label: string;
+	color: string;
 	created_at: string;
 	updated_at: string;
+	deleted_at: string | null;
 };
 
 export type ApiNotifSub = {

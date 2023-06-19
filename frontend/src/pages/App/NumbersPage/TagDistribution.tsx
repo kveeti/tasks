@@ -112,6 +112,7 @@ function useData(selectedDate: Date) {
 			db.tasks
 				.filter(
 					(t) =>
+						!t.deleted_at &&
 						t.created_at >= startOfMonthSelectedDate &&
 						t.created_at <= endOfMonthSelectedDate &&
 						(!!t.stopped_at || !!t.expires_at)
@@ -120,7 +121,7 @@ function useData(selectedDate: Date) {
 		[selectedDate]
 	);
 
-	const dbTags = useLiveQuery(() => db.tags.toArray(), [dbTasks]);
+	const dbTags = useLiveQuery(() => db.tags.filter((t) => !t.deleted_at).toArray(), [dbTasks]);
 	const dbTasksWith = dbTasks?.map((task) => ({
 		...task,
 		seconds: differenceInSeconds(task.stopped_at ?? task.expires_at, task.created_at),

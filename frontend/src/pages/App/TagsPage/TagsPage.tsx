@@ -4,7 +4,7 @@ import { FocusRing } from "@react-aria/focus";
 import type { AriaButtonProps } from "@react-types/button";
 import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
-import { LucidePlusCircle, Mail, Plus, PlusCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import colors from "tailwindcss/colors";
 import { z } from "zod";
@@ -17,14 +17,13 @@ import { Button } from "@/Ui/NewButton";
 import { type DbTag, db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
-import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
 import { WithAnimation } from "../WithAnimation";
 import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
 
 export function TagsPage() {
-	const dbTags = useLiveQuery(() => db.tags.toArray())?.sort(
+	const dbTags = useLiveQuery(() => db.tags.filter((t) => !t.deleted_at).toArray())?.sort(
 		(a, b) => +b.created_at - +a.created_at
 	);
 	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
@@ -93,6 +92,7 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 				color: values.color,
 				created_at: new Date(),
 				updated_at: new Date(),
+				deleted_at: null,
 			};
 
 			await db.tags.add(newTag);
@@ -195,7 +195,7 @@ function EditTag(props: {
 				onSubmit={editTagForm.handleSubmit}
 				className="flex h-full w-full flex-col justify-between gap-4"
 			>
-				<h1 className="text-3xl font-bold">edit tag</h1>
+				<h1 className="text-2xl font-bold">edit tag</h1>
 
 				<Input
 					label="label"

@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useDevActions } from "./App/DevActions";
-import { NumbersPage } from "./App/NumbersPage2/NumbersPage2";
+import { NumbersPage } from "./App/NumbersPage/NumbersPage";
 import { TagsPage } from "./App/TagsPage/TagsPage";
 import { Index, Test } from "./App/Test";
 

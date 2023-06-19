@@ -1,5 +1,4 @@
 use axum::http::HeaderValue;
-use axum::routing::patch;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
 use config::{Env, CONFIG};
 use data::{create_id, get_db};
@@ -73,23 +72,10 @@ async fn main() {
 
     let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 
-    let v1_tasks_routes = Router::new()
-        .route("/", post(endpoints::tasks::add_task_endpoint))
-        .route("/:task_id", patch(endpoints::tasks::update_task_endpoint));
-
-    let v1_tags_routes = Router::new()
-        .route(
-            "/",
-            post(endpoints::tags::add_tag_endpoint).delete(endpoints::tags::delete_tag_endpoint),
-        )
-        .route("/:tag_id", patch(endpoints::tags::update_tag_endpoint));
-
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
-        .nest("/sync", v1_sync_routes)
-        .nest("/tasks", v1_tasks_routes)
-        .nest("/tags", v1_tags_routes);
+        .nest("/sync", v1_sync_routes);
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 

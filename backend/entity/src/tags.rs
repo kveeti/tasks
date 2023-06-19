@@ -12,6 +12,7 @@ pub struct Model {
     pub color: String,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
+    pub deleted_at: Option<DateTimeWithTimeZone>,
     pub og_created_at: DateTimeWithTimeZone,
 }
 

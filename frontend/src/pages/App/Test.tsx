@@ -10,8 +10,7 @@ import colors from "tailwindcss/colors";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
-import { useUser } from "@/auth";
-import { db } from "@/db/db";
+import { type DbTask, db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { getMinutesAndSeconds } from "@/utils/formatSeconds";
@@ -36,8 +35,6 @@ export function Test() {
 }
 
 function TestInner() {
-	const user = useUser();
-
 	const location = useLocation();
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
@@ -105,13 +102,14 @@ export function Index() {
 
 		const expires_at = addSeconds(new Date(), time);
 
-		const task = {
+		const task: DbTask = {
 			id: createId(),
 			tag_id: selectedTag.id,
 			created_at: new Date(),
 			updated_at: new Date(),
 			expires_at,
 			stopped_at: null,
+			deleted_at: null,
 		};
 
 		await db.tasks.add(task);
@@ -194,7 +192,7 @@ function SelectTag() {
 
 			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
 				<div className="flex flex-col gap-4">
-					<h1 className="text-3xl font-bold">select a tag</h1>
+					<h1 className="text-2xl font-bold">select a tag</h1>
 
 					<div className="flex w-full flex-col gap-2">
 						{dbTags?.map((tag) => (

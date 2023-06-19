@@ -3,7 +3,7 @@ import eachDayOfInterval from "date-fns/eachDayOfInterval";
 import subDays from "date-fns/subDays";
 import { toast } from "sonner";
 
-import { db } from "@/db/db";
+import { type DbTag, db } from "@/db/db";
 import { createId } from "@/utils/createId";
 import { useHotkeys } from "@/utils/useHotkeys";
 
@@ -28,12 +28,13 @@ function useAddTasks() {
 		toast.promise(
 			async () => {
 				const tag = (() => {
-					const newTag = {
+					const newTag: DbTag = {
 						id: createId(),
 						color: "#fff",
 						label: `Test-tag-${createId().slice(0, 5)}`,
 						created_at: new Date(),
 						updated_at: new Date(),
+						deleted_at: null,
 					};
 
 					db.tags.add(newTag);
@@ -48,6 +49,7 @@ function useAddTasks() {
 					updated_at: day,
 					expires_at: addHours(day, 2),
 					stopped_at: addHours(day, 1.8),
+					deleted_at: null,
 				}));
 
 				await db.tasks.bulkAdd(tasks);

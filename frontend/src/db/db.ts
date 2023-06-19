@@ -7,6 +7,7 @@ export type DbTask = {
 	created_at: Date;
 	updated_at: Date;
 	stopped_at: Date | null;
+	deleted_at: Date | null;
 };
 
 export type DbTag = {
@@ -15,6 +16,7 @@ export type DbTag = {
 	color: string;
 	created_at: Date;
 	updated_at: Date;
+	deleted_at: Date | null;
 };
 
 export type DbTaskWithTag = DbTask & { tag: DbTag };
@@ -35,9 +37,9 @@ export class Db extends Dexie {
 	constructor() {
 		super("db");
 		this.version(1).stores({
-			tasks: "&id, title, tagId, userId, expiresAt, createdAt, stoppedAt",
-			tags: "&id, label, userId, color, createdAt",
-			notifSubs: "&id, endpoint, p256dh, auth, userId, createdAt",
+			tasks: "&id, title, tag_id, expires_at, created_at, updated_at, stopped_at, deleted_at",
+			tags: "&id, label, color, created_at, updated_at, deleted_at",
+			notifSubs: "&id, endpoint, p256dh, auth, created_at",
 		});
 	}
 }
