@@ -4,7 +4,6 @@ import { type ReactNode, useEffect, useState } from "react";
 
 import { type DbTaskWithTag, db } from "../../db/db";
 import { createCtx } from "../../utils/createContext";
-import { getMinutesAndSeconds } from "../../utils/formatSeconds";
 import { useSetInterval } from "../../utils/useSetInterval";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
@@ -74,7 +73,7 @@ function getTimes(activeTasks?: DbTaskWithTag[]) {
 					id: task.id,
 					tag: task.tag,
 					timeUntilExpiryValue,
-					timeUntilExpiry: getMinutesAndSeconds(timeUntilExpiryValue),
+					timeUntilExpiry: timeUntilExpiryValue,
 				};
 			})
 			.filter((task) => task.timeUntilExpiryValue > 0) ?? []

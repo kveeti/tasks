@@ -7,13 +7,13 @@ import { type ComponentProps, useRef, useState } from "react";
 import { Outlet, Link as RRDLink, useLocation } from "react-router-dom";
 import colors from "tailwindcss/colors";
 
+import { Time } from "@/Ui/Counter";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
 import { type DbTask, db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
-import { getMinutesAndSeconds } from "@/utils/formatSeconds";
 import { sleep } from "@/utils/sleep";
 
 import { TimerContextProvider, useTimerContext } from "./TimerContext";
@@ -78,7 +78,6 @@ export function Index() {
 	const { selectedTagTime, selectedTag, dbTags } = useTimerContext();
 
 	const [time, setTime] = useState(0);
-	const { minutes, seconds } = getMinutesAndSeconds(time);
 
 	const isRunning = !!selectedTagTime;
 	const isStartingDisabled = isRunning || time <= 0;
@@ -127,10 +126,8 @@ export function Index() {
 	return (
 		<WithAnimation>
 			<div className="flex h-full w-full flex-col items-center justify-center gap-8">
-				<h2 className="rounded-3xl border border-gray-800 bg-gray-950 p-4 text-[5.5rem] font-semibold leading-[1] text-gray-50">
-					<span>{isRunning ? selectedTagTime?.timeUntilExpiry.minutes : minutes}</span>
-					<span>:</span>
-					<span>{isRunning ? selectedTagTime?.timeUntilExpiry.seconds : seconds}</span>
+				<h2 className="rounded-3xl border border-gray-800 bg-gray-950 p-4 font-bold text-gray-50">
+					<Time seconds={isRunning ? selectedTagTime.timeUntilExpiry : time} />
 				</h2>
 
 				<div className="flex w-full max-w-[260px] gap-2">
