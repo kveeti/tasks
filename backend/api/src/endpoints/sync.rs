@@ -50,7 +50,7 @@ pub async fn sync_endpoint(
     Json(body): Json<SyncEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
     if body.tags.len() > 0 {
-        tracing::info!("Upserting {} tags", body.tasks.len());
+        tracing::info!("Upserting {} tags", body.tags.len());
 
         TagsEntity::insert_many(body.tags.into_iter().map(|tag| tags::ActiveModel {
             id: ActiveValue::Set(tag.id),
@@ -66,8 +66,13 @@ pub async fn sync_endpoint(
             og_created_at: ActiveValue::Set(tag.created_at),
         }))
         .on_conflict(
-            OnConflict::column(tasks::Column::Id)
-                .update_columns(vec![tasks::Column::UpdatedAt])
+            OnConflict::column(tags::Column::Id)
+                .update_columns(vec![
+                    tags::Column::Color,
+                    tags::Column::Label,
+                    tags::Column::UpdatedAt,
+                    tags::Column::DeletedAt,
+                ])
                 .to_owned(),
         )
         .exec(&ctx.db)
@@ -97,7 +102,12 @@ pub async fn sync_endpoint(
         }))
         .on_conflict(
             OnConflict::column(tasks::Column::Id)
-                .update_columns(vec![tasks::Column::TagId, tasks::Column::UpdatedAt])
+                .update_columns(vec![
+                    tasks::Column::TagId,
+                    tasks::Column::UpdatedAt,
+                    tasks::Column::StoppedAt,
+                    tasks::Column::DeletedAt,
+                ])
                 .to_owned(),
         )
         .exec(&ctx.db)

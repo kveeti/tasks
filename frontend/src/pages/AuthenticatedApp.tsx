@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { useSyncing } from "@/utils/Syncing";
+
 import { useDevActions } from "./App/DevActions";
 import { NumbersPage } from "./App/NumbersPage/NumbersPage";
 import { TagsPage } from "./App/TagsPage/TagsPage";
@@ -8,6 +10,7 @@ import { Index, Test } from "./App/Test";
 
 export function AuthenticatedApp() {
 	useDevActions();
+	useSyncing();
 
 	return (
 		<motion.div

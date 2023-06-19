@@ -34,7 +34,7 @@ export function useSyncing() {
 			: await db.tags.toArray();
 
 		const { tags, tasks } = await syncMutation.mutateAsync({
-			last_synced_at: lastSyncedAt ? new Date(lastSyncedAt) : null,
+			last_synced_at: lastSyncedAt ? lastSyncedAt : null,
 			tasks: tasksNotSynced,
 			tags: tagsNotSynced,
 		});
