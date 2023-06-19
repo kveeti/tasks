@@ -8,6 +8,15 @@ import type { ApiTag, ApiTask } from "./api/types";
 import { useSetInterval } from "./useSetInterval";
 
 export function useSyncing() {
+	const sync = useSync();
+
+	useSetInterval(sync, 5000);
+	useEffect(() => {
+		sync();
+	}, []);
+}
+
+export function useSync() {
 	const syncMutation = useMutation(
 		(syncBody: { last_synced_at: Date | null; tasks: DbTask[]; tags: DbTag[] }) =>
 			apiRequest<{ tags: ApiTag[]; tasks: ApiTask[] }>({
@@ -17,7 +26,7 @@ export function useSyncing() {
 			})
 	);
 
-	async function sync() {
+	return async () => {
 		const storageLastSyncedAt = localStorage.getItem("lastSyncedAt");
 		const lastSyncedAt = storageLastSyncedAt ? new Date(storageLastSyncedAt) : null;
 
@@ -64,10 +73,5 @@ export function useSyncing() {
 		}
 
 		localStorage.setItem("lastSyncedAt", new Date().toISOString());
-	}
-
-	useSetInterval(sync, 10000);
-	useEffect(() => {
-		sync();
-	}, []);
+	};
 }

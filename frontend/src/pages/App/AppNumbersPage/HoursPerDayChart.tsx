@@ -31,7 +31,7 @@ export function HoursPerDayChart(props: { selectedDate: Date }) {
 	);
 }
 
-export function Chart(props: { width: number; height: number; selectedDate: Date }) {
+function Chart(props: { width: number; height: number; selectedDate: Date }) {
 	const startOfMonthSelectedDate = startOfMonth(props.selectedDate);
 	const endOfMonthSelectedDate = endOfMonth(props.selectedDate);
 

@@ -19,13 +19,14 @@ import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { useForm } from "@/utils/useForm";
 
+import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
 import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
 
-export function TagsPage() {
-	const dbTags = useLiveQuery(() => db.tags.filter((t) => !t.deleted_at).toArray())?.sort(
-		(a, b) => +b.created_at - +a.created_at
-	);
+export function AppTagsPage() {
+	let { dbTags } = useTimerContext();
+	dbTags = dbTags?.sort((a, b) => +b.created_at - +a.created_at);
+
 	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
 	const [createdTag, setCreatedTag] = useState<DbTag | null>(null);
 
@@ -173,13 +174,15 @@ function EditTag(props: {
 							),
 						"label in use! two tags can't have the same label"
 					),
+				color: zodTagColors,
 			})
 		),
-		defaultValues: { label: props.tagInEdit.label },
+		defaultValues: { label: props.tagInEdit.label, color: props.tagInEdit.color },
 		onSubmit: async (values) => {
 			const newTag: DbTag = {
 				...props.tagInEdit,
 				label: values.label,
+				color: values.color,
 				updated_at: new Date(),
 			};
 
@@ -202,6 +205,14 @@ function EditTag(props: {
 					error={editTagForm.formState.errors.label?.message}
 					{...editTagForm.register("label")}
 				/>
+
+				<div className="flex flex-col">
+					<Label required>color</Label>
+
+					<ColorSelector form={editTagForm} />
+
+					<Error message={editTagForm.formState.errors.color?.message} />
+				</div>
 
 				<div className="flex w-full gap-2">
 					<Button

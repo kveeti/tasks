@@ -3,31 +3,35 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useSyncing } from "@/utils/Syncing";
 
+import { AppIndexPage } from "./App/AppIndexPage/AppIndexPage";
+import { AppLayout } from "./App/AppLayout";
+import { AppNumbersPage } from "./App/AppNumbersPage/AppNumbersPage";
+import { AppTagsPage } from "./App/AppTagsPage/AppTagsPage";
 import { useDevActions } from "./App/DevActions";
-import { NumbersPage } from "./App/NumbersPage/NumbersPage";
-import { TagsPage } from "./App/TagsPage/TagsPage";
-import { Index, Test } from "./App/Test";
+import { TimerContextProvider } from "./App/TimerContext";
 
 export function AuthenticatedApp() {
 	useDevActions();
 	useSyncing();
 
 	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
-			transition={{ duration: 0.2 }}
-		>
-			<Routes>
-				<Route path="/app" element={<Test />}>
-					<Route index element={<Index />} />
-					<Route path="stats" element={<NumbersPage />} />
-					<Route path="tags" element={<TagsPage />} />
-					<Route path="settings" element={<div />} />
-				</Route>
-				<Route path="*" element={<Navigate to="/app" />} />
-			</Routes>
-		</motion.div>
+		<TimerContextProvider>
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: 0.2 }}
+			>
+				<Routes>
+					<Route path="/app" element={<AppLayout />}>
+						<Route index element={<AppIndexPage />} />
+						<Route path="stats" element={<AppNumbersPage />} />
+						<Route path="tags" element={<AppTagsPage />} />
+						<Route path="settings" element={<div />} />
+					</Route>
+					<Route path="*" element={<Navigate to="/app" />} />
+				</Routes>
+			</motion.div>
+		</TimerContextProvider>
 	);
 }

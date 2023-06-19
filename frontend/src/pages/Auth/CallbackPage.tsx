@@ -10,7 +10,9 @@ import { type User, useUserContext } from "../../auth";
 
 export function CallbackPage() {
 	const firstRenderAtRef = useRef(new Date());
-	const [status, setStatus] = useState<"loggingIn" | "failed" | "success">("loggingIn");
+	const [status, setStatus] = useState<"loggingIn" | "failed" | "success" | "syncing">(
+		"loggingIn"
+	);
 	const [searchParams] = useSearchParams();
 
 	const code = searchParams.get("code");
@@ -86,7 +88,6 @@ export function CallbackPage() {
 							transition={{
 								duration: 0.7,
 								ease: "easeInOut",
-								type: "spring",
 							}}
 							className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
 						>

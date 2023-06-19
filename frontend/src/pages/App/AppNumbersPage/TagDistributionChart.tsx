@@ -46,16 +46,14 @@ function Chart(props: { data: Data; width: number; height: number }) {
 		.padAngle(0.005)
 		.value((d) => d.seconds);
 
-	const color = getColor(props.data.map((d) => d.tag.label));
-
-	const pieData = pie(props.data);
+	const pieData = pie(props.data.filter((d) => d.percentage));
 
 	return (
 		<svg viewBox={`0 0 ${props.width} ${props.height}`}>
 			<g transform={`translate(${props.width / 2}, ${props.height / 2})`}>
 				{pieData.map((d, i) => (
 					<Fragment key={i}>
-						<path d={arc(d) ?? ""} fill={color(d.data.tag.label)}>
+						<path d={arc(d)} fill={d.data.tag.color}>
 							<title>{`${d.data.tag.label}: ${d.data.percentage}`}</title>
 						</path>
 
@@ -79,15 +77,13 @@ function Chart(props: { data: Data; width: number; height: number }) {
 function Labels(props: { data: Data }) {
 	if (!props.data.length) return null;
 
-	const color = getColor(props.data.map((d) => d.tag.label));
-
 	return (
 		<div className="flex flex-col divide-y divide-solid divide-gray-800/70 text-sm">
 			{props.data.map((d, i) => (
 				<div key={i} className="flex items-center gap-2 py-2">
 					<div
 						className="h-3 w-3 rounded-full"
-						style={{ backgroundColor: color(d.tag.label) }}
+						style={{ backgroundColor: d.tag.color }}
 					/>
 					<div className="flex w-full justify-between gap-2">
 						<span>{d.tag.label}</span>
@@ -159,9 +155,3 @@ function useData(selectedDate: Date) {
 }
 
 type Data = ReturnType<typeof useData>;
-
-function getColor(labels: string[]) {
-	return d3
-		.scaleOrdinal()
-		.range(d3.quantize((t) => d3.interpolateSpectral(t * 0.8 + 0.1), labels.length).reverse());
-}

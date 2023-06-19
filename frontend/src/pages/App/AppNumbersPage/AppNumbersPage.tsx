@@ -16,10 +16,10 @@ import { useState } from "react";
 import { Button } from "@/Ui/NewButton";
 
 import { WithAnimation } from "../WithAnimation";
-import { HoursPerDayChart } from "./HoursPerDay";
-import { TagDistributionChart } from "./TagDistribution";
+import { HoursPerDayChart } from "./HoursPerDayChart";
+import { TagDistributionChart } from "./TagDistributionChart";
 
-export function NumbersPage() {
+export function AppNumbersPage() {
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [selectedTimeFrame, setSelectedTimeFrame] = useState<"day" | "week" | "month" | "year">(
 		"day"
