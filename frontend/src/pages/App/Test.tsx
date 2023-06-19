@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
 import { type ComponentProps, useRef, useState } from "react";
 import { Outlet, Link as RRDLink, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import colors from "tailwindcss/colors";
 
 import { Time } from "@/Ui/Counter";
@@ -80,7 +81,6 @@ export function Index() {
 	const [time, setTime] = useState(0);
 
 	const isRunning = !!selectedTagTime;
-	const isStartingDisabled = isRunning || time <= 0;
 
 	function addTime(seconds: number) {
 		setTime(time + seconds);
@@ -97,7 +97,8 @@ export function Index() {
 	}
 
 	async function startTimer() {
-		if (!selectedTag) return;
+		if (!selectedTag) return toast.error("Select a tag first");
+		if (!time) return toast.error("Add some time first");
 
 		const expires_at = addSeconds(new Date(), time);
 
@@ -125,50 +126,72 @@ export function Index() {
 
 	return (
 		<WithAnimation>
-			<div className="flex h-full w-full flex-col items-center justify-center gap-8">
-				<h2 className="rounded-3xl border border-gray-800 bg-gray-950 p-4 font-bold text-gray-50">
+			<div className="flex h-full w-full flex-col items-center justify-center p-8">
+				<h2 className="rounded-3xl border border-gray-800 bg-gray-950/50 p-4 font-bold text-gray-50">
 					<Time seconds={isRunning ? selectedTagTime.timeUntilExpiry : time} />
 				</h2>
 
-				<div className="flex w-full max-w-[260px] gap-2">
-					<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950 p-2">
-						<Button className="w-full p-2" onPress={() => addTime(1800)}>
-							<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" />{" "}
-							<span>30 min</span>
-						</Button>
-						<Button className="w-full p-2" onPress={() => subtractTime(1800)}>
-							<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 30 min
-						</Button>
-					</div>
+				<AnimatePresence initial={false}>
+					{!isRunning && (
+						<motion.div
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+							transition={{
+								duration: 0.4,
+								mass: 0.1,
+								type: "spring",
+							}}
+							className="flex w-full items-center justify-center"
+						>
+							<div className="flex w-full max-w-[260px] gap-2 pt-8">
+								<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
+									<Button className="w-full p-2" onPress={() => addTime(1800)}>
+										<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 30
+										min
+									</Button>
+									<Button
+										className="w-full p-2"
+										onPress={() => subtractTime(1800)}
+									>
+										<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 30
+										min
+									</Button>
+								</div>
+								<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
+									<Button className="w-full p-2" onPress={() => addTime(1800)}>
+										<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
+										min
+									</Button>
+									<Button
+										className="w-full p-2"
+										onPress={() => subtractTime(1800)}
+									>
+										<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
+										min
+									</Button>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 
-					<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950 p-2">
-						<Button className="w-full p-2" onPress={() => addTime(1800)}>
-							<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5 min
-						</Button>
-						<Button className="w-full p-2" onPress={() => subtractTime(1800)}>
-							<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5 min
-						</Button>
-					</div>
+				<div className="my-8">
+					{dbTags?.length ? (
+						<SelectTag />
+					) : isRunning ? null : (
+						<LinkButton className="p-2" to={"/app/tags?create_tag=1"}>
+							create a tag
+						</LinkButton>
+					)}
 				</div>
-
-				{dbTags?.length ? (
-					<SelectTag />
-				) : isRunning ? null : (
-					<LinkButton className="p-2" to={"/app/tags?create_tag=1"}>
-						create a tag
-					</LinkButton>
-				)}
 
 				{isRunning ? (
 					<Button onPress={() => stopTimer()} className="px-[4rem] py-4">
 						stop
 					</Button>
 				) : (
-					<Button
-						onPress={() => startTimer()}
-						isDisabled={isStartingDisabled}
-						className="px-[4rem] py-4"
-					>
+					<Button onPress={() => startTimer()} className="px-[4rem] py-4">
 						start
 					</Button>
 				)}

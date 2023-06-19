@@ -3,8 +3,7 @@ import { AnimatePresence, MotionValue, motion, useSpring, useTransform } from "f
 import { useEffect } from "react";
 
 const fontSize = 88;
-const padding = 15;
-const height = fontSize + padding;
+const height = fontSize;
 
 function getMinutesAndSeconds(seconds: number) {
 	return {
@@ -19,7 +18,7 @@ export function Time(props: { seconds: number }) {
 	return (
 		<div style={{ fontSize }} className="flex overflow-hidden leading-none">
 			<AnimatePresence>
-				{time.minutes > 100 && (
+				{time.minutes >= 100 && (
 					<motion.div
 						className="overflow-hidden"
 						initial={{ opacity: 0, width: 0 }}
@@ -40,8 +39,8 @@ export function Time(props: { seconds: number }) {
 	);
 }
 
-export function Digit({ place, value }: { place: number; value: number }) {
-	const valueRoundedToPlace = Math.floor(value / place);
+export function Digit(props: { place: number; value: number }) {
+	const valueRoundedToPlace = Math.floor(props.value / props.place);
 	const animatedValue = useSpring(valueRoundedToPlace, { duration: 100, mass: 0.05 });
 
 	useEffect(() => {
@@ -57,10 +56,10 @@ export function Digit({ place, value }: { place: number; value: number }) {
 	);
 }
 
-function Number({ mv, number }: { mv: MotionValue; number: number }) {
-	const y = useTransform(mv, (latest) => {
+function Number(props: { mv: MotionValue; number: number }) {
+	const y = useTransform(props.mv, (latest) => {
 		const placeValue = latest % 10;
-		const offset = (10 + number - placeValue) % 10;
+		const offset = (10 + props.number - placeValue) % 10;
 
 		let memo = offset * height;
 
@@ -73,7 +72,7 @@ function Number({ mv, number }: { mv: MotionValue; number: number }) {
 
 	return (
 		<motion.span style={{ y }} className="absolute inset-0 flex items-center justify-center">
-			{number}
+			{props.number}
 		</motion.span>
 	);
 }

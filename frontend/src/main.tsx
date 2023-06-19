@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>
 		<UserCtxProvider>
 			<ApiProvider>
-				<Toaster richColors />
+				<Toaster richColors position="top-center" theme="dark" />
 
 				<BrowserRouter>
 					<Entrypoint />
