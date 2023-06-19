@@ -23,8 +23,7 @@ import { WithAnimation } from "../WithAnimation";
 import { ColorSelector, type TagColors, tagColors, zodTagColors } from "./ColorSelector";
 
 export function AppTagsPage() {
-	let { dbTags } = useTimerContext();
-	dbTags = dbTags?.sort((a, b) => +b.created_at - +a.created_at);
+	const { dbTags } = useTimerContext();
 
 	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
 	const [createdTag, setCreatedTag] = useState<DbTag | null>(null);

@@ -17,7 +17,9 @@ export function TimerContextProvider(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const dbTags = useLiveQuery(() => db.tags.toArray(), []);
+	const dbTags = useLiveQuery(() => db.tags.toArray(), [])?.sort(
+		(a, b) => +b.created_at - +a.created_at
+	);
 	const dbActiveTasks = useLiveQuery(async () => {
 		const now = new Date();
 
