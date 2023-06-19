@@ -26,7 +26,7 @@ export function AppLayout() {
 						<Link
 							key={l.id}
 							to={l.href}
-							className="relative flex w-full items-center justify-center rounded-full px-4 py-2"
+							className="relative flex w-full items-center justify-center rounded-full px-4 py-2 outline-none outline-2 outline-offset-2 transition-[outline,opacity] duration-200 focus-visible:outline-gray-300"
 						>
 							{activeLinkId === l.id && (
 								<motion.div
