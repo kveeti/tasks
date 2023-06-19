@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
 import type { AriaButtonProps } from "@react-types/button";
-import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { Plus } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
@@ -21,7 +20,7 @@ import { useForm } from "@/utils/useForm";
 
 import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
-import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
+import { ColorSelector, type TagColors, tagColors, zodTagColors } from "./ColorSelector";
 
 export function AppTagsPage() {
 	let { dbTags } = useTimerContext();
@@ -44,24 +43,37 @@ export function AppTagsPage() {
 				</div>
 
 				<div className="flex flex-col gap-2 overflow-auto p-4">
-					<AnimatePresence initial={false}>
-						{dbTags?.map((tag) => (
-							<motion.div
-								key={tag.id}
-								initial={{ opacity: 0, height: 0 }}
-								animate={{ opacity: 1, height: "auto" }}
-								exit={{ opacity: 0, height: 0 }}
-							>
-								<Tag
+					{dbTags?.length ? (
+						<AnimatePresence initial={false}>
+							{dbTags?.map((tag) => (
+								<motion.div
 									key={tag.id}
-									createdTag={createdTag?.id === tag.id}
-									onPress={() => setTagInEdit(tag)}
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: "auto" }}
+									exit={{ opacity: 0, height: 0 }}
 								>
-									{tag.label}
-								</Tag>
-							</motion.div>
-						))}
-					</AnimatePresence>
+									<Tag
+										key={tag.id}
+										createdTag={createdTag?.id === tag.id}
+										onPress={() => setTagInEdit(tag)}
+									>
+										<div
+											className="h-3 w-3 rounded-full"
+											style={{ backgroundColor: tag.color }}
+										/>
+
+										{tag.label}
+									</Tag>
+								</motion.div>
+							))}
+						</AnimatePresence>
+					) : (
+						<div className="flex h-full flex-col items-center justify-center">
+							<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
+								no tags
+							</h2>
+						</div>
+					)}
 				</div>
 
 				{tagInEdit && (
@@ -161,23 +173,23 @@ function EditTag(props: {
 	setTagInEdit: (tag: DbTag | null) => void;
 	dbTags?: DbTag[];
 }) {
-	const editTagForm = useForm({
-		resolver: zodResolver(
-			z.object({
-				label: z
-					.string()
-					.min(2, { message: "too short! must be at least 2 chars" })
-					.refine(
-						(label) =>
-							!props.dbTags?.some(
-								(tag) => tag.label === label && tag.id !== props.tagInEdit.id
-							),
-						"label in use! two tags can't have the same label"
+	const editTagFormSchema = z.object({
+		label: z
+			.string()
+			.min(2, { message: "too short! must be at least 2 chars" })
+			.refine(
+				(label) =>
+					!props.dbTags?.some(
+						(tag) => tag.label === label && tag.id !== props.tagInEdit.id
 					),
-				color: zodTagColors,
-			})
-		),
-		defaultValues: { label: props.tagInEdit.label, color: props.tagInEdit.color },
+				"label in use! two tags can't have the same label"
+			),
+		color: zodTagColors,
+	});
+
+	const editTagForm = useForm<z.infer<typeof editTagFormSchema>>({
+		resolver: zodResolver(editTagFormSchema),
+		defaultValues: { label: props.tagInEdit.label, color: props.tagInEdit.color as TagColors },
 		onSubmit: async (values) => {
 			const newTag: DbTag = {
 				...props.tagInEdit,
@@ -274,7 +286,7 @@ function Tag(props: ComponentProps<"button"> & AriaButtonProps & { createdTag: b
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"w-full cursor-default rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
+					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
 					props.className
 				)}
 			>

@@ -18,8 +18,19 @@ export function SelectTag() {
 
 	return (
 		<>
-			<Button className="px-6 py-2" onPress={() => setIsOpen(true)}>
-				{selectedTag ? selectedTag.label : "select a tag"}
+			<Button className="px-4 py-2" onPress={() => setIsOpen(true)}>
+				{selectedTag ? (
+					<div className="flex items-center gap-2">
+						<div
+							className="h-3 w-3 rounded-full"
+							style={{ backgroundColor: selectedTag.color }}
+						/>
+
+						<span>{selectedTag.label}</span>
+					</div>
+				) : (
+					"select a tag"
+				)}
 			</Button>
 
 			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -35,6 +46,11 @@ export function SelectTag() {
 									setIsOpen(false);
 								}}
 							>
+								<div
+									className="h-3 w-3 rounded-full"
+									style={{ backgroundColor: tag.color }}
+								/>
+
 								{tag.label}
 							</Tag>
 						))}
@@ -78,7 +94,7 @@ function Tag(props: ComponentProps<"button"> & AriaButtonProps) {
 				ref={ref}
 				animate={controls}
 				className={cn(
-					"w-full rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
+					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
 					props.className
 				)}
 			>

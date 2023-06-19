@@ -18,9 +18,9 @@ export function TagDistributionChart(props: { selectedDate: Date }) {
 		<>
 			<h2 className="text-lg font-bold">tag distribution</h2>
 
-			<div className="my-2 border-b border-b-gray-800/70" />
+			<div className="mb-4 mt-2 border-b border-b-gray-800/70" />
 
-			<div ref={ref} className="h-[200px]">
+			<div ref={ref} className="mb-1 h-[200px]">
 				{data.length ? (
 					<Chart data={data} width={bounds.width} height={bounds.height} />
 				) : (
@@ -78,20 +78,22 @@ function Labels(props: { data: Data }) {
 	if (!props.data.length) return null;
 
 	return (
-		<div className="flex flex-col divide-y divide-solid divide-gray-800/70 text-sm">
+		<div className="flex w-full flex-col divide-y divide-solid divide-gray-800/70 text-sm">
 			{props.data.map((d, i) => (
-				<div key={i} className="flex items-center gap-2 py-2">
-					<div
-						className="h-3 w-3 rounded-full"
-						style={{ backgroundColor: d.tag.color }}
-					/>
-					<div className="flex w-full justify-between gap-2">
-						<span>{d.tag.label}</span>
+				<div key={i} className="flex gap-4 py-2">
+					<div className="flex w-full items-center gap-2">
+						<div
+							className="h-3 w-3 rounded-full"
+							style={{ backgroundColor: d.tag.color }}
+						/>
+						<span className="w-full truncate">{d.tag.label}</span>
+					</div>
 
-						<div className="flex gap-8">
-							<span>{d.percentage}%</span>
-							<span>{secondsToHours(d.seconds)} h</span>
-						</div>
+					<div className="flex gap-8">
+						<span>{d.percentage}%</span>
+						<span className="whitespace-nowrap">{`${secondsToHours(
+							d.seconds
+						)} h`}</span>
 					</div>
 				</div>
 			))}

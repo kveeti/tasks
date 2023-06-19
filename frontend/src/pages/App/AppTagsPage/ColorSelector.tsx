@@ -4,7 +4,7 @@ import { z } from "zod";
 import { cn } from "@/utils/classNames";
 import type { UseFormReturn } from "@/utils/useForm";
 
-export const tagColors = ["#d13c4b", "#1287A8", "#598392", "#AEC3B0", "#EFF6E0"] as const;
+export const tagColors = ["#d13c4b", "#1287A8", "#33a02c", "#f28e2c", "#bc80bd"] as const;
 export type TagColors = (typeof tagColors)[number];
 export const zodTagColors = z.enum(tagColors);
 

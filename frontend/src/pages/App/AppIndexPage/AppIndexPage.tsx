@@ -117,8 +117,15 @@ export function AppIndexPage() {
 
 				<div className="my-8">
 					{isRunning ? (
-						<span className="flex items-center justify-center rounded-xl bg-gray-600 px-6 py-2">
-							{selectedTag?.label}
+						<span className="flex items-center justify-center rounded-xl bg-gray-600 px-4 py-2">
+							<div className="flex items-center gap-2">
+								<div
+									className="h-3 w-3 rounded-full"
+									style={{ backgroundColor: selectedTag?.color }}
+								/>
+
+								<span>{selectedTag?.label}</span>
+							</div>
 						</span>
 					) : dbTags?.length ? (
 						<SelectTag />
