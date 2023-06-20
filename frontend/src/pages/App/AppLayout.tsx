@@ -1,14 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+
+import { useHotkeys } from "@/utils/useHotkeys";
 
 const links = [
 	{ id: "home", label: "home", href: "/app" },
 	{ id: "stats", label: "stats", href: "/app/stats" },
 	{ id: "tags", label: "tags", href: "/app/tags" },
-	{ id: "settings", label: "settings", href: "/app/settings" },
+	{ id: "tasks", label: "tasks", href: "/app/tasks" },
 ];
 
 export function AppLayout() {
+	useKeybinds();
+
 	const location = useLocation();
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
@@ -46,4 +50,15 @@ export function AppLayout() {
 			</div>
 		</div>
 	);
+}
+
+function useKeybinds() {
+	const navigate = useNavigate();
+
+	useHotkeys([
+		["mod+1", () => navigate(links[0]!.href)],
+		["mod+2", () => navigate(links[1]!.href)],
+		["mod+3", () => navigate(links[2]!.href)],
+		["mod+4", () => navigate(links[3]!.href)],
+	]);
 }
