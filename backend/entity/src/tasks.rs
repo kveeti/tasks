@@ -9,12 +9,12 @@ pub struct Model {
     pub id: String,
     pub user_id: String,
     pub tag_id: String,
-    pub created_at: DateTimeWithTimeZone,
-    pub stopped_at: Option<DateTimeWithTimeZone>,
+    pub started_at: DateTimeWithTimeZone,
     pub expires_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
+    pub stopped_at: Option<DateTimeWithTimeZone>,
     pub deleted_at: Option<DateTimeWithTimeZone>,
-    pub og_created_at: DateTimeWithTimeZone,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

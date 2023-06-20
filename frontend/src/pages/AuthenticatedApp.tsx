@@ -7,6 +7,7 @@ import { AppIndexPage } from "./App/AppIndexPage/AppIndexPage";
 import { AppLayout } from "./App/AppLayout";
 import { AppNumbersPage } from "./App/AppNumbersPage/AppNumbersPage";
 import { AppTagsPage } from "./App/AppTagsPage/AppTagsPage";
+import { AppTasksPage } from "./App/AppTasksPage/AppTasksPage";
 import { useDevActions } from "./App/DevActions";
 import { TimerContextProvider } from "./App/TimerContext";
 
@@ -27,7 +28,7 @@ export function AuthenticatedApp() {
 						<Route index element={<AppIndexPage />} />
 						<Route path="stats" element={<AppNumbersPage />} />
 						<Route path="tags" element={<AppTagsPage />} />
-						<Route path="settings" element={<div />} />
+						<Route path="tasks" element={<AppTasksPage />} />
 					</Route>
 					<Route path="*" element={<Navigate to="/app" />} />
 				</Routes>

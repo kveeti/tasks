@@ -13,7 +13,7 @@ import { Input } from "@/Ui/Input";
 import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
-import { type DbTag, db } from "@/db/db";
+import { type DbTag, addNotSynced, db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { useForm } from "@/utils/useForm";
@@ -33,7 +33,7 @@ export function AppTagsPage() {
 			<div className="flex h-full w-full flex-col gap-2">
 				<div className="flex items-center justify-between gap-4">
 					<div>
-						<h1 className="px-4 pt-4 text-2xl font-bold">Tags</h1>
+						<h1 className="px-4 pt-4 text-2xl font-bold">tags</h1>
 					</div>
 
 					<div className="px-4 pt-4">
@@ -107,7 +107,7 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 				deleted_at: null,
 			};
 
-			await db.tags.add(newTag);
+			await Promise.all([db.tags.add(newTag), addNotSynced(newTag.id, "tag")]);
 
 			newTagForm.reset();
 			setIsModalOpen(false);
@@ -137,7 +137,7 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 					onSubmit={newTagForm.handleSubmit}
 					className="flex h-full w-full flex-col justify-between gap-4"
 				>
-					<h1 className="text-2xl font-bold">create a tag</h1>
+					<h1 className="text-2xl font-bold">new tag</h1>
 
 					<Input label="label" required {...newTagForm.register("label")} />
 

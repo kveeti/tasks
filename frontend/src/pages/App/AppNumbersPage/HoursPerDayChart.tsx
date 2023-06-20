@@ -41,8 +41,8 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 				.filter(
 					(t) =>
 						!t.deleted_at &&
-						t.created_at >= startOfMonthSelectedDate &&
-						t.created_at <= endOfMonthSelectedDate &&
+						t.started_at >= startOfMonthSelectedDate &&
+						t.started_at <= endOfMonthSelectedDate &&
 						(!!t.stopped_at || !!t.expires_at)
 				)
 				.toArray(),
@@ -57,12 +57,12 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 		start: startOfMonthSelectedDate,
 		end: endOfMonthSelectedDate,
 	}).reduce((acc, cur) => {
-		const daysTasks = dbTasks?.filter((d) => isSameDay(d.created_at, cur));
+		const daysTasks = dbTasks?.filter((d) => isSameDay(d.started_at, cur));
 
 		const daysTotalHours =
 			daysTasks.reduce(
 				(acc, cur) =>
-					acc + +differenceInHours(cur.stopped_at ?? cur.expires_at, cur.created_at),
+					acc + +differenceInHours(cur.stopped_at ?? cur.expires_at, cur.started_at),
 				0
 			) || 0;
 

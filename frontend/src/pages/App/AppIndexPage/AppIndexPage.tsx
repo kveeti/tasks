@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Time } from "@/Ui/Counter";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
-import { type DbTask, db } from "@/db/db";
+import { type DbTask, addNotSynced, db } from "@/db/db";
 import { createId } from "@/utils/createId";
 
 import { useTimerContext } from "../TimerContext";
@@ -44,14 +44,15 @@ export function AppIndexPage() {
 		const task: DbTask = {
 			id: createId(),
 			tag_id: selectedTag.id,
-			created_at: new Date(),
-			updated_at: new Date(),
+			started_at: new Date(),
 			expires_at,
 			stopped_at: null,
 			deleted_at: null,
+			created_at: new Date(),
+			updated_at: new Date(),
 		};
 
-		await db.tasks.add(task);
+		await Promise.all([db.tasks.add(task), addNotSynced(task.id, "task")]);
 	}
 
 	function stopTimer() {

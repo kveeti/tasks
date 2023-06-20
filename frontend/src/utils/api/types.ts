@@ -1,11 +1,12 @@
 export type ApiTask = {
 	id: string;
 	tag_id: string | null;
+	started_at: string;
 	expires_at: string;
-	created_at: string;
-	updated_at: string;
 	stopped_at: string | null;
 	deleted_at: string | null;
+	created_at: string;
+	updated_at: string;
 };
 
 export type ApiTag = {
