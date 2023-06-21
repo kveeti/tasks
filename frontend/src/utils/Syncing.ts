@@ -46,20 +46,18 @@ export function useSync() {
 				},
 			});
 
-			const promises = [];
-
 			if (tags.length > 0) {
-				promises.push(
-					db.tags.bulkPut(
-						tags.map((t) => ({
-							...t,
-							created_at: new Date(t.created_at),
-							updated_at: new Date(t.updated_at),
-							deleted_at: t.deleted_at ? new Date(t.deleted_at) : null,
-						}))
-					)
+				await db.tags.bulkPut(
+					tags.map((t) => ({
+						...t,
+						created_at: new Date(t.created_at),
+						updated_at: new Date(t.updated_at),
+						deleted_at: t.deleted_at ? new Date(t.deleted_at) : null,
+					}))
 				);
 			}
+
+			const promises = [];
 
 			if (tasks.length > 0) {
 				promises.push(
