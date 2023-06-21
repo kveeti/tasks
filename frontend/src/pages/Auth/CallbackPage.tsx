@@ -1,105 +1,118 @@
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Fragment, type ReactNode, useEffect, useState } from "react";
 import useMeasure from "react-use-measure";
 
 import { apiRequest } from "@/utils/api/apiRequest";
+import { cn } from "@/utils/classNames";
 
 import { type User, useUserContext } from "../../auth";
+import { LoginStep } from "./CallbackPage/LoginStep";
+import { SyncStep } from "./CallbackPage/SyncStep";
+
+const steps = [LoginStep, SyncStep];
 
 export function CallbackPage() {
-	const firstRenderAtRef = useRef(new Date());
-	const [status, setStatus] = useState<"loggingIn" | "failed" | "success" | "syncing">(
-		"loggingIn"
-	);
-	const [searchParams] = useSearchParams();
-
-	const code = searchParams.get("code");
+	const [activeStep, setActiveStep] = useState(-1);
+	const [_user, _setUser] = useState<User | null>(null);
 
 	const { setUser } = useUserContext();
 
-	const verifyQuery = useVerifyCodeQuery(code);
+	function nextStep() {
+		setActiveStep((s) => s + 1);
+	}
+
+	useEffect(() => setActiveStep(0), []);
 
 	useEffect(() => {
-		if (verifyQuery.isLoading) {
-			return;
-		}
-
-		if (verifyQuery.isError) {
-			setStatus("failed");
-			return;
-		}
-
 		const timeouts: number[] = [];
 
-		if (verifyQuery.data) {
-			const timeSinceFirstRender = new Date().getTime() - firstRenderAtRef.current.getTime();
-			if (timeSinceFirstRender < 1000) {
-				timeouts.push(
-					setTimeout(() => {
-						setStatus("success");
-					}, 1000 - timeSinceFirstRender)
-				);
+		if (activeStep > 2 && _user) {
+			timeouts.push(
+				setTimeout(() => {
+					setUser(_user);
+				}, 500)
+			);
+		}
 
-				timeouts.push(
-					setTimeout(() => {
-						// Entrypoint.tsx will redirect to /app if userId is set
-						setUser(verifyQuery.data);
-					}, 2000 - timeSinceFirstRender)
-				);
-			} else {
-				setStatus("success");
-
-				timeouts.push(
-					setTimeout(() => {
-						// Entrypoint.tsx will redirect to /app if userId is set
-						setUser(verifyQuery.data);
-					}, 1000)
-				);
-			}
-
-			return;
+		if (activeStep === 2) {
+			timeouts.push(
+				setTimeout(() => {
+					setActiveStep(3);
+				}, 2000)
+			);
 		}
 
 		return () => {
 			timeouts.forEach(clearTimeout);
 		};
-	}, [verifyQuery.status]);
+	}, [activeStep]);
 
 	return (
-		<Card>
-			<div className="flex flex-col items-center justify-center gap-4 p-4">
-				{status === "loggingIn" ? (
-					<>
-						<Loader />
-						Logging in...
-					</>
-				) : status === "failed" ? (
-					<>
-						<Loader />
-						failed
-					</>
-				) : status === "success" ? (
-					<>
-						<motion.div
-							initial={{ scale: 0.5, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							transition={{
-								duration: 0.7,
-								ease: "easeInOut",
-							}}
-							className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
-						>
-							<div className="relative flex items-center justify-center">
-								<Checkmark />
-							</div>
-						</motion.div>
-						Logged in!
-					</>
-				) : null}
-			</div>
-		</Card>
+		<div className="relative flex flex-col gap-2 mx-auto h-full w-full max-w-[250px]">
+			<AnimatePresence initial={false} mode="wait">
+				{activeStep < 2 ? (
+					<motion.div
+						key="steps"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="flex flex-col"
+					>
+						{steps.map((Comp, i) => (
+							<Fragment key={i}>
+								<div className="w-full p-4 relative">
+									{activeStep === i && (
+										<motion.div
+											layoutId="active-step-indicator"
+											className="absolute inset-0 w-full rounded-xl border border-gray-800 bg-gray-900"
+											transition={{
+												type: "spring",
+												damping: 25,
+											}}
+										/>
+									)}
+									<div className="relative w-full">
+										<Comp
+											isActive={i === activeStep}
+											setUser={_setUser}
+											nextStep={nextStep}
+										/>
+									</div>
+								</div>
+								{i !== steps.length - 1 && (
+									<Separator margin={activeStep === i + 1} />
+								)}
+							</Fragment>
+						))}
+					</motion.div>
+				) : (
+					<motion.div
+						key="welcome"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="bg-gray-900 border flex-col gap-4 border-gray-800 flex items-center justify-center p-4 rounded-xl"
+					>
+						<span className="text-[4rem]">👋🏻</span>
+						<span className="text-lg">Welcome!</span>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
+}
+
+function Separator(props: { margin?: boolean }) {
+	return (
+		<motion.div
+			animate={{
+				marginTop: props.margin ? "-0.5rem" : "0.5rem",
+				marginBottom: props.margin ? "0.5rem" : "-0.5rem",
+			}}
+			transition={{ duration: 0.5, type: "tween" }}
+			className={cn("p-4 ml-8 my-2 border-l border-l-gray-800")}
+		/>
 	);
 }
 
@@ -159,37 +172,43 @@ function Resizeable(props: { children: ReactNode }) {
 	);
 }
 
-function Loader() {
-	return (
-		<div className="box-border h-12 w-12 animate-spin-slow rounded-full border-2 border-gray-400 border-r-gray-600" />
-	);
-}
-
 function Checkmark() {
 	return (
-		<svg
-			className="h-12 w-12 text-white"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			strokeWidth={2}
+		<motion.div
+			initial={{ scale: 0.5, opacity: 0 }}
+			animate={{ scale: 1, opacity: 1 }}
+			transition={{
+				duration: 0.7,
+				ease: "easeInOut",
+			}}
+			className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
 		>
-			<motion.path
-				initial={{ pathLength: 0 }}
-				animate={{
-					pathLength: 1,
-				}}
-				transition={{
-					duration: 0.5,
-					delay: 0.25,
-					type: "tween",
-					ease: "easeOut",
-				}}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M5 13l4 4L19 7"
-			/>
-		</svg>
+			<div className="relative flex items-center justify-center">
+				<svg
+					className="h-5 w-5 text-white"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
+					<motion.path
+						initial={{ pathLength: 0 }}
+						animate={{
+							pathLength: 1,
+						}}
+						transition={{
+							duration: 0.5,
+							delay: 0.25,
+							type: "tween",
+							ease: "easeOut",
+						}}
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M5 13l4 4L19 7"
+					/>
+				</svg>
+			</div>
+		</motion.div>
 	);
 }
 
@@ -204,3 +223,98 @@ function ignoreCircularReferences() {
 		return value;
 	};
 }
+
+// useEffect(() => {
+// 	if (verifyQuery.status === "loading") {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "login");
+// 			newSteps[index]!.status = "loading";
+
+// 			return newSteps;
+// 		});
+
+// 		return;
+// 	}
+
+// 	if (verifyQuery.isError) {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "login");
+// 			newSteps[index]!.status = "failed";
+
+// 			return newSteps;
+// 		});
+
+// 		return;
+// 	}
+
+// 	const timeouts: number[] = [];
+
+// 	if (verifyQuery.data) {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "login");
+// 			newSteps[index]!.status = "success";
+
+// 			return newSteps;
+// 		});
+// 		syncMutation.mutate();
+
+// 		timeouts.push(
+// 			setTimeout(() => {
+// 				// Entrypoint.tsx will redirect to /app if userId is set
+// 				// setUser(verifyQuery.data);
+// 			}, 1000)
+// 		);
+// 	}
+
+// 	return () => {
+// 		timeouts.forEach(clearTimeout);
+// 	};
+// }, [verifyQuery.status]);
+
+// useEffect(() => {
+// 	if (syncMutation.isLoading) {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "sync");
+// 			newSteps[index]!.status = "loading";
+
+// 			return newSteps;
+// 		});
+
+// 		return;
+// 	}
+
+// 	if (syncMutation.isError) {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "sync");
+// 			newSteps[index]!.status = "failed";
+
+// 			return newSteps;
+// 		});
+
+// 		return;
+// 	}
+
+// 	const timeouts: number[] = [];
+
+// 	if (syncMutation.isSuccess) {
+// 		setSteps((steps) => {
+// 			const newSteps = [...steps];
+// 			const index = newSteps.findIndex((step) => step.id === "sync");
+// 			newSteps[index]!.status = "success";
+
+// 			return newSteps;
+// 		});
+
+// 		timeouts.push(
+// 			setTimeout(() => {
+// 				// Entrypoint.tsx will redirect to /app if userId is set
+// 				// setUser(verifyQuery.data);
+// 			}, 1000)
+// 		);
+// 	}
+// }, [syncMutation.status]);

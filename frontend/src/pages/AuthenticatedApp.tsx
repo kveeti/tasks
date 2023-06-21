@@ -21,7 +21,7 @@ export function AuthenticatedApp() {
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}
-				transition={{ duration: 0.2 }}
+				transition={{ duration: 0.5, ease: "easeInOut" }}
 			>
 				<Routes>
 					<Route path="/app" element={<AppLayout />}>
