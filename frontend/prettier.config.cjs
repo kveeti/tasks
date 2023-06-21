@@ -6,9 +6,10 @@ module.exports = {
 	singleQuote: false,
 	semi: true,
 	useTabs: true,
-
-	plugins: [require("./prettier.plugins.cjs")],
-
+    plugins: [
+        require("prettier-plugin-tailwindcss"),
+        require('@trivago/prettier-plugin-sort-imports'),
+    ],
 	importOrder: ["<THIRD_PARTY_MODULES>", "^@/(.*)$", "^[./]"],
 	importOrderSeparation: true,
 	importOrderSortSpecifiers: true,
