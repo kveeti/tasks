@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
 import type { AriaButtonProps } from "@react-types/button";
@@ -11,7 +12,7 @@ import isYesterday from "date-fns/isYesterday";
 import startOfDay from "date-fns/startOfDay";
 import subDays from "date-fns/subDays";
 import { useLiveQuery } from "dexie-react-hooks";
-import { motion, useAnimation } from "framer-motion";
+import { AnimatePresence, motion, useAnimate, useAnimation, useIsPresent } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus } from "lucide-react";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import colors from "tailwindcss/colors";
@@ -22,6 +23,7 @@ import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button, SelectButton } from "@/Ui/NewButton";
 import { type DbTask, addNotSynced, db } from "@/db/db";
+import { useDbTags } from "@/db/useCommonDb";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { sleep } from "@/utils/sleep";
@@ -31,6 +33,7 @@ import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
 
 export function AppTasksPage() {
+	const [createdTask, setCreatedTask] = useState<DbTask | null>(null);
 	const [selectedDay, setSelectedDay] = useState(startOfDay(new Date()));
 	const formattedSelectedDay = isToday(selectedDay)
 		? "today"
@@ -50,10 +53,14 @@ export function AppTasksPage() {
 		});
 	}
 
-	const { dbTags } = useTimerContext();
+	const dbTags = useDbTags();
 	const dbTasks = useLiveQuery(
 		() =>
-			db.tasks.filter((t) => !t.deleted_at && isSameDay(t.started_at, selectedDay)).toArray(),
+			db.tasks
+				.orderBy("created_at")
+				.filter((t) => !t.deleted_at && isSameDay(t.started_at, selectedDay))
+				.reverse()
+				.toArray(),
 		[selectedDay]
 	);
 
@@ -68,29 +75,34 @@ export function AppTasksPage() {
 				<div className="flex items-center justify-between gap-4 px-4 pt-4">
 					<h1 className="text-2xl font-bold">tasks</h1>
 
-					<NewTask />
+					<NewTask setCreatedTask={setCreatedTask} />
 				</div>
 
-				<div className="flex h-full flex-col gap-2 overflow-auto p-4">
-					{dbTasksWithTags?.map((task) => (
-						<Task>
-							<div className="flex w-full items-center justify-between gap-3">
-								<div className="flex items-center gap-3">
-									<div
-										className="h-3 w-3 rounded-full"
-										style={{ backgroundColor: task.tag.color }}
-									/>
-
-									<span>{task.tag.label}</span>
+				<div className="flex h-full flex-col overflow-auto p-4">
+					<AnimatePresence initial={false}>
+						{dbTasksWithTags?.map((task, i) => (
+							<Task
+								key={task.id}
+								isCreatedTask={createdTask?.id === task.id}
+								resetCreatedTask={() => setCreatedTask(null)}
+								className={cn(i !== dbTasksWithTags.length && "mb-2")}
+							>
+								<div className="flex w-full items-center justify-between gap-3">
+									<div className="flex items-center gap-3">
+										<div
+											className="h-3 w-3 rounded-full"
+											style={{ backgroundColor: task.tag.color }}
+										/>
+										<span>{task.tag.label}</span>
+									</div>
+									<span className="text-gray-400">
+										{format(task.started_at, "HH:mm")} -{" "}
+										{format(task.stopped_at ?? task.expires_at, "HH:mm")}
+									</span>
 								</div>
-
-								<span className="text-gray-400">
-									{format(task.started_at, "HH:mm")} -{" "}
-									{format(task.stopped_at ?? task.expires_at, "HH:mm")}
-								</span>
-							</div>
-						</Task>
-					))}
+							</Task>
+						))}
+					</AnimatePresence>
 				</div>
 
 				<div className="border-t border-t-gray-800 bg-gray-900 p-4">
@@ -113,17 +125,28 @@ export function AppTasksPage() {
 	);
 }
 
-function Task(props: ComponentProps<"button"> & AriaButtonProps & { isCreatedTag?: boolean }) {
-	const ref = useRef<HTMLButtonElement | null>(null);
-	const controls = useAnimation();
+function Task(
+	props: ComponentProps<"button"> &
+		AriaButtonProps & { isCreatedTask: boolean; resetCreatedTask: () => void }
+) {
+	const [ref, animate] = useAnimate();
+	const [wrapperRef, wrapperAnimate] = useAnimate();
+	const isPresent = useIsPresent();
 
 	const aria = useButton(
 		{
 			...props,
+			onPressStart: async () => {
+				animate(ref.current, { backgroundColor: colors.neutral[800] }, { duration: 0 });
+			},
+			onPressEnd: async () => {
+				animate(ref.current, {
+					backgroundColor: "rgb(10 10 10 / 0.5)",
+					transition: { duration: 0.4 },
+				});
+			},
 			onPress: async (e) => {
-				controls.set({ backgroundColor: colors.neutral[800] });
-
-				controls.start({
+				animate(ref.current, {
 					backgroundColor: "rgb(10 10 10 / 0.5)",
 					transition: { duration: 0.4 },
 				});
@@ -137,47 +160,55 @@ function Task(props: ComponentProps<"button"> & AriaButtonProps & { isCreatedTag
 	);
 
 	useEffect(() => {
-		if (!props.isCreatedTag) return;
+		if (!isPresent || !props.isCreatedTask) return;
 
-		controls.set({ backgroundColor: colors.neutral[700] });
+		(async () => {
+			wrapperRef.current.style = "height: 0; opacity: 0;";
+			ref.current.style = `background-color: ${colors.neutral[700]}`;
 
-		controls.start({
-			backgroundColor: "rgb(10 10 10 / 0.5)",
-			transition: { duration: 0.5 },
-		});
+			await animate(wrapperRef.current, { height: "auto", opacity: 1 });
+			animate(ref.current, {
+				backgroundColor: "rgb(10 10 10 / 0.5)",
+				transition: { duration: 0.4 },
+			});
+
+			props.resetCreatedTask();
+		})();
+
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [isPresent]);
 
 	return (
-		<FocusRing focusRingClass="outline-gray-300">
-			{/* @ts-expect-error dont know how to fix this */}
-			<motion.button
-				{...aria.buttonProps}
-				ref={ref}
-				animate={controls}
-				className={cn(
-					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
-					props.className
-				)}
-			>
-				{props.children}
-			</motion.button>
-		</FocusRing>
+		<div ref={wrapperRef}>
+			<FocusRing focusRingClass="outline-gray-300">
+				<button
+					{...aria.buttonProps}
+					ref={ref}
+					className={cn(
+						"flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2",
+						props.className
+					)}
+				>
+					{props.children}
+				</button>
+			</FocusRing>
+		</div>
 	);
 }
 
 const addTasksFormSchema = z.object({
-	start: z.string(),
+	start: z.string().transform(Date),
 	duration: z.number(),
 	tagId: z.string(),
 });
 
-function NewTask() {
+function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 	const [isOpen, setIsOpen] = useState(false);
 
-	const addTasksForm = useForm<z.infer<typeof addTasksFormSchema>>({
+	const newTaskForm = useForm<z.infer<typeof addTasksFormSchema>>({
+		resolver: zodResolver(addTasksFormSchema),
 		defaultValues: {
-			start: "",
+			start: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
 			duration: 0,
 			tagId: "",
 		},
@@ -198,14 +229,35 @@ function NewTask() {
 
 			await Promise.all([db.tasks.add(newTask), addNotSynced(newTask.id, "task")]);
 
-			addTasksForm.reset();
+			props.setCreatedTask(newTask);
+
+			newTaskForm.reset();
 			setIsOpen(false);
 		},
 	});
 
 	return (
 		<>
-			<Button className="rounded-full p-2" onPress={() => setIsOpen(true)}>
+			<Button
+				className="rounded-full p-2"
+				onPress={async () => {
+					// setIsOpen(true)
+					const newTask: DbTask = {
+						id: createId(),
+						tag_id: "01H3H139RPYQ5049REEQEDEXKZ",
+						started_at: new Date(),
+						expires_at: addHours(new Date(), 1),
+						stopped_at: null,
+						deleted_at: null,
+						updated_at: new Date(),
+						created_at: new Date(),
+					};
+
+					await Promise.all([db.tasks.add(newTask), addNotSynced(newTask.id, "task")]);
+
+					props.setCreatedTask(newTask);
+				}}
+			>
 				<Plus className="h-4 w-4" />
 			</Button>
 
@@ -213,10 +265,20 @@ function NewTask() {
 				<div className="flex flex-col gap-4">
 					<h1 className="text-2xl font-bold">new task</h1>
 
-					<form onSubmit={addTasksForm.handleSubmit} className="flex flex-col gap-4">
-						<Input type="datetime-local" label="start" required />
+					<form onSubmit={newTaskForm.handleSubmit} className="flex flex-col gap-4">
+						<Input
+							type="datetime-local"
+							label="start"
+							required
+							{...newTaskForm.register("start")}
+						/>
 
-						<Input type="number" label="(h) duration" required />
+						<Input
+							type="number"
+							label="(h) duration"
+							required
+							{...newTaskForm.register("duration", { valueAsNumber: true })}
+						/>
 
 						<div className="flex flex-col gap-1">
 							<Label id="select-tag" required>
@@ -224,8 +286,8 @@ function NewTask() {
 							</Label>
 
 							<NewTaskSelectTag
-								selectedTagId={addTasksForm.watch("tagId")}
-								onSelect={(tagId) => addTasksForm.setValue("tagId", tagId)}
+								selectedTagId={newTaskForm.watch("tagId")}
+								onSelect={(tagId) => newTaskForm.setValue("tagId", tagId)}
 							/>
 						</div>
 
