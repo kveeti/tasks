@@ -2,6 +2,8 @@ import differenceInSeconds from "date-fns/differenceInSeconds";
 import { useLiveQuery } from "dexie-react-hooks";
 import { type ReactNode, useEffect, useState } from "react";
 
+import { useDbTags } from "@/db/useCommonDb";
+
 import { type DbTaskWithTag, db } from "../../db/db";
 import { createCtx } from "../../utils/createContext";
 import { useSetInterval } from "../../utils/useSetInterval";
@@ -17,9 +19,7 @@ export function TimerContextProvider(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const dbTags = useLiveQuery(() => db.tags.toArray(), [])?.sort(
-		(a, b) => +b.created_at - +a.created_at
-	);
+	const dbTags = useDbTags();
 	const dbActiveTasks = useLiveQuery(async () => {
 		const now = new Date();
 
