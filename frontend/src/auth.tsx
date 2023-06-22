@@ -21,7 +21,11 @@ export function useUser() {
 export function UserCtxProvider(props: { children: ReactNode }) {
 	const contextValue = useContextValue();
 
-	return <Context.Provider value={contextValue}>{props.children}</Context.Provider>;
+	return (
+		<Context.Provider value={contextValue}>
+			{!contextValue.isLoading && props.children}
+		</Context.Provider>
+	);
 }
 
 function useContextValue() {
