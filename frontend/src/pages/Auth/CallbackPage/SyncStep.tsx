@@ -2,11 +2,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { sync } from "@/utils/Syncing";
+import { useSyncing } from "@/utils/Syncing";
 import { sleep } from "@/utils/sleep";
 
 export function SyncStep(props: { isActive: boolean; nextStep: () => void }) {
 	const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+	const { sync } = useSyncing();
 
 	useEffect(() => {
 		if (!props.isActive) return;

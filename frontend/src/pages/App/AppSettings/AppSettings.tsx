@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
-import { useUser } from "@/auth";
-import { useSyncingEnabled } from "@/utils/Syncing";
+import { useUser, useUserContext } from "@/auth";
+import { db } from "@/db/db";
+import { useSyncing } from "@/utils/Syncing";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
@@ -39,7 +40,8 @@ function deleteAccountFormSchema(userEmail: string) {
 }
 
 function DeleteAccount() {
-	const { setIsSyncingEnabled } = useSyncingEnabled();
+	const { disableSync, enableSync } = useSyncing();
+	const { logout } = useUserContext();
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [submitButtonStatus, setSubmitButtonStatus] = useState<
 		"idle" | "loading" | "success" | "error"
@@ -56,17 +58,23 @@ function DeleteAccount() {
 	const deleteAccountForm = useForm({
 		resolver: zodResolver(deleteAccountFormSchema(user.email)),
 		defaultValues: { email: "" },
-		onSubmit: async (values) => {
+		onSubmit: async () => {
 			setSubmitButtonStatus("loading");
-			setIsSyncingEnabled(false);
+			disableSync();
+
 			const [res] = await Promise.allSettled([
 				deleteAccountMutation.mutateAsync(),
 				sleep(1000),
 			]);
 
 			if (res.status === "fulfilled") {
-				await sleep(1000);
 				setSubmitButtonStatus("success");
+
+				enableSync();
+				await sleep(1000);
+				await logout();
+
+				setSubmitButtonStatus("idle");
 			} else {
 				setSubmitButtonStatus("error");
 				await sleep(1500);
@@ -90,6 +98,7 @@ function DeleteAccount() {
 					</p>
 
 					<Input
+						type="email"
 						{...deleteAccountForm.register("email")}
 						error={deleteAccountForm.formState.errors.email?.message}
 					/>
@@ -114,11 +123,25 @@ function DeleteAccount() {
 									className="box-border h-4 w-4 animate-spin-slow rounded-full border-2 border-gray-400 border-r-gray-600"
 								/>
 							) : submitButtonStatus === "success" ? (
-								<Checkmark />
+								<Checkmark key="check" />
 							) : submitButtonStatus === "error" ? (
-								"failed"
+								<motion.span
+									key="error"
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+								>
+									failed
+								</motion.span>
 							) : (
-								"delete"
+								<motion.span
+									key="error"
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+								>
+									delete
+								</motion.span>
 							)}
 						</Button>
 					</div>
@@ -130,38 +153,30 @@ function DeleteAccount() {
 
 function Checkmark() {
 	return (
-		<motion.div
-			key="checkmark"
-			initial={{ scale: 0.5, opacity: 0 }}
-			animate={{ scale: 1, opacity: 1 }}
-			transition={{ duration: 0.2, ease: "easeInOut" }}
-			className="relative flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow"
-		>
-			<div className="relative flex items-center justify-center">
-				<svg
-					className="h-5 w-5 text-white"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					strokeWidth={2}
-				>
-					<motion.path
-						initial={{ pathLength: 0 }}
-						animate={{
-							pathLength: 1,
-						}}
-						transition={{
-							duration: 0.5,
-							delay: 0.25,
-							type: "tween",
-							ease: "easeOut",
-						}}
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						d="M5 13l4 4L19 7"
-					/>
-				</svg>
-			</div>
-		</motion.div>
+		<div className="relative flex items-center justify-center">
+			<svg
+				className="h-5 w-5 text-white"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+				strokeWidth={2}
+			>
+				<motion.path
+					initial={{ pathLength: 0 }}
+					animate={{
+						pathLength: 1,
+					}}
+					transition={{
+						duration: 0.5,
+						delay: 0.25,
+						type: "tween",
+						ease: "easeOut",
+					}}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					d="M5 13l4 4L19 7"
+				/>
+			</svg>
+		</div>
 	);
 }

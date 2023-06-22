@@ -7,16 +7,19 @@ import { Entrypoint } from "./Entrypoint";
 import { ApiProvider } from "./api";
 import { UserCtxProvider } from "./auth";
 import "./main.css";
+import { SyncingContextProvider } from "./utils/Syncing";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 	<React.StrictMode>
 		<UserCtxProvider>
 			<ApiProvider>
-				<Toaster richColors position="top-center" theme="dark" />
+				<SyncingContextProvider>
+					<Toaster richColors position="top-center" theme="dark" />
 
-				<BrowserRouter>
-					<Entrypoint />
-				</BrowserRouter>
+					<BrowserRouter>
+						<Entrypoint />
+					</BrowserRouter>
+				</SyncingContextProvider>
 			</ApiProvider>
 		</UserCtxProvider>
 	</React.StrictMode>

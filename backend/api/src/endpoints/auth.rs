@@ -167,7 +167,7 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
         format!(
-            "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
+            "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
             create_token(&user.id, expires_at)?,
             expires_at.format("%a, %d %b %Y %T GMT")
         )

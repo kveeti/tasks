@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { z } from "zod";
 
+import { db } from "./db/db";
 import { createCtx } from "./utils/createContext";
 import { safeJsonParse } from "./utils/safeJsonParse";
 
@@ -48,6 +49,12 @@ function useContextValue() {
 		}
 	}
 
+	async function logout() {
+		_setUser(null);
+		await db.delete();
+		localStorage.clear();
+	}
+
 	useEffect(() => {
 		setIsLoading(true);
 		checkUser();
@@ -68,5 +75,6 @@ function useContextValue() {
 		isLoading,
 		user: _user,
 		setUser,
+		logout,
 	};
 }

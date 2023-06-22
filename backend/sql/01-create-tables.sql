@@ -6,7 +6,7 @@ CREATE TABLE "users" (
 
 CREATE TABLE "tags" (
     "id" VARCHAR(26) PRIMARY KEY,
-    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id"),
+    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "label" VARCHAR(255) NOT NULL,
     "color" VARCHAR(7) NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -16,8 +16,8 @@ CREATE TABLE "tags" (
 
 CREATE TABLE "tasks" (
     "id" VARCHAR(26) PRIMARY KEY,
-    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id"),
-    "tag_id" VARCHAR(26) NOT NULL REFERENCES "tags"("id"),
+    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "tag_id" VARCHAR(26) NOT NULL REFERENCES "tags"("id") ON DELETE CASCADE,
     "started_at" TIMESTAMP WITH TIME ZONE NOT NULL,
     "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL,
     "stopped_at" TIMESTAMP WITH TIME ZONE,
@@ -28,7 +28,7 @@ CREATE TABLE "tasks" (
 
 CREATE TABLE "notif_subs" (
     "id" VARCHAR(26) PRIMARY KEY,
-    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id"),
+    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "endpoint" VARCHAR(255) NOT NULL UNIQUE,
     "p256dh" VARCHAR(255) NOT NULL,
     "auth" VARCHAR(255) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE "notif_subs" (
 
 CREATE TABLE "notifs" (
     "id" VARCHAR(26) PRIMARY KEY,
-    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id"),
+    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "title" VARCHAR(255) NOT NULL,
     "message" VARCHAR(255) NOT NULL,
     "send_at" TIMESTAMP WITH TIME ZONE NOT NULL,

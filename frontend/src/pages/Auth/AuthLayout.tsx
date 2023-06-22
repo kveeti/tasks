@@ -1,9 +1,15 @@
+import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 
 import { useUser } from "@/auth";
+import { db } from "@/db/db";
 
 export function AuthLayout() {
 	const user = useUser();
+
+	useEffect(() => {
+		db.open();
+	}, []);
 
 	if (user) {
 		return <Navigate to="/app" />;

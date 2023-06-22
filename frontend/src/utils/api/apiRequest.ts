@@ -9,6 +9,7 @@ type Props = {
 	method: string;
 	body?: any;
 	query?: URLSearchParams;
+    signal?: AbortSignal;
 };
 
 export async function apiRequest<TReturnValue>(props: Props) {
@@ -21,6 +22,7 @@ export async function apiRequest<TReturnValue>(props: Props) {
 				body: JSON.stringify(props.body),
 				headers: { "Content-Type": "application/json" },
 			}),
+            signal: props.signal,
 		}
 	).then(async (res) => {
 		const json = await res.json().catch(() => null);
