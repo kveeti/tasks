@@ -1,21 +1,40 @@
 import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { db } from "@/db/db";
 
 import { apiRequest } from "./api/apiRequest";
 import type { ApiTag, ApiTask } from "./api/types";
+import { createCtx } from "./createContext";
 import { useSetInterval } from "./useSetInterval";
 
-export function useSyncing() {
-	useSetInterval(sync, 5000);
-	useEffect(() => {
-		sync();
-	}, []);
+const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
+
+export const useSyncingEnabled = useContextInner;
+
+function useContextValue() {
+	const [isSyncingEnabled, setIsSyncingEnabled] = useState(false);
+
+	return {
+		isSyncingEnabled,
+		setIsSyncingEnabled,
+	};
+}
+
+export function SyncingContextProvider(props: { children: React.ReactNode }) {
+	const value = useContextValue();
+
+	return <Context.Provider value={value}>{props.children}</Context.Provider>;
 }
 
 export function useSync() {
-	return useMutation(sync);
+	const { isSyncingEnabled } = useSyncingEnabled();
+
+	useSetInterval(sync, isSyncingEnabled ? 5000 : null);
+	useEffect(() => {
+		if (!isSyncingEnabled) return;
+		sync();
+	}, []);
 }
 
 export async function sync() {
