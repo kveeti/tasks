@@ -1,18 +1,18 @@
-import { Menu } from "@headlessui/react";
-import { ChevronDown } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { useState } from "react";
-import { Fragment } from "react";
 import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
-import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Ui/Select";
-import { cn } from "@/utils/classNames";
+import { useUser } from "@/auth";
+import { useSyncingEnabled } from "@/utils/Syncing";
+import { apiRequest } from "@/utils/api/apiRequest";
+import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
-import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
 import { TurnOnNotifications } from "./Notifications";
 
@@ -22,115 +22,146 @@ export function AppSettingsPage() {
 			<div className="flex flex-col gap-2 p-4">
 				<TurnOnNotifications />
 
-				<AddTasks />
+				<DeleteAccount />
 			</div>
 		</WithAnimation>
 	);
 }
 
-const addTasksFormSchema = z.object({
-	start: z.string(),
-	duration: z.number(),
-	tagId: z.string(),
-});
+function deleteAccountFormSchema(userEmail: string) {
+	return z.object({
+		email: z
+			.string()
+			.email()
+			.nonempty()
+			.refine((email) => email === userEmail, { message: "emails don't match" }),
+	});
+}
 
-function AddTasks() {
-	const { dbTags } = useTimerContext();
-	const [isOpen, setIsOpen] = useState(false);
+function DeleteAccount() {
+	const { setIsSyncingEnabled } = useSyncingEnabled();
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [submitButtonStatus, setSubmitButtonStatus] = useState<
+		"idle" | "loading" | "success" | "error"
+	>("idle");
+	const user = useUser();
 
-	const addTasksForm = useForm<z.infer<typeof addTasksFormSchema>>({
-		defaultValues: {
-			start: "",
-			duration: 0,
-			tagId: "",
-		},
-		onSubmit: (values) => {
-			console.log(values);
+	const deleteAccountMutation = useMutation(() =>
+		apiRequest<void>({
+			method: "DELETE",
+			path: "/users/me",
+		})
+	);
+
+	const deleteAccountForm = useForm({
+		resolver: zodResolver(deleteAccountFormSchema(user.email)),
+		defaultValues: { email: "" },
+		onSubmit: async (values) => {
+			setSubmitButtonStatus("loading");
+			setIsSyncingEnabled(false);
+			const [res] = await Promise.allSettled([
+				deleteAccountMutation.mutateAsync(),
+				sleep(1000),
+			]);
+
+			if (res.status === "fulfilled") {
+				await sleep(1000);
+				setSubmitButtonStatus("success");
+			} else {
+				setSubmitButtonStatus("error");
+				await sleep(1500);
+				setSubmitButtonStatus("idle");
+			}
 		},
 	});
 
 	return (
 		<>
-			<Button onPress={() => setIsOpen(true)}>add tasks</Button>
+			<Button onPress={() => setIsModalOpen(true)}>Delete Account</Button>
 
-			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-				<div className="flex flex-col gap-4">
-					<h1 className="text-2xl font-bold">add tasks</h1>
+			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+				<form onSubmit={deleteAccountForm.handleSubmit} className="flex flex-col gap-4">
+					<h1 className="text-2xl font-bold leading-none">delete account</h1>
 
-					<form onSubmit={addTasksForm.handleSubmit} className="flex flex-col gap-4">
-						<Input type="datetime-local" label="start" required />
+					<p className="text-gray-400">this action cannot be undone.</p>
 
-						<Input type="number" label="(h) duration" required />
+					<p className="text-gray-400">
+						type your email address ({user.email}) to confirm:
+					</p>
 
-						<div className="flex flex-col gap-1">
-							<Label id="select-tag" required>
-								tag
-							</Label>
+					<Input
+						{...deleteAccountForm.register("email")}
+						error={deleteAccountForm.formState.errors.email?.message}
+					/>
 
-							{/* <Select
-								required
-								onValueChange={(v) => addTasksForm.setValue("tagId", v)}
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="select a tag" />
-								</SelectTrigger>
+					<div className="flex gap-2 w-full">
+						<Button
+							className="w-full p-3"
+							onPress={() => setIsModalOpen(false)}
+							isSecondary
+						>
+							cancel
+						</Button>
 
-								<SelectContent id="select-tag">
-									{dbTags?.map((tag) => (
-										<SelectItem value={tag.id}>
-											<div className="flex items-center gap-3">
-												<div
-													className="h-3 w-3 rounded-full"
-													style={{ backgroundColor: tag.color }}
-												/>
-
-												<span>{tag.label}</span>
-											</div>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select> */}
-
-							<Menu as="div" className="relative z-10 inline-block">
-								<Menu.Button className="flex w-full items-center justify-between rounded-xl border border-gray-600 bg-gray-800 p-3 outline-none outline-2 transition-[outline,_color,_background,_border] duration-200 focus-visible:outline focus-visible:outline-gray-500">
-									<span>select a tag</span>
-									<ChevronDown className="h-4 w-4 opacity-50" />
-								</Menu.Button>
-
-								<Menu.Items className="absolute right-0 mt-1.5 w-full rounded-xl border border-gray-800 bg-gray-900 p-1.5 shadow-md outline-none">
-									{dbTags?.map((tag) => (
-										<Menu.Item key={tag.id} as={Fragment}>
-											{({ active }) => (
-												<div
-													className={cn(
-														"relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 outline-none",
-														active && "bg-gray-800"
-													)}
-												>
-													{tag.label}
-												</div>
-											)}
-										</Menu.Item>
-									))}
-								</Menu.Items>
-							</Menu>
-						</div>
-
-						<div className="flex w-full gap-2 pt-2">
-							<Button
-								onPress={() => setIsOpen(false)}
-								className="flex-1 p-4"
-								isSecondary
-							>
-								cancel
-							</Button>
-							<Button className="flex-1 p-4" type="submit">
-								add
-							</Button>
-						</div>
-					</form>
-				</div>
+						<Button className="w-full p-3" type="submit">
+							{submitButtonStatus === "loading" ? (
+								<motion.div
+									key="loader"
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.2, ease: "easeInOut" }}
+									className="box-border h-4 w-4 animate-spin-slow rounded-full border-2 border-gray-400 border-r-gray-600"
+								/>
+							) : submitButtonStatus === "success" ? (
+								<Checkmark />
+							) : submitButtonStatus === "error" ? (
+								"failed"
+							) : (
+								"delete"
+							)}
+						</Button>
+					</div>
+				</form>
 			</Modal>
 		</>
+	);
+}
+
+function Checkmark() {
+	return (
+		<motion.div
+			key="checkmark"
+			initial={{ scale: 0.5, opacity: 0 }}
+			animate={{ scale: 1, opacity: 1 }}
+			transition={{ duration: 0.2, ease: "easeInOut" }}
+			className="relative flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow"
+		>
+			<div className="relative flex items-center justify-center">
+				<svg
+					className="h-5 w-5 text-white"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					strokeWidth={2}
+				>
+					<motion.path
+						initial={{ pathLength: 0 }}
+						animate={{
+							pathLength: 1,
+						}}
+						transition={{
+							duration: 0.5,
+							delay: 0.25,
+							type: "tween",
+							ease: "easeOut",
+						}}
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						d="M5 13l4 4L19 7"
+					/>
+				</svg>
+			</div>
+		</motion.div>
 	);
 }
