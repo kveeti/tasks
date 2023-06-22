@@ -18,16 +18,22 @@ export const Input = forwardRef<HTMLInputElement, Props>(
 	({ label, required, id, error, ...rest }, ref) => {
 		const innerId = useId();
 
+		const hasError = !!error;
+
 		if (!label)
 			return (
 				<div className="flex flex-col">
-					<InnerInput ref={ref} required={required} id={id ?? innerId} {...rest} />
+					<InnerInput
+						ref={ref}
+						required={required}
+						id={id ?? innerId}
+						invalid={hasError}
+						{...rest}
+					/>
 
 					<Error message={error} />
 				</div>
 			);
-
-		const hasError = !!error;
 
 		return (
 			<div className="flex flex-col">
