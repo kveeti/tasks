@@ -85,7 +85,7 @@ function DeleteAccount() {
 
 	return (
 		<>
-			<Button onPress={() => setIsModalOpen(true)}>Delete Account</Button>
+			<Button onPress={() => setIsModalOpen(true)}>delete account</Button>
 
 			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<form onSubmit={deleteAccountForm.handleSubmit} className="flex flex-col gap-4">
