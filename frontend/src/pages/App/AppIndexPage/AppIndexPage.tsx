@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { addSeconds } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
@@ -8,6 +9,7 @@ import { Time } from "@/Ui/Counter";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
 import { type DbTask, addNotSynced, db } from "@/db/db";
+import { apiRequest } from "@/utils/api/apiRequest";
 import { createId } from "@/utils/createId";
 
 import { useTimerContext } from "../TimerContext";
@@ -20,6 +22,18 @@ export function AppIndexPage() {
 	const [time, setTime] = useState(0);
 
 	const isRunning = !!selectedTagTime;
+
+	const addNotifMutation = useMutation<
+		void,
+		unknown,
+		{ title: string; message: string; send_at: string }
+	>((body) =>
+		apiRequest({
+			method: "POST",
+			path: "/notifs",
+			body,
+		})
+	);
 
 	function addTime(seconds: number) {
 		setTime(time + seconds);
@@ -52,7 +66,15 @@ export function AppIndexPage() {
 			updated_at: new Date(),
 		};
 
-		await Promise.all([db.tasks.add(task), addNotSynced(task.id, "task")]);
+		await Promise.all([
+			addNotifMutation.mutateAsync({
+				title: "Timer finished",
+				message: `Your ${selectedTag.label} timer has finished`,
+				send_at: expires_at.toISOString(),
+			}),
+			db.tasks.add(task),
+			addNotSynced(task.id, "task"),
+		]);
 	}
 
 	function stopTimer() {
@@ -99,13 +121,13 @@ export function AppIndexPage() {
 									</Button>
 								</div>
 								<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
-									<Button className="w-full p-2" onPress={() => addTime(1800)}>
+									<Button className="w-full p-2" onPress={() => addTime(5)}>
 										<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
 										min
 									</Button>
 									<Button
 										className="w-full p-2"
-										onPress={() => subtractTime(1800)}
+										onPress={() => subtractTime(300)}
 									>
 										<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
 										min

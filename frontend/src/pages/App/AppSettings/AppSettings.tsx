@@ -1,27 +1,26 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { useUser, useUserContext } from "@/auth";
-import { db } from "@/db/db";
 import { useSyncing } from "@/utils/Syncing";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
 import { WithAnimation } from "../WithAnimation";
-import { TurnOnNotifications } from "./Notifications";
+import { EnableNotifications } from "./Notifications";
 
 export function AppSettingsPage() {
 	return (
 		<WithAnimation>
 			<div className="flex flex-col gap-2 p-4">
-				<TurnOnNotifications />
+				<EnableNotifications />
 
 				<DeleteAccount />
 			</div>

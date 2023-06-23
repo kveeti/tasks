@@ -1,5 +1,5 @@
 [package]
-name = "api"
+name = "notifications"
 version = "0.0.0"
 edition = "2021"
 
@@ -13,12 +13,8 @@ serde_json = { workspace = true }
 tokio = { workspace = true }
 sea-orm = { workspace = true }
 chrono = { workspace = true }
-reqwest = { workspace = true }
+config = { path = "../config" }
 data = { path = "../data" }
 entity = { path = "../entity" }
-config = { path = "../config" }
-auth = { path = "../auth" }
-axum = { version = "0.6.18", features = [ "headers" ]}
-hyper = "0.14.25"
-tower = "0.4.13"
-tower-http = { version = "0.3", features = [ "trace", "cors" ] }
+web-push =  { version = "0.9.5" }
+futures = { version = "0.3.28" }

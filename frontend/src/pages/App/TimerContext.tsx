@@ -19,19 +19,12 @@ export function TimerContextProvider(props: { children: ReactNode }) {
 }
 
 function useContextValue() {
-	const dbTags = useDbTags();
-	const dbActiveTasks = useLiveQuery(async () => {
-		const now = new Date();
-
-		const tasks = (
-			await db.tasks.filter((task) => task.expires_at > now && !task.stopped_at).toArray()
-		).map((task) => ({
-			...task,
-			tag: dbTags?.find((tag) => tag.id === task.tag_id)!,
-		}));
-
-		return tasks;
-	}, [dbTags]);
+	const dbTags = useDbTags([]);
+	const dbActiveTasks = useLiveQuery(
+		async () =>
+			db.tasks.filter((task) => task.expires_at > new Date() && !task.stopped_at).toArray(),
+		[]
+	);
 
 	const [activeTasks, setActiveTasks] = useState<ReturnType<typeof getTimes>>([]);
 	const [selectedTagId, setSelectedTagId] = useState<string>();
@@ -40,7 +33,14 @@ function useContextValue() {
 
 	function updateTimes() {
 		if (dbActiveTasks) {
-			setActiveTasks(getTimes(dbActiveTasks));
+			setActiveTasks(
+				getTimes(
+					dbActiveTasks.map((t) => ({
+						...t,
+						tag: dbTags?.find((tag) => tag.id === t.tag_id)!,
+					}))
+				)
+			);
 		}
 	}
 

@@ -1,76 +1,88 @@
-import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button3 } from "@/Ui/Button";
+import { Button } from "@/Ui/NewButton";
 import { apiRequest } from "@/utils/api/apiRequest";
+import { urlBase64ToUint8Array } from "@/utils/urlBase64ToUint8Array";
 
-export function TurnOnNotifications() {
-	const addNotifSubMutation = useAddNotifSubMutation();
+export function EnableNotifications() {
+	const [enabled, setEnabled] = useState(localStorage.getItem("notifs-enabled") === "1");
 
 	return (
-		<Button3
+		<Button
 			className="p-3"
-			onPress={async () => {
-				const reg = await navigator.serviceWorker.register("/notifs.js", {
-					scope: "/",
-				});
-
-				await navigator.serviceWorker.ready;
-
-				const result = await window.Notification.requestPermission();
-
-				if (result === "granted") {
-					const subscription = await reg.pushManager.subscribe({
-						userVisibleOnly: true,
-						applicationServerKey: urlBase64ToUint8Array(
-							"BJ-1I_gj6WS2XRyi4btN_V9I-hlJSuYO415rpw8T1-n03_mskX42OxMroj9gHouWy7OHE_2WmU33-Zqv3U5RnJc"
-						),
-					});
-
-					const subJson = subscription.toJSON();
-
-					if (!subJson.keys?.auth || !subJson.keys?.p256dh || !subJson.endpoint) {
-						toast.error("Failed to turn on notifications");
-						return;
-					}
-
-					await addNotifSubMutation
-						.mutateAsync({
-							endpoint: subJson.endpoint,
-							auth: subJson.keys.auth,
-							p256dh: subJson.keys.p256dh,
-						})
-						.then(() => toast.success("Turned on notifications"))
-						.catch(() => toast.error("Failed to turn on notifications"));
-				} else {
-					toast.error("You need to allow notifications to turn them on, crazy, right?");
-				}
-			}}
+			isDisabled={enabled}
+			onPress={async () =>
+				toast.promise(enableNotifications, {
+					error: "failed to enable notifications",
+					loading: "enabling notifications...",
+					success: () => {
+						setEnabled(true);
+						return "notifications enabled";
+					},
+				})
+			}
 		>
-			Turn on notifications
-		</Button3>
+			{enabled ? "notifications enabled" : "enable notifications"}
+		</Button>
 	);
 }
 
-function urlBase64ToUint8Array(base64String: string) {
-	const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-	const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-
-	const rawData = window.atob(base64);
-	const outputArray = new Uint8Array(rawData.length);
-
-	for (let i = 0; i < rawData.length; ++i) {
-		outputArray[i] = rawData.charCodeAt(i);
+async function enableNotifications() {
+	const reg = await navigator.serviceWorker.getRegistration();
+	if (!reg) {
+		throw new Error("no service worker");
 	}
-	return outputArray;
+	await navigator.serviceWorker.ready;
+
+	const existingSub = await reg.pushManager.getSubscription();
+	if (existingSub) {
+		localStorage.setItem("notifs-enabled", "1");
+		return;
+	}
+
+	const result = await createNotifSubscription(reg);
+
+	if (result.error) {
+		throw new Error(result.error);
+	} else if (!result.data) {
+		throw new Error("no data");
+	}
+
+	await apiRequest<void>({
+		method: "POST",
+		path: "/notif-subs",
+		body: {
+			endpoint: result.data.endpoint,
+			auth: result.data.auth,
+			p256dh: result.data.p256dh,
+		},
+	});
 }
 
-function useAddNotifSubMutation() {
-	return useMutation((body: { endpoint: string; auth: string; p256dh: string }) =>
-		apiRequest<void>({
-			method: "POST",
-			path: "/notif-subs",
-			body,
-		})
-	);
+async function createNotifSubscription(reg: ServiceWorkerRegistration) {
+	const result = await window.Notification.requestPermission();
+
+	if (result !== "granted") {
+		return { error: "permission denied" };
+	}
+
+	const subscription = await reg.pushManager.subscribe({
+		userVisibleOnly: true,
+		applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUB_KEY),
+	});
+
+	const subJson = subscription.toJSON();
+
+	if (!subJson.keys?.auth || !subJson.keys?.p256dh || !subJson.endpoint) {
+		return { error: "invalid subscription" };
+	}
+
+	return {
+		data: {
+			endpoint: subJson.endpoint,
+			auth: subJson.keys.auth,
+			p256dh: subJson.keys.p256dh,
+		},
+	};
 }

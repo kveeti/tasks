@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useSync } from "@/utils/Syncing";
+import { useNotifications } from "@/utils/useNotifications";
 
 import { AppIndexPage } from "./App/AppIndexPage/AppIndexPage";
 import { AppLayout } from "./App/AppLayout";
@@ -15,6 +16,8 @@ import { TimerContextProvider } from "./App/TimerContext";
 export function AuthenticatedApp() {
 	useDevActions();
 	useSync();
+
+	useNotifications();
 
 	return (
 		<TimerContextProvider>

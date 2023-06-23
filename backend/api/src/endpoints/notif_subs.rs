@@ -32,7 +32,7 @@ pub async fn add_notif_sub_endpoint(
     })
     .on_conflict(
         OnConflict::column(notif_subs::Column::Endpoint)
-            .do_nothing()
+            .update_column(notif_subs::Column::Auth)
             .to_owned(),
     )
     .exec(&state.db)

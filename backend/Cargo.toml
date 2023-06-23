@@ -5,9 +5,13 @@ lto = true
 [workspace]
 
 members = [
+    "backend",
     "api",
     "data",
-    "config"
+    "config",
+    "auth",
+    "entity",
+    "notifications"
 ]
 
 [workspace.dependencies]
@@ -25,3 +29,4 @@ sea-orm = { version = "0.11.1", features = [ "sqlx-postgres", "runtime-tokio-rus
 twilight-http = "0.15.1"
 twilight-model = "0.15.1"
 tokio = { version = "1.25.0", features = ["full"] }
+reqwest = { version = "0.11.6", features = [ "json" ] }

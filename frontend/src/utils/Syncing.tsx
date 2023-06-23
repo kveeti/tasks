@@ -1,4 +1,3 @@
-import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
 import { db } from "@/db/db";
@@ -13,28 +12,30 @@ const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>
 export const useSyncing = useContextInner;
 
 function useContextValue() {
-	const [isSyncingEnabled, setIsSyncingEnabled] = useState(false);
-    const abortControllerRef = useRef<AbortController >(new AbortController());
+	const [isSyncingEnabled, setIsSyncingEnabled] = useState(true);
+	const abortControllerRef = useRef<AbortController>(new AbortController());
 
-    function disableSync() {
-        setIsSyncingEnabled(false); 
-        abortControllerRef.current.abort();
-    }
+	function disableSync() {
+		setIsSyncingEnabled(false);
+		abortControllerRef.current.abort();
+	}
 
-    function enableSync() {
-        setIsSyncingEnabled(true); 
-        abortControllerRef.current = new AbortController();
-    }
-    
-    function sync() {
-        return  isSyncingEnabled ? _sync({signal: abortControllerRef.current.signal}) : Promise.resolve();
-    } 
+	function enableSync() {
+		setIsSyncingEnabled(true);
+		abortControllerRef.current = new AbortController();
+	}
+
+	function sync() {
+		return isSyncingEnabled
+			? _sync({ signal: abortControllerRef.current.signal })
+			: Promise.resolve();
+	}
 
 	return {
 		isSyncingEnabled,
-        disableSync,
-        enableSync,
-        sync
+		disableSync,
+		enableSync,
+		sync,
 	};
 }
 
@@ -53,7 +54,7 @@ export function useSync() {
 	}, []);
 }
 
- async function _sync(props: {signal: AbortSignal}) {
+async function _sync(props: { signal: AbortSignal }) {
 	const storageLastSyncedAt = localStorage.getItem("lastSyncedAt");
 	const lastSyncedAt = storageLastSyncedAt ? new Date(storageLastSyncedAt) : null;
 
@@ -77,7 +78,7 @@ export function useSync() {
 			tasks: notSyncedTasks,
 			tags: notSyncedTags,
 		},
-        signal: props.signal
+		signal: props.signal,
 	});
 
 	if (tags.length > 0) {

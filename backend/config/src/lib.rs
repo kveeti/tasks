@@ -29,6 +29,8 @@ pub struct Config {
     pub google_client_secret: String,
     pub port: u16,
     pub front_url: String,
+    pub vapid_public_key: String,
+    pub vapid_private_key: String,
 }
 
 impl Config {

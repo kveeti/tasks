@@ -49,7 +49,7 @@ export function Button(props: { className?: string; isSecondary?: boolean } & Ar
 				ref={ref}
 				animate={controls}
 				className={twMerge(
-					"flex cursor-default select-none items-center justify-center gap-2 rounded-xl p-2 outline-none outline-2 outline-offset-2 transition-[outline,opacity] duration-200 disabled:opacity-40",
+					"flex cursor-default select-none items-center justify-center gap-2 rounded-xl p-3 outline-none outline-2 outline-offset-2 transition-[outline,opacity] duration-200 disabled:opacity-40",
 					props.isSecondary ? "bg-gray-700" : "bg-gray-600",
 					props.className
 				)}

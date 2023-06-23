@@ -1,30 +1,20 @@
-use axum::http::HeaderValue;
 use axum::routing::delete;
 use axum::{body::Body, response::Response, routing::get, routing::post, Router};
 use config::{Env, CONFIG};
 use data::{create_id, get_db};
+use hyper::http::HeaderValue;
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
-use tracing_subscriber::EnvFilter;
-use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 use types::RequestContextStruct;
 
 mod auth;
 mod endpoints;
 pub mod types;
 
-#[tokio::main]
-async fn main() {
-    tracing_subscriber::registry()
-        .with(EnvFilter::from(
-            "api=debug,auth=debug,data=debug,sea_orm=error".to_string(),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
-
+pub async fn start_api() -> () {
     let cors = CorsLayer::new()
         .allow_methods([
             Method::GET,
@@ -71,6 +61,8 @@ async fn main() {
     let v1_notif_subs_routes =
         Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
 
+    let v1_notifs_routes = Router::new().route("/", post(endpoints::notifs::add_notif_endpoint));
+
     let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 
     let v1_users_routes =
@@ -80,7 +72,8 @@ async fn main() {
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
         .nest("/sync", v1_sync_routes)
-        .nest("/users", v1_users_routes);
+        .nest("/users", v1_users_routes)
+        .nest("/notifs", v1_notifs_routes);
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 

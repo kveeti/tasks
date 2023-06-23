@@ -60,5 +60,6 @@ function useKeybinds() {
 		["mod+2", () => navigate(links[1]!.href)],
 		["mod+3", () => navigate(links[2]!.href)],
 		["mod+4", () => navigate(links[3]!.href)],
+		["mod+,", () => navigate("/app/settings")],
 	]);
 }
