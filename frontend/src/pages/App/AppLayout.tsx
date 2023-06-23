@@ -18,7 +18,7 @@ export function AppLayout() {
 
 	return (
 		<div className="fixed h-full w-full">
-			<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-1">
+			<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
 				<div className="h-full max-h-[500px] w-full max-w-[400px] overflow-hidden rounded-3xl border border-gray-800 bg-gray-900">
 					<AnimatePresence initial={false}>
 						<Outlet />
