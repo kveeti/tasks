@@ -58,6 +58,7 @@ export function AppIndexPage() {
 		const task: DbTask = {
 			id: createId(),
 			tag_id: selectedTag.id,
+			is_manual: false,
 			started_at: new Date(),
 			expires_at,
 			stopped_at: null,

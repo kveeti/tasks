@@ -219,6 +219,7 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 			const newTask: DbTask = {
 				id: createId(),
 				tag_id: values.tagId,
+				is_manual: true,
 				started_at: startDate,
 				expires_at: endDate,
 				stopped_at: null,
@@ -238,26 +239,7 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 
 	return (
 		<>
-			<Button
-				className="rounded-full p-2"
-				onPress={async () => {
-					// setIsOpen(true)
-					const newTask: DbTask = {
-						id: createId(),
-						tag_id: "01H3H139RPYQ5049REEQEDEXKZ",
-						started_at: new Date(),
-						expires_at: addHours(new Date(), 1),
-						stopped_at: null,
-						deleted_at: null,
-						updated_at: new Date(),
-						created_at: new Date(),
-					};
-
-					await Promise.all([db.tasks.add(newTask), addNotSynced(newTask.id, "task")]);
-
-					props.setCreatedTask(newTask);
-				}}
-			>
+			<Button className="rounded-full p-2" onPress={async () => setIsOpen(true)}>
 				<Plus className="h-4 w-4" />
 			</Button>
 

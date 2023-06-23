@@ -9,6 +9,7 @@ pub struct Model {
     pub id: String,
     pub user_id: String,
     pub tag_id: String,
+    pub is_manual: bool,
     pub started_at: DateTimeWithTimeZone,
     pub expires_at: DateTimeWithTimeZone,
     pub stopped_at: Option<DateTimeWithTimeZone>,

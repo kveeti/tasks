@@ -22,7 +22,11 @@ function useContextValue() {
 	const dbTags = useDbTags([]);
 	const dbActiveTasks = useLiveQuery(
 		async () =>
-			db.tasks.filter((task) => task.expires_at > new Date() && !task.stopped_at).toArray(),
+			db.tasks
+				.filter(
+					(task) => !task.is_manual && task.expires_at > new Date() && !task.stopped_at
+				)
+				.toArray(),
 		[]
 	);
 

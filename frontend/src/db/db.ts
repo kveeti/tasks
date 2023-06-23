@@ -5,6 +5,7 @@ import { createId } from "@/utils/createId";
 export type DbTask = {
 	id: string;
 	tag_id: string | null;
+	is_manual: boolean;
 	started_at: Date;
 	expires_at: Date;
 	stopped_at: Date | null;

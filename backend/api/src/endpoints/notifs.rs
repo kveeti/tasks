@@ -29,7 +29,6 @@ pub async fn add_notif_endpoint(
         message: sea_orm::ActiveValue::Set(body.message),
         created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().into()),
         send_at: sea_orm::ActiveValue::Set(body.send_at.into()),
-        sent_at: sea_orm::ActiveValue::NotSet,
     })
     .exec(&ctx.db)
     .await

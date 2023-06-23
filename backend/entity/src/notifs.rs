@@ -11,7 +11,6 @@ pub struct Model {
     pub title: String,
     pub message: String,
     pub send_at: DateTimeWithTimeZone,
-    pub sent_at: Option<DateTimeWithTimeZone>,
     pub created_at: DateTimeWithTimeZone,
 }
 
