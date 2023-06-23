@@ -34,6 +34,7 @@ export function SelectTag() {
 					<div className="flex w-full flex-col gap-2">
 						{dbTags?.map((tag) => (
 							<Tag
+								key={tag.id}
 								tag={tag}
 								onPress={() => {
 									setSelectedTagId(tag.id);
