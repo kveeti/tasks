@@ -56,51 +56,59 @@ pub async fn start_notification_service() {
 
                     for notif in notifs.clone() {
                         let user_id = notif.user_id.to_owned();
-                        let subs = subs_by_user_id.get_mut(&user_id).unwrap();
+                        let subs = subs_by_user_id.get_mut(&user_id);
 
-                        let payload = json!({
-                            "title": notif.title,
-                            "message": notif.message,
-                        })
-                        .to_string();
-
-                        let futures = subs.iter().map(|sub| {
-                            let client = client.clone();
-
-                            let subscription_info = SubscriptionInfo::new(
-                                sub.endpoint.to_owned(),
-                                sub.p256dh.to_owned(),
-                                sub.auth.to_owned(),
-                            );
-
-                            let signature = signature_builder
-                                .to_owned()
-                                .add_sub_info(&subscription_info)
-                                .build()
-                                .unwrap();
-
-                            let mut message_builder =
-                                WebPushMessageBuilder::new(&subscription_info).unwrap();
-                            message_builder.set_payload(
-                                web_push::ContentEncoding::Aes128Gcm,
-                                payload.as_bytes(),
-                            );
-                            message_builder.set_vapid_signature(signature.clone());
-
-                            let message = message_builder.build().unwrap();
-
-                            async move {
-                                let response = client.send(message).await;
-
-                                if let Err(e) = response {
-                                    tracing::error!("Failed to send notification: {}", e);
-                                } else if let Ok(response) = response {
-                                    tracing::info!("Notification sent: {:?}", response);
-                                }
+                        if let None = subs {
+                            continue;
+                        } else if let Some(subs) = subs {
+                            if subs.len() <= 0 {
+                                continue;
                             }
-                        });
 
-                        futures::future::join_all(futures).await;
+                            let payload = json!({
+                                "title": notif.title,
+                                "message": notif.message,
+                            })
+                            .to_string();
+
+                            let futures = subs.iter().map(|sub| {
+                                let client = client.clone();
+
+                                let subscription_info = SubscriptionInfo::new(
+                                    sub.endpoint.to_owned(),
+                                    sub.p256dh.to_owned(),
+                                    sub.auth.to_owned(),
+                                );
+
+                                let signature = signature_builder
+                                    .to_owned()
+                                    .add_sub_info(&subscription_info)
+                                    .build()
+                                    .unwrap();
+
+                                let mut message_builder =
+                                    WebPushMessageBuilder::new(&subscription_info).unwrap();
+                                message_builder.set_payload(
+                                    web_push::ContentEncoding::Aes128Gcm,
+                                    payload.as_bytes(),
+                                );
+                                message_builder.set_vapid_signature(signature.clone());
+
+                                let message = message_builder.build().unwrap();
+
+                                async move {
+                                    let response = client.send(message).await;
+
+                                    if let Err(e) = response {
+                                        tracing::error!("Failed to send notification: {}", e);
+                                    } else if let Ok(response) = response {
+                                        tracing::info!("Notification sent: {:?}", response);
+                                    }
+                                }
+                            });
+
+                            futures::future::join_all(futures).await;
+                        }
                     }
                 }
 
