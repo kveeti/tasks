@@ -1,14 +1,8 @@
-import { useButton } from "@react-aria/button";
-import { FocusRing } from "@react-aria/focus";
-import type { AriaButtonProps } from "@react-types/button";
-import { motion, useAnimation } from "framer-motion";
-import { type ComponentProps, useRef, useState } from "react";
-import colors from "tailwindcss/colors";
+import { useState } from "react";
 
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
-import { cn } from "@/utils/classNames";
-import { sleep } from "@/utils/sleep";
+import { Tag } from "@/Ui/shared/Tag";
 
 import { useTimerContext } from "../TimerContext";
 
@@ -40,66 +34,16 @@ export function SelectTag() {
 					<div className="flex w-full flex-col gap-2">
 						{dbTags?.map((tag) => (
 							<Tag
-								key={tag.id}
+								tag={tag}
 								onPress={() => {
 									setSelectedTagId(tag.id);
 									setIsOpen(false);
 								}}
-							>
-								<div
-									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: tag.color }}
-								/>
-
-								{tag.label}
-							</Tag>
+							/>
 						))}
 					</div>
 				</div>
 			</Modal>
 		</>
-	);
-}
-
-function Tag(props: ComponentProps<"button"> & AriaButtonProps) {
-	const ref = useRef<HTMLButtonElement | null>(null);
-	const controls = useAnimation();
-
-	const aria = useButton(
-		{
-			...props,
-			onPress: async (e) => {
-				controls.set({ backgroundColor: colors.neutral[800] });
-
-				controls.start({
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.3 },
-				});
-
-				await sleep(200);
-
-				props.onPress?.(e);
-			},
-			// @ts-expect-error undocumented prop
-			preventFocusOnPress: true,
-		},
-		ref
-	);
-
-	return (
-		<FocusRing focusRingClass="outline-gray-300">
-			{/* @ts-expect-error dont know how to fix this */}
-			<motion.button
-				{...aria.buttonProps}
-				ref={ref}
-				animate={controls}
-				className={cn(
-					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
-					props.className
-				)}
-			>
-				{props.children}
-			</motion.button>
-		</FocusRing>
 	);
 }

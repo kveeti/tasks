@@ -13,6 +13,7 @@ import { Input } from "@/Ui/Input";
 import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
+import { Tag } from "@/Ui/shared/Tag";
 import { type DbTag, addNotSynced, db } from "@/db/db";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
@@ -45,25 +46,13 @@ export function AppTagsPage() {
 					{dbTags?.length ? (
 						<AnimatePresence initial={false}>
 							{dbTags?.map((tag) => (
-								<motion.div
+								<Tag
 									key={tag.id}
-									initial={{ opacity: 0, height: 0 }}
-									animate={{ opacity: 1, height: "auto" }}
-									exit={{ opacity: 0, height: 0 }}
-								>
-									<Tag
-										key={tag.id}
-										createdTag={createdTag?.id === tag.id}
-										onPress={() => setTagInEdit(tag)}
-									>
-										<div
-											className="h-3 w-3 rounded-full"
-											style={{ backgroundColor: tag.color }}
-										/>
-
-										{tag.label}
-									</Tag>
-								</motion.div>
+									tag={tag}
+									onPress={() => setTagInEdit(tag)}
+									isCreatedTag={tag.id === createdTag?.id}
+									resetCreatedTag={() => setCreatedTag(null)}
+								/>
 							))}
 						</AnimatePresence>
 					) : (
@@ -213,6 +202,7 @@ function EditTag(props: {
 
 				<Input
 					label="label"
+					required
 					error={editTagForm.formState.errors.label?.message}
 					{...editTagForm.register("label")}
 				/>
@@ -239,58 +229,5 @@ function EditTag(props: {
 				</div>
 			</form>
 		</Modal>
-	);
-}
-
-function Tag(props: ComponentProps<"button"> & AriaButtonProps & { createdTag: boolean }) {
-	const ref = useRef<HTMLButtonElement | null>(null);
-	const controls = useAnimation();
-
-	const aria = useButton(
-		{
-			...props,
-			onPress: async (e) => {
-				controls.set({ backgroundColor: colors.neutral[800] });
-
-				controls.start({
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.4 },
-				});
-
-				props.onPress?.(e);
-			},
-			// @ts-expect-error undocumented prop
-			preventFocusOnPress: true,
-		},
-		ref
-	);
-
-	useEffect(() => {
-		if (!props.createdTag) return;
-
-		controls.set({ backgroundColor: colors.neutral[700] });
-
-		controls.start({
-			backgroundColor: "rgb(10 10 10 / 0.5)",
-			transition: { duration: 0.5 },
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	return (
-		<FocusRing focusRingClass="outline-gray-300">
-			{/* @ts-expect-error dont know how to fix this */}
-			<motion.button
-				{...aria.buttonProps}
-				ref={ref}
-				animate={controls}
-				className={cn(
-					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
-					props.className
-				)}
-			>
-				{props.children}
-			</motion.button>
-		</FocusRing>
 	);
 }

@@ -1,7 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useButton } from "@react-aria/button";
-import { FocusRing } from "@react-aria/focus";
-import type { AriaButtonProps } from "@react-types/button";
 import addDays from "date-fns/addDays";
 import addHours from "date-fns/addHours";
 import format from "date-fns/format";
@@ -12,21 +9,21 @@ import isYesterday from "date-fns/isYesterday";
 import startOfDay from "date-fns/startOfDay";
 import subDays from "date-fns/subDays";
 import { useLiveQuery } from "dexie-react-hooks";
-import { AnimatePresence, motion, useAnimate, useAnimation, useIsPresent } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus } from "lucide-react";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
-import colors from "tailwindcss/colors";
+import { useState } from "react";
 import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
 import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button, SelectButton } from "@/Ui/NewButton";
+import { Tag } from "@/Ui/shared/Tag";
+import { Task } from "@/Ui/shared/Task";
 import { type DbTask, addNotSynced, db } from "@/db/db";
 import { useDbTags } from "@/db/useCommonDb";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
-import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
 
 import { useTimerContext } from "../TimerContext";
@@ -83,24 +80,11 @@ export function AppTasksPage() {
 						{dbTasksWithTags?.map((task, i) => (
 							<Task
 								key={task.id}
+								task={task}
 								isCreatedTask={createdTask?.id === task.id}
 								resetCreatedTask={() => setCreatedTask(null)}
 								className={cn(i !== dbTasksWithTags.length && "mb-2")}
-							>
-								<div className="flex w-full items-center justify-between gap-3">
-									<div className="flex items-center gap-3">
-										<div
-											className="h-3 w-3 rounded-full"
-											style={{ backgroundColor: task.tag.color }}
-										/>
-										<span>{task.tag.label}</span>
-									</div>
-									<span className="text-gray-400">
-										{format(task.started_at, "HH:mm")} -{" "}
-										{format(task.stopped_at ?? task.expires_at, "HH:mm")}
-									</span>
-								</div>
-							</Task>
+							/>
 						))}
 					</AnimatePresence>
 				</div>
@@ -122,77 +106,6 @@ export function AppTasksPage() {
 				</div>
 			</div>
 		</WithAnimation>
-	);
-}
-
-function Task(
-	props: ComponentProps<"button"> &
-		AriaButtonProps & { isCreatedTask: boolean; resetCreatedTask: () => void }
-) {
-	const [ref, animate] = useAnimate();
-	const [wrapperRef, wrapperAnimate] = useAnimate();
-	const isPresent = useIsPresent();
-
-	const aria = useButton(
-		{
-			...props,
-			onPressStart: async () => {
-				animate(ref.current, { backgroundColor: colors.neutral[800] }, { duration: 0 });
-			},
-			onPressEnd: async () => {
-				animate(ref.current, {
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.4 },
-				});
-			},
-			onPress: async (e) => {
-				animate(ref.current, {
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.4 },
-				});
-
-				props.onPress?.(e);
-			},
-			// @ts-expect-error undocumented prop
-			preventFocusOnPress: true,
-		},
-		ref
-	);
-
-	useEffect(() => {
-		if (!isPresent || !props.isCreatedTask) return;
-
-		(async () => {
-			wrapperRef.current.style = "height: 0; opacity: 0;";
-			ref.current.style = `background-color: ${colors.neutral[700]}`;
-
-			await animate(wrapperRef.current, { height: "auto", opacity: 1 });
-			animate(ref.current, {
-				backgroundColor: "rgb(10 10 10 / 0.5)",
-				transition: { duration: 0.4 },
-			});
-
-			props.resetCreatedTask();
-		})();
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isPresent]);
-
-	return (
-		<div ref={wrapperRef}>
-			<FocusRing focusRingClass="outline-gray-300">
-				<button
-					{...aria.buttonProps}
-					ref={ref}
-					className={cn(
-						"flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2",
-						props.className
-					)}
-				>
-					{props.children}
-				</button>
-			</FocusRing>
-		</div>
 	);
 }
 
@@ -325,65 +238,16 @@ function NewTaskSelectTag(props: { selectedTagId: string; onSelect: (id: string)
 						{dbTags?.map((tag) => (
 							<Tag
 								key={tag.id}
+								tag={tag}
 								onPress={() => {
 									props.onSelect(tag.id);
 									setIsOpen(false);
 								}}
-							>
-								<div
-									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: tag.color }}
-								/>
-
-								{tag.label}
-							</Tag>
+							/>
 						))}
 					</div>
 				</div>
 			</Modal>
 		</>
-	);
-}
-
-function Tag(props: ComponentProps<"button"> & AriaButtonProps) {
-	const ref = useRef<HTMLButtonElement | null>(null);
-	const controls = useAnimation();
-
-	const aria = useButton(
-		{
-			...props,
-			onPress: async (e) => {
-				controls.set({ backgroundColor: colors.neutral[800] });
-
-				controls.start({
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.3 },
-				});
-
-				await sleep(200);
-
-				props.onPress?.(e);
-			},
-			// @ts-expect-error undocumented prop
-			preventFocusOnPress: true,
-		},
-		ref
-	);
-
-	return (
-		<FocusRing focusRingClass="outline-gray-300">
-			{/* @ts-expect-error dont know how to fix this */}
-			<motion.button
-				{...aria.buttonProps}
-				ref={ref}
-				animate={controls}
-				className={cn(
-					"flex w-full cursor-default items-center gap-4 rounded-xl bg-gray-950/50 p-4 outline-none outline-2 outline-offset-2",
-					props.className
-				)}
-			>
-				{props.children}
-			</motion.button>
-		</FocusRing>
 	);
 }
