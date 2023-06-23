@@ -40,7 +40,9 @@ export function useNotifications() {
 					auth: subJson.keys.auth,
 					p256dh: subJson.keys.p256dh,
 				},
-			}).catch(() => null);
+			})
+				.catch(() => null)
+				.then(() => localStorage.setItem("notifs-enabled", "1"));
 		})();
 	}, []);
 }
