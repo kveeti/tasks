@@ -7,7 +7,7 @@ export default defineConfig({
 	plugins: [
 		react(),
 		VitePWA({
-			mode: "development",
+			mode: process.env.NODE_ENV === "production" ? "production" : "development",
 			base: "/",
 			strategies: "injectManifest",
 			srcDir: "src",
