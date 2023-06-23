@@ -14,10 +14,10 @@ export function EnableNotifications() {
 			isDisabled={enabled}
 			onPress={async () =>
 				toast.promise(enableNotifications, {
-					error: (err) =>
-						`failed to enable notifications: ${
-							"messaeg" in err ? err.message : JSON.stringify(err)
-						}`,
+					error: (err) => {
+						console.error("error enabling notifications:", err);
+						return "error enabling notifications";
+					},
 					loading: "enabling notifications...",
 					success: () => {
 						setEnabled(true);
