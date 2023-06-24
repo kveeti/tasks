@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
+import { Checkmark, Loader } from "@/Ui/Status";
 import { useUser, useUserContext } from "@/auth";
 import { useSyncing } from "@/utils/Syncing";
 import { apiRequest } from "@/utils/api/apiRequest";
@@ -104,23 +105,16 @@ function DeleteAccount() {
 
 					<div className="flex gap-2 w-full">
 						<Button
-							className="w-full p-3"
+							className="w-full"
 							onPress={() => setIsModalOpen(false)}
 							isSecondary
 						>
 							cancel
 						</Button>
 
-						<Button className="w-full p-3" type="submit">
+						<Button className="w-full" type="submit">
 							{submitButtonStatus === "loading" ? (
-								<motion.div
-									key="loader"
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 0.2, ease: "easeInOut" }}
-									className="box-border h-4 w-4 animate-spin-slow rounded-full border-2 border-gray-400 border-r-gray-600"
-								/>
+								<Loader key="loader" />
 							) : submitButtonStatus === "success" ? (
 								<Checkmark key="check" />
 							) : submitButtonStatus === "error" ? (
@@ -147,35 +141,5 @@ function DeleteAccount() {
 				</form>
 			</Modal>
 		</>
-	);
-}
-
-function Checkmark() {
-	return (
-		<div className="relative flex items-center justify-center">
-			<svg
-				className="h-5 w-5 text-white"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				strokeWidth={2}
-			>
-				<motion.path
-					initial={{ pathLength: 0 }}
-					animate={{
-						pathLength: 1,
-					}}
-					transition={{
-						duration: 0.5,
-						delay: 0.25,
-						type: "tween",
-						ease: "easeOut",
-					}}
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					d="M5 13l4 4L19 7"
-				/>
-			</svg>
-		</div>
 	);
 }
