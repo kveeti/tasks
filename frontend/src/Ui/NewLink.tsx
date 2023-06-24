@@ -6,15 +6,22 @@ import { Link } from "react-router-dom";
 import colors from "tailwindcss/colors";
 
 import { cn } from "@/utils/classNames";
+import { sleep } from "@/utils/sleep";
 
 const MotionLink = motion(Link);
 
-export function LinkButton(props: { children: ReactNode; to: string; className?: string }) {
+export function LinkButton(props: {
+	children: ReactNode;
+	to: string;
+	className?: string;
+	onPress?: () => void;
+}) {
 	const ref = useRef<HTMLLinkElement | null>(null);
 	const controls = useAnimation();
 
 	const aria = useLink(
 		{
+			...props,
 			onPressStart: () => {
 				controls.stop();
 				controls.set({ backgroundColor: colors.neutral[500] });
@@ -25,12 +32,15 @@ export function LinkButton(props: { children: ReactNode; to: string; className?:
 					transition: { duration: 0.4 },
 				});
 			},
-			onPress: () => {
+			onPress: async () => {
 				ref.current?.focus();
 				controls.start({
 					backgroundColor: colors.neutral[600],
 					transition: { duration: 0.4 },
 				});
+
+				await sleep(50);
+				props.onPress?.();
 			},
 			// @ts-expect-error undocumented prop
 			preventFocusOnPress: true,
@@ -39,7 +49,7 @@ export function LinkButton(props: { children: ReactNode; to: string; className?:
 	);
 
 	return (
-		<FocusRing>
+		<FocusRing focusRingClass="outline-gray-300">
 			{/* @ts-expect-error dont know how to fix this */}
 			<MotionLink
 				{...aria.linkProps}
