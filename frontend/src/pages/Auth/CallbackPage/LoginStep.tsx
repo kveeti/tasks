@@ -47,8 +47,6 @@ export function LoginStep(props: {
 
 			setStatus("success");
 
-			console.log(res.value);
-
 			props.setUser(res.value);
 
 			timeouts.push(
