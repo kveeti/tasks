@@ -2,17 +2,28 @@ import * as d3 from "d3";
 import differenceInHours from "date-fns/differenceInHours";
 import eachDayOfInterval from "date-fns/eachDayOfInterval";
 import endOfMonth from "date-fns/endOfMonth";
+import endOfWeek from "date-fns/endOfWeek";
 import format from "date-fns/format";
 import isSameDay from "date-fns/isSameDay";
 import startOfMonth from "date-fns/startOfMonth";
+import startOfWeek from "date-fns/startOfWeek";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Fragment } from "react";
 import useMeasure from "react-use-measure";
 
 import { db } from "@/db/db";
 
-export function HoursPerDayChart(props: { selectedDate: Date }) {
+export function HoursPerDayChart(props: { selectedDate: Date; interval: "month" | "week" }) {
 	const [ref, bounds] = useMeasure();
+
+	const start =
+		props.interval === "week"
+			? startOfWeek(props.selectedDate, { weekStartsOn: 1 })
+			: startOfMonth(props.selectedDate);
+	const end =
+		props.interval === "week"
+			? endOfWeek(props.selectedDate, { weekStartsOn: 1 })
+			: endOfMonth(props.selectedDate);
 
 	return (
 		<>
@@ -25,28 +36,36 @@ export function HoursPerDayChart(props: { selectedDate: Date }) {
 					height={bounds.height}
 					width={bounds.width}
 					selectedDate={props.selectedDate}
+					interval={props.interval}
+					start={start}
+					end={end}
 				/>
 			</div>
 		</>
 	);
 }
 
-function Chart(props: { width: number; height: number; selectedDate: Date }) {
-	const startOfMonthSelectedDate = startOfMonth(props.selectedDate);
-	const endOfMonthSelectedDate = endOfMonth(props.selectedDate);
-
+function Chart(props: {
+	width: number;
+	height: number;
+	selectedDate: Date;
+	interval: "month" | "week";
+	start: Date;
+	end: Date;
+}) {
 	const dbTasks = useLiveQuery(
 		() =>
 			db.tasks
 				.filter(
 					(t) =>
 						!t.deleted_at &&
-						t.started_at >= startOfMonthSelectedDate &&
-						t.started_at <= endOfMonthSelectedDate &&
-						(!!t.stopped_at || !!t.expires_at)
+						!t.is_manual &&
+						(!!t.stopped_at || !!t.expires_at) &&
+						t.started_at >= props.start &&
+						t.started_at <= props.end
 				)
 				.toArray(),
-		[props.selectedDate]
+		[props.selectedDate, props.start, props.end, props.interval]
 	);
 
 	if (!dbTasks?.length) {
@@ -54,8 +73,8 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 	}
 
 	const data = eachDayOfInterval({
-		start: startOfMonthSelectedDate,
-		end: endOfMonthSelectedDate,
+		start: props.start,
+		end: props.end,
 	}).reduce((acc, cur) => {
 		const daysTasks = dbTasks?.filter((d) => isSameDay(d.started_at, cur));
 
@@ -75,16 +94,6 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 		return acc;
 	}, [] as { date: Date; dateLabel: string; hours: number }[]);
 
-	const dates = data.map((d) => d.date);
-
-	const datesToShow = [
-		dates.at(0),
-		dates.at(Math.ceil(dates.length / 4) - 1),
-		dates.at(Math.ceil(dates.length / 2) - 1),
-		dates.at(Math.ceil((dates.length / 4) * 3) - 1),
-		dates.at(-1),
-	] as Date[];
-
 	const margin = {
 		top: 10,
 		bottom: 20,
@@ -92,9 +101,22 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 		left: 25,
 	};
 
+	const dates = data.map((d) => d.date);
+
+	const datesToShow =
+		props.interval === "week"
+			? dates
+			: ([
+					dates.at(0),
+					dates.at(Math.ceil(dates.length / 4) - 1),
+					dates.at(Math.ceil(dates.length / 2) - 1),
+					dates.at(Math.ceil((dates.length / 4) * 3) - 1),
+					dates.at(-1),
+			  ] as Date[]);
+
 	const x = d3
 		.scaleTime()
-		.domain([startOfMonth(new Date()), endOfMonth(new Date())])
+		.domain([props.start, props.end])
 		.range([margin.left, props.width - margin.right]);
 
 	const yMax = d3.max(data, (d) => d.hours) ?? 0;
@@ -114,7 +136,9 @@ function Chart(props: { width: number; height: number; selectedDate: Date }) {
 					transform={`translate(${x(date)}, ${props.height})`}
 					fill="currentColor"
 				>
-					{format(date, "d.M")}
+					{props.interval === "week"
+						? format(date, "EEE").toLowerCase()
+						: format(date, "d.M")}
 				</text>
 			))}
 

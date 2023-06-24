@@ -1,18 +1,29 @@
 import * as d3 from "d3";
 import differenceInSeconds from "date-fns/differenceInSeconds";
 import endOfMonth from "date-fns/endOfMonth";
+import endOfWeek from "date-fns/endOfWeek";
+import endOfYear from "date-fns/endOfYear";
 import secondsToHours from "date-fns/secondsToHours";
 import startOfMonth from "date-fns/startOfMonth";
+import startOfWeek from "date-fns/startOfWeek";
+import startOfYear from "date-fns/startOfYear";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Fragment } from "react";
 import useMeasure from "react-use-measure";
 
 import { type DbTag, db } from "@/db/db";
+import { useDbTags } from "@/db/useCommonDb";
 
-export function TagDistributionChart(props: { selectedDate: Date }) {
+export function TagDistributionChart(props: {
+	selectedDate: Date;
+	interval: "year" | "month" | "week";
+}) {
 	const [ref, bounds] = useMeasure();
 
-	const data = useData(props.selectedDate);
+	const data = useData({
+		selectedDate: props.selectedDate,
+		interval: props.interval,
+	});
 
 	return (
 		<>
@@ -46,7 +57,7 @@ function Chart(props: { data: Data; width: number; height: number }) {
 		.padAngle(0.005)
 		.value((d) => d.seconds);
 
-	const pieData = pie(props.data.filter((d) => d.percentage));
+	const pieData = pie(props.data);
 
 	return (
 		<svg viewBox={`0 0 ${props.width} ${props.height}`}>
@@ -101,9 +112,19 @@ function Labels(props: { data: Data }) {
 	);
 }
 
-function useData(selectedDate: Date) {
-	const startOfMonthSelectedDate = startOfMonth(selectedDate);
-	const endOfMonthSelectedDate = endOfMonth(selectedDate);
+function useData(props: { selectedDate: Date; interval: "year" | "month" | "week" }) {
+	const startOfMonthSelectedDate =
+		props.interval === "week"
+			? startOfWeek(props.selectedDate, { weekStartsOn: 1 })
+			: props.interval === "month"
+			? startOfMonth(props.selectedDate)
+			: startOfYear(props.selectedDate);
+	const endOfMonthSelectedDate =
+		props.interval === "week"
+			? endOfWeek(props.selectedDate, { weekStartsOn: 1 })
+			: props.interval === "month"
+			? endOfMonth(props.selectedDate)
+			: endOfYear(props.selectedDate);
 
 	const dbTasks = useLiveQuery(
 		() =>
@@ -116,10 +137,10 @@ function useData(selectedDate: Date) {
 						(!!t.stopped_at || !!t.expires_at)
 				)
 				.toArray(),
-		[selectedDate]
+		[props.selectedDate]
 	);
 
-	const dbTags = useLiveQuery(() => db.tags.filter((t) => !t.deleted_at).toArray(), [dbTasks]);
+	const dbTags = useDbTags([props.selectedDate]);
 	const dbTasksWith = dbTasks?.map((task) => ({
 		...task,
 		seconds: differenceInSeconds(task.stopped_at ?? task.expires_at, task.started_at),
@@ -129,7 +150,7 @@ function useData(selectedDate: Date) {
 
 	const totalSeconds = dbTasksWith?.reduce((acc, cur) => acc + cur.seconds, 0) || 0;
 
-	const data =
+	const data = (
 		dbTags?.reduce(
 			(acc, cur) => {
 				const tasks = dbTasksWith?.filter((d) => d.tag_id === cur.id) ?? [];
@@ -138,10 +159,14 @@ function useData(selectedDate: Date) {
 					.filter((d) => d.tag_id === cur.id)
 					.reduce((acc, cur) => acc + cur.seconds, 0);
 
+				const percentage = Math.round((taskSeconds / totalSeconds) * 100);
+
+				if (!percentage) return acc;
+
 				acc.push({
 					tag: cur,
 					seconds: taskSeconds,
-					percentage: Math.round((taskSeconds / totalSeconds) * 100),
+					percentage,
 				});
 
 				return acc;
@@ -151,7 +176,8 @@ function useData(selectedDate: Date) {
 				seconds: number;
 				percentage: number;
 			}[]
-		) || [];
+		) || []
+	).sort((a, b) => b.percentage - a.percentage);
 
 	return data;
 }
