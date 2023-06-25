@@ -135,7 +135,6 @@ function Chart(props: {
 					className="text-[12px] text-gray-400"
 					transform={`translate(${x(date)}, ${props.height})`}
 					fill="currentColor"
-					textAnchor="end"
 				>
 					{props.timeframe === "week"
 						? format(date, "EEE").toLowerCase()
