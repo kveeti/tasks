@@ -1,6 +1,7 @@
 export type ApiTask = {
 	id: string;
 	tag_id: string | null;
+	is_manual: boolean;
 	started_at: string;
 	expires_at: string;
 	stopped_at: string | null;

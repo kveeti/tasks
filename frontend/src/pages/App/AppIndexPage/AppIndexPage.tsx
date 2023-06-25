@@ -26,11 +26,19 @@ export function AppIndexPage() {
 	const addNotifMutation = useMutation<
 		void,
 		unknown,
-		{ title: string; message: string; send_at: string }
+		{ title: string; message: string; send_at: string; task_id: string }
 	>((body) =>
 		apiRequest({
 			method: "POST",
 			path: "/notifs",
+			body,
+		})
+	);
+
+	const deleteNotifMutation = useMutation<void, unknown, { task_id: string }>((body) =>
+		apiRequest({
+			method: "DELETE",
+			path: `/notifs`,
 			body,
 		})
 	);
@@ -67,12 +75,15 @@ export function AppIndexPage() {
 			updated_at: new Date(),
 		};
 
-		await Promise.all([
-			addNotifMutation.mutateAsync({
-				title: "Timer finished",
-				message: `Your ${selectedTag.label} timer has finished`,
-				send_at: expires_at.toISOString(),
-			}),
+		Promise.all([
+			addNotifMutation
+				.mutateAsync({
+					title: "Timer finished",
+					message: `Your ${selectedTag.label} timer has finished`,
+					send_at: expires_at.toISOString(),
+					task_id: task.id,
+				})
+				.catch((err) => console.error("Failed to add notif:", err)),
 			db.tasks.add(task),
 			addNotSynced(task.id, "task"),
 		]);
@@ -81,10 +92,16 @@ export function AppIndexPage() {
 	function stopTimer() {
 		if (!selectedTagTime) return;
 
-		db.tasks.update(selectedTagTime.id, {
-			stopped_at: new Date(),
-			updated_at: new Date(),
-		});
+		Promise.all([
+			deleteNotifMutation
+				.mutateAsync({ task_id: selectedTagTime.id })
+				.catch((err) => console.error("Failed to delete notif:", err)),
+			db.tasks.update(selectedTagTime.id, {
+				stopped_at: new Date(),
+				updated_at: new Date(),
+			}),
+			addNotSynced(selectedTagTime.id, "task"),
+		]);
 	}
 
 	return (

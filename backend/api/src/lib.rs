@@ -61,7 +61,11 @@ pub async fn start_api() -> () {
     let v1_notif_subs_routes =
         Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
 
-    let v1_notifs_routes = Router::new().route("/", post(endpoints::notifs::add_notif_endpoint));
+    let v1_notifs_routes = Router::new().route(
+        "/",
+        post(endpoints::notifs::add_notif_endpoint)
+            .delete(endpoints::notifs::delete_notif_endpoint),
+    );
 
     let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 

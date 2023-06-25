@@ -8,6 +8,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
     pub user_id: String,
+    pub task_id: String,
     pub title: String,
     pub message: String,
     pub send_at: DateTimeWithTimeZone,

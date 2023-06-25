@@ -39,6 +39,7 @@ CREATE TABLE "notif_subs" (
 CREATE TABLE "notifs" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "task_id" VARCHAR(26) NOT NULL, -- can't use foreign key because task might not have been synced yet when notification is created
     "title" VARCHAR(255) NOT NULL,
     "message" VARCHAR(255) NOT NULL,
     "send_at" TIMESTAMP WITH TIME ZONE NOT NULL,

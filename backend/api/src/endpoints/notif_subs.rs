@@ -6,15 +6,17 @@ use anyhow::Context;
 use axum::{extract::State, response::IntoResponse, Json};
 
 use data::create_id;
+use entity::{notif_subs, notifs};
 use hyper::StatusCode;
 
-use entity::notif_subs::{self, Entity as NotifSubEntity};
-use sea_orm::{sea_query::OnConflict, EntityTrait};
+use sea_orm::{sea_query::OnConflict, ColumnTrait, EntityTrait, ModelTrait, QueryFilter};
+
 #[derive(serde::Deserialize)]
 pub struct AddNotifSubEndpointBody {
     pub endpoint: String,
     pub p256dh: String,
     pub auth: String,
+    pub task_id: String,
 }
 
 pub async fn add_notif_sub_endpoint(
@@ -22,7 +24,7 @@ pub async fn add_notif_sub_endpoint(
     State(state): RequestContext,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let insert_result = NotifSubEntity::insert(notif_subs::ActiveModel {
+    let insert_result = notif_subs::Entity::insert(notif_subs::ActiveModel {
         id: sea_orm::ActiveValue::Set(create_id()),
         user_id: sea_orm::ActiveValue::Set(user_id),
         auth: sea_orm::ActiveValue::Set(body.auth),
