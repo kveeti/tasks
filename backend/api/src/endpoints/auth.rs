@@ -159,8 +159,10 @@ pub async fn auth_verify_code_endpoint(
 }
 
 pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
+    let email = "dev@dev.local";
+
     let existing_user = UserEntity::find()
-        .filter(users::Column::Email.eq("dev@dev.local"))
+        .filter(users::Column::Email.eq(email))
         .one(&ctx.db)
         .await
         .context("Failed to find existing_user")?;
@@ -170,7 +172,7 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
         None => {
             let user = users::Model {
                 id: create_id(),
-                email: "dev@dev.local".to_owned(),
+                email: email.to_owned(),
                 created_at: chrono::Utc::now().into(),
                 updated_at: chrono::Utc::now().into(),
             };
