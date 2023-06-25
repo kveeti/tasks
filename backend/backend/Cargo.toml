@@ -1,0 +1,10 @@
+[package]
+name = "backend"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true }
+tracing-subscriber = { workspace = true }
+api = { path = "../api" }
+notifications = { path = "../notifications" }

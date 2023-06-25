@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+	@apply bg-black text-gray-50;
+	user-select: none;
+	cursor: default;
+
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
+	text-rendering: optimizeLegibility;
+}
