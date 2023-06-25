@@ -16,13 +16,13 @@ import { useDbTags } from "@/db/useCommonDb";
 
 export function TagDistributionChart(props: {
 	selectedDate: Date;
-	interval: "year" | "month" | "week";
+	timeframe: "year" | "month" | "week";
 }) {
 	const [ref, bounds] = useMeasure();
 
 	const data = useData({
 		selectedDate: props.selectedDate,
-		interval: props.interval,
+		timeframe: props.timeframe,
 	});
 
 	return (
@@ -112,17 +112,17 @@ function Labels(props: { data: Data }) {
 	);
 }
 
-function useData(props: { selectedDate: Date; interval: "year" | "month" | "week" }) {
+function useData(props: { selectedDate: Date; timeframe: "year" | "month" | "week" }) {
 	const startOfMonthSelectedDate =
-		props.interval === "week"
+		props.timeframe === "week"
 			? startOfWeek(props.selectedDate, { weekStartsOn: 1 })
-			: props.interval === "month"
+			: props.timeframe === "month"
 			? startOfMonth(props.selectedDate)
 			: startOfYear(props.selectedDate);
 	const endOfMonthSelectedDate =
-		props.interval === "week"
+		props.timeframe === "week"
 			? endOfWeek(props.selectedDate, { weekStartsOn: 1 })
-			: props.interval === "month"
+			: props.timeframe === "month"
 			? endOfMonth(props.selectedDate)
 			: endOfYear(props.selectedDate);
 
@@ -137,10 +137,10 @@ function useData(props: { selectedDate: Date; interval: "year" | "month" | "week
 						(!!t.stopped_at || !!t.expires_at)
 				)
 				.toArray(),
-		[props.selectedDate]
+		[props.selectedDate, props.timeframe]
 	);
 
-	const dbTags = useDbTags([props.selectedDate]);
+	const dbTags = useDbTags([props.selectedDate, props.timeframe]);
 	const dbTasksWith = dbTasks?.map((task) => ({
 		...task,
 		seconds: differenceInSeconds(task.stopped_at ?? task.expires_at, task.started_at),

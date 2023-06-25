@@ -1,8 +1,10 @@
 import addMonths from "date-fns/addMonths";
 import addWeeks from "date-fns/addWeeks";
 import addYears from "date-fns/addYears";
+import endOfWeek from "date-fns/endOfWeek";
 import format from "date-fns/format";
 import isSameWeek from "date-fns/isSameWeek";
+import isSameYear from "date-fns/isSameYear";
 import subMonths from "date-fns/subMonths";
 import subWeeks from "date-fns/subWeeks";
 import subYears from "date-fns/subYears";
@@ -17,48 +19,55 @@ import { TagDistributionChart } from "./TagDistributionChart";
 
 export function AppNumbersPage() {
 	const [selectedDate, setSelectedDate] = useState(new Date());
-	const [selectedTimeFrame, setSelectedTimeFrame] = useState<"week" | "month" | "year">("week");
+	const [selectedTimeframe, setSelectedTimeframe] = useState<"week" | "month" | "year">("week");
 	// week shows hours per day (7 days)
 	// month shows hours per day (months days days)
 	// year shows hours per month (12 months)
 
 	const formattedSelectedDate =
-		selectedTimeFrame === "week"
+		selectedTimeframe === "week"
 			? isSameWeek(selectedDate, new Date())
 				? "this week"
 				: isSameWeek(selectedDate, subWeeks(new Date(), 1))
 				? "last week"
-				: format(selectedDate, "w. 'week' yyyy")
-			: selectedTimeFrame === "month"
+				: format(
+						selectedDate,
+						`'week' w${
+							isSameYear(endOfWeek(selectedDate, { weekStartsOn: 1 }), new Date())
+								? ""
+								: ", yyyy"
+						}`
+				  )
+			: selectedTimeframe === "month"
 			? format(selectedDate, "MMMM yyyy")
-			: selectedTimeFrame === "year"
+			: selectedTimeframe === "year"
 			? format(selectedDate, "yyyy")
 			: "";
 
 	function toggleTimeFrame() {
-		if (selectedTimeFrame === "week") {
-			setSelectedTimeFrame("month");
-		} else if (selectedTimeFrame === "month") {
-			setSelectedTimeFrame("year");
-		} else if (selectedTimeFrame === "year") {
-			setSelectedTimeFrame("week");
+		if (selectedTimeframe === "week") {
+			setSelectedTimeframe("month");
+		} else if (selectedTimeframe === "month") {
+			setSelectedTimeframe("year");
+		} else if (selectedTimeframe === "year") {
+			setSelectedTimeframe("week");
 		}
 	}
 
 	function scrollTimeFrame(direction: "left" | "right") {
-		if (selectedTimeFrame === "week") {
+		if (selectedTimeframe === "week") {
 			if (direction === "left") {
 				setSelectedDate((d) => subWeeks(d, 1));
 			} else {
 				setSelectedDate((d) => addWeeks(d, 1));
 			}
-		} else if (selectedTimeFrame === "month") {
+		} else if (selectedTimeframe === "month") {
 			if (direction === "left") {
 				setSelectedDate((d) => subMonths(d, 1));
 			} else {
 				setSelectedDate((d) => addMonths(d, 1));
 			}
-		} else if (selectedTimeFrame === "year") {
+		} else if (selectedTimeframe === "year") {
 			if (direction === "left") {
 				setSelectedDate((d) => subYears(d, 1));
 			} else {
@@ -74,10 +83,10 @@ export function AppNumbersPage() {
 					<h1 className="text-2xl font-bold">stats</h1>
 
 					<div className="flex flex-col rounded-xl border border-gray-800 bg-gray-950/50 p-4">
-						{selectedTimeFrame === "week" || selectedTimeFrame === "month" ? (
+						{selectedTimeframe === "week" || selectedTimeframe === "month" ? (
 							<HoursPerDayChart
 								selectedDate={selectedDate}
-								interval={selectedTimeFrame}
+								timeframe={selectedTimeframe}
 							/>
 						) : (
 							<div>not implemented</div>
@@ -85,7 +94,10 @@ export function AppNumbersPage() {
 					</div>
 
 					<div className="flex flex-col rounded-xl border border-gray-800 bg-gray-950/50 p-4 pb-2">
-						<TagDistributionChart selectedDate={selectedDate} />
+						<TagDistributionChart
+							selectedDate={selectedDate}
+							timeframe={selectedTimeframe}
+						/>
 					</div>
 				</div>
 

@@ -13,15 +13,15 @@ import useMeasure from "react-use-measure";
 
 import { db } from "@/db/db";
 
-export function HoursPerDayChart(props: { selectedDate: Date; interval: "month" | "week" }) {
+export function HoursPerDayChart(props: { selectedDate: Date; timeframe: "month" | "week" }) {
 	const [ref, bounds] = useMeasure();
 
 	const start =
-		props.interval === "week"
+		props.timeframe === "week"
 			? startOfWeek(props.selectedDate, { weekStartsOn: 1 })
 			: startOfMonth(props.selectedDate);
 	const end =
-		props.interval === "week"
+		props.timeframe === "week"
 			? endOfWeek(props.selectedDate, { weekStartsOn: 1 })
 			: endOfMonth(props.selectedDate);
 
@@ -36,7 +36,7 @@ export function HoursPerDayChart(props: { selectedDate: Date; interval: "month" 
 					height={bounds.height}
 					width={bounds.width}
 					selectedDate={props.selectedDate}
-					interval={props.interval}
+					timeframe={props.timeframe}
 					start={start}
 					end={end}
 				/>
@@ -49,7 +49,7 @@ function Chart(props: {
 	width: number;
 	height: number;
 	selectedDate: Date;
-	interval: "month" | "week";
+	timeframe: "month" | "week";
 	start: Date;
 	end: Date;
 }) {
@@ -65,7 +65,7 @@ function Chart(props: {
 						t.started_at <= props.end
 				)
 				.toArray(),
-		[props.selectedDate, props.start, props.end, props.interval]
+		[props.selectedDate, props.start, props.end, props.timeframe]
 	);
 
 	if (!dbTasks?.length) {
@@ -104,7 +104,7 @@ function Chart(props: {
 	const dates = data.map((d) => d.date);
 
 	const datesToShow =
-		props.interval === "week"
+		props.timeframe === "week"
 			? dates
 			: ([
 					dates.at(0),
@@ -135,8 +135,9 @@ function Chart(props: {
 					className="text-[12px] text-gray-400"
 					transform={`translate(${x(date)}, ${props.height})`}
 					fill="currentColor"
+					textAnchor="end"
 				>
-					{props.interval === "week"
+					{props.timeframe === "week"
 						? format(date, "EEE").toLowerCase()
 						: format(date, "d.M")}
 				</text>
