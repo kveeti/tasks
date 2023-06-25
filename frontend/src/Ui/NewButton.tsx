@@ -30,7 +30,7 @@ export function Button(props: { className?: string; isSecondary?: boolean } & Ar
 			onPress: async (e) => {
 				ref.current?.focus();
 				controls.start({
-					backgroundColor: baseColor,
+					backgroundColor: [null, baseColor],
 					transition: { duration: 0.4 },
 				});
 				props.onPress?.(e);
@@ -85,7 +85,7 @@ export function SelectButton(props: { className?: string } & AriaButtonProps) {
 			onPress: async (e) => {
 				ref.current?.focus();
 				controls.start({
-					backgroundColor: baseColor,
+					backgroundColor: [null, baseColor],
 					transition: { duration: 0.4 },
 				});
 				props.onPress?.(e);
