@@ -159,7 +159,7 @@ pub async fn auth_verify_code_endpoint(
 }
 
 pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
-    let email = "veeti@veetik.com";
+    let email = "dev@dev.local";
 
     let existing_user = UserEntity::find()
         .filter(users::Column::Email.eq(email))
