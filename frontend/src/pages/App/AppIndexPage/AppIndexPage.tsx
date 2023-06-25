@@ -139,7 +139,7 @@ export function AppIndexPage() {
 									</Button>
 								</div>
 								<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
-									<Button className="w-full p-2" onPress={() => addTime(5)}>
+									<Button className="w-full p-2" onPress={() => addTime(300)}>
 										<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
 										min
 									</Button>
