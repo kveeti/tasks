@@ -19,8 +19,6 @@ pub async fn start_notification_service() {
     tracing::info!("Notification service started");
 
     loop {
-        tracing::debug!("Checking for notifications to send");
-
         let notifs = notifs::Entity::find()
             .filter(notifs::Column::SendAt.lt(chrono::Utc::now()))
             .all(&db)
@@ -30,10 +28,8 @@ pub async fn start_notification_service() {
             tracing::error!("Failed to get notifications: {}", e);
         } else if let Ok(notifs) = notifs {
             if notifs.len() <= 0 {
-                tracing::debug!("No notifications to send");
+                continue;
             } else {
-                tracing::debug!("Found {} notifications to send", notifs.len());
-
                 let user_ids = notifs.iter().map(|n| n.user_id.to_owned());
 
                 let subs = notif_subs::Entity::find()
@@ -44,7 +40,11 @@ pub async fn start_notification_service() {
                 if let Err(e) = subs {
                     tracing::error!("Failed to get notification subscriptions: {}", e);
                 } else if let Ok(subs) = subs {
-                    tracing::debug!("Found {} notification subscriptions", subs.len());
+                    tracing::debug!(
+                        "Found {} notifications for {} subs",
+                        notifs.len(),
+                        subs.len()
+                    );
 
                     let mut subs_by_user_id = std::collections::HashMap::new();
 
@@ -101,8 +101,8 @@ pub async fn start_notification_service() {
 
                                     if let Err(e) = response {
                                         tracing::error!("Failed to send notification: {}", e);
-                                    } else if let Ok(response) = response {
-                                        tracing::info!("Notification sent: {:?}", response);
+                                    } else if let Ok(_response) = response {
+                                        tracing::info!("Notification sent");
                                     }
                                 }
                             });

@@ -52,7 +52,7 @@ pub async fn sync_endpoint(
     Json(body): Json<SyncEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
     if body.tags.len() > 0 {
-        tracing::info!("Upserting {} tags", body.tags.len());
+        tracing::debug!("Upserting {} tags", body.tags.len());
 
         TagsEntity::insert_many(body.tags.into_iter().map(|tag| tags::ActiveModel {
             id: ActiveValue::Set(tag.id),
@@ -82,7 +82,7 @@ pub async fn sync_endpoint(
     }
 
     if body.tasks.len() > 0 {
-        tracing::info!("Upserting {} tasks", body.tasks.len());
+        tracing::debug!("Upserting {} tasks", body.tasks.len());
 
         TasksEntity::insert_many(body.tasks.into_iter().map(|task| tasks::ActiveModel {
             id: ActiveValue::Set(task.id),
