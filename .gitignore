@@ -7,3 +7,5 @@ dev-dist
 dist
 .swc
 .env
+
+.DS_Store
