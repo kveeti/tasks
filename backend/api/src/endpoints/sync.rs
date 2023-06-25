@@ -64,16 +64,19 @@ pub async fn sync_endpoint(
                 Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
                 None => ActiveValue::NotSet,
             },
-            created_at: ActiveValue::Set(chrono::Utc::now().into()),
+            created_at: ActiveValue::Set(tag.created_at),
             updated_at: ActiveValue::Set(tag.updated_at),
+            synced_at: ActiveValue::Set(chrono::Utc::now().into()),
         }))
         .on_conflict(
             OnConflict::column(tags::Column::Id)
                 .update_columns(vec![
                     tags::Column::Color,
                     tags::Column::Label,
+                    tags::Column::CreatedAt,
                     tags::Column::UpdatedAt,
                     tags::Column::DeletedAt,
+                    tags::Column::SyncedAt,
                 ])
                 .to_owned(),
         )
@@ -102,14 +105,18 @@ pub async fn sync_endpoint(
             },
             updated_at: ActiveValue::Set(task.updated_at),
             created_at: ActiveValue::Set(task.created_at),
+            synced_at: ActiveValue::Set(chrono::Utc::now().into()),
         }))
         .on_conflict(
             OnConflict::column(tasks::Column::Id)
                 .update_columns(vec![
                     tasks::Column::TagId,
+                    tasks::Column::IsManual,
+                    tasks::Column::CreatedAt,
                     tasks::Column::UpdatedAt,
                     tasks::Column::StoppedAt,
                     tasks::Column::DeletedAt,
+                    tasks::Column::SyncedAt,
                 ])
                 .to_owned(),
         )
@@ -121,7 +128,7 @@ pub async fn sync_endpoint(
     let tags_out_of_date_on_client = TagsEntity::find()
         .filter(tags::Column::UserId.eq(user_id.to_owned()))
         .apply_if(body.last_synced_at, |q, last_synced_at| {
-            q.filter(tags::Column::UpdatedAt.gt(last_synced_at))
+            q.filter(tags::Column::SyncedAt.gt(last_synced_at - chrono::Duration::minutes(2)))
         })
         .all(&ctx.db)
         .await
@@ -130,7 +137,7 @@ pub async fn sync_endpoint(
     let tasks_out_of_date_on_client = TasksEntity::find()
         .filter(tasks::Column::UserId.eq(user_id))
         .apply_if(body.last_synced_at, |q, last_synced_at| {
-            q.filter(tasks::Column::UpdatedAt.gt(last_synced_at))
+            q.filter(tasks::Column::SyncedAt.gt(last_synced_at - chrono::Duration::minutes(2)))
         })
         .all(&ctx.db)
         .await

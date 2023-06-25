@@ -155,6 +155,22 @@ function restore_db() {
     echo "Database restored!"
 }
 
+function run_intermediate() {
+    echo "Running intermediate..."
+
+    if [ $1 == "mysql" ]; then
+        mysql $(parse_url $DATABASE_URL) < ./sql/02-test.sql
+    else if [ $1 == "postgres" ]; then
+        psql $DATABASE_URL < ./sql/02-test.sql
+    else
+        echo "Invalid db type"
+        exit 1
+    fi
+    fi
+
+    echo "Intermediate ran!"
+}
+
 function main() {
     check_envs
 
@@ -171,9 +187,12 @@ function main() {
         dump_db $db_type
     else if [ "$1" == "restore" ]; then
         restore_db $db_type
+    else if [ "$1" == "run" ]; then
+        run_intermediate $db_type 
     else
         echo "Invalid argument"
         exit 1
+    fi
     fi
     fi
     fi
