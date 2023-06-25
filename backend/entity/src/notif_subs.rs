@@ -12,7 +12,7 @@ pub struct Model {
     pub endpoint: String,
     pub p256dh: String,
     pub auth: String,
-    pub created_at: DateTimeUtc,
+    pub created_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
