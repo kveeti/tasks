@@ -52,9 +52,27 @@ function purge_db() {
 function generate_rust_code_with_sea_orm_cli() {
     echo "Generating Rust db entities with sea-orm-cli..."
 
-    sea-orm-cli generate entity -o entity/src
+    sea-orm-cli generate entity -o entity_old/src
 
     echo "Rust db entities generated!"
+}
+
+function dump_db() {
+    echo "Dumping database..."
+
+    # pg_dump $DATABASE_URL > ./sql/dump.sql
+    mysqldump $(parse_url $DATABASE_URL) > ./sql/dump.sql
+
+    echo "Database dumped!"
+}
+
+function restore_db() {
+    echo "Restoring database..."
+
+    # psql $DATABASE_URL < ./sql/dump.sql
+    mysql $(parse_url $DATABASE_URL) < ./sql/dump.sql
+
+    echo "Database restored!"
 }
 
 function main() {
@@ -66,9 +84,15 @@ function main() {
         initialize_db
     else if [ "$1" == "gen" ]; then
         generate_rust_code_with_sea_orm_cli
+    else if [ "$1" == "dump" ]; then
+        dump_db
+    else if [ "$1" == "restore" ]; then
+        restore_db
     else
         echo "Invalid argument"
         exit 1
+    fi
+    fi
     fi
     fi
     fi

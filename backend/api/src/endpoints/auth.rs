@@ -11,7 +11,7 @@ use config::CONFIG;
 use data::create_id;
 use entity::users::{self, Entity as UserEntity};
 use hyper::{header, HeaderMap, StatusCode};
-use sea_orm::{sea_query::OnConflict, EntityTrait, IntoActiveModel};
+use sea_orm::{ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter};
 
 use crate::types::{ApiError, RequestContext};
 
@@ -46,7 +46,7 @@ struct AuthVerifyCodeResponseBody {
 }
 
 pub async fn auth_verify_code_endpoint(
-    State(state): RequestContext,
+    State(ctx): RequestContext,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let client = reqwest::Client::new();
@@ -110,23 +110,30 @@ pub async fn auth_verify_code_endpoint(
         .await
         .context("Failed to parse user response body")?;
 
-    let user = users::Model {
-        id: create_id(),
-        email: oauth_me_response_body.email,
-        created_at: chrono::Utc::now().into(),
-        updated_at: chrono::Utc::now().into(),
-    };
-
-    UserEntity::insert(user.clone().into_active_model())
-        .on_conflict(
-            OnConflict::column(users::Column::Email)
-                .update_column(users::Column::Email)
-                .update_column(users::Column::UpdatedAt)
-                .to_owned(),
-        )
-        .exec(&state.db)
+    let existing_user = UserEntity::find()
+        .filter(users::Column::Email.eq(&oauth_me_response_body.email))
+        .one(&ctx.db)
         .await
-        .context("Failed to upsert user")?;
+        .context("Failed to find existing_user")?;
+
+    let user_id = match existing_user {
+        Some(user) => user.id,
+        None => {
+            let user = users::Model {
+                id: create_id(),
+                email: "dev@dev.local".to_owned(),
+                created_at: chrono::Utc::now().into(),
+                updated_at: chrono::Utc::now().into(),
+            };
+
+            UserEntity::insert(user.clone().into_active_model())
+                .exec(&ctx.db)
+                .await
+                .context("Failed to insert new user")?;
+
+            user.id
+        }
+    };
 
     let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
 
@@ -134,7 +141,7 @@ pub async fn auth_verify_code_endpoint(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-            create_token(&user.id, expires_at)?,
+            create_token(&user_id, expires_at)?,
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
@@ -145,29 +152,37 @@ pub async fn auth_verify_code_endpoint(
         StatusCode::OK,
         headers,
         Json(AuthVerifyCodeResponseBody {
-            id: user.id,
-            email: user.email,
+            id: user_id,
+            email: oauth_me_response_body.email.to_owned(),
         }),
     ));
 }
 
 pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
-    let user = users::Model {
-        id: create_id(),
-        email: "dev@dev.local".to_owned(),
-        created_at: chrono::Utc::now().into(),
-        updated_at: chrono::Utc::now().into(),
-    };
-
-    UserEntity::insert(user.clone().into_active_model())
-        .on_conflict(
-            OnConflict::column(users::Column::Email)
-                .update_column(users::Column::Email)
-                .to_owned(),
-        )
-        .exec(&ctx.db)
+    let existing_user = UserEntity::find()
+        .filter(users::Column::Email.eq("dev@dev.local"))
+        .one(&ctx.db)
         .await
-        .context("Failed to upsert user")?;
+        .context("Failed to find existing_user")?;
+
+    let (user_id, email) = match existing_user {
+        Some(user) => (user.id, user.email),
+        None => {
+            let user = users::Model {
+                id: create_id(),
+                email: "dev@dev.local".to_owned(),
+                created_at: chrono::Utc::now().into(),
+                updated_at: chrono::Utc::now().into(),
+            };
+
+            UserEntity::insert(user.clone().into_active_model())
+                .exec(&ctx.db)
+                .await
+                .context("Failed to insert new user")?;
+
+            (user.id, user.email)
+        }
+    };
 
     let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
 
@@ -175,7 +190,7 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-            create_token(&user.id, expires_at)?,
+            create_token(&user_id, expires_at)?,
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
@@ -185,9 +200,6 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
     return Ok((
         StatusCode::OK,
         headers,
-        Json(AuthVerifyCodeResponseBody {
-            id: user.id,
-            email: user.email,
-        }),
+        Json(AuthVerifyCodeResponseBody { id: user_id, email }),
     ));
 }
