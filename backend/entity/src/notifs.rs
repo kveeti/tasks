@@ -11,8 +11,8 @@ pub struct Model {
     pub task_id: String,
     pub title: String,
     pub message: String,
-    pub send_at: DateTimeWithTimeZone,
-    pub created_at: DateTimeWithTimeZone,
+    pub send_at: DateTimeUtc,
+    pub created_at: DateTimeUtc,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -23,7 +23,7 @@ pub async fn add_notif_sub_endpoint(
     State(state): RequestContext,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let insert_result = notif_subs::Entity::insert(notif_subs::ActiveModel {
+    notif_subs::Entity::insert(notif_subs::ActiveModel {
         id: sea_orm::ActiveValue::Set(create_id()),
         user_id: sea_orm::ActiveValue::Set(user_id),
         auth: sea_orm::ActiveValue::Set(body.auth),
@@ -39,8 +39,6 @@ pub async fn add_notif_sub_endpoint(
     .exec(&state.db)
     .await
     .context("Failed to upsert notif sub")?;
-
-    print!("insert_result: {:?}", insert_result);
 
     return Ok(StatusCode::CREATED);
 }

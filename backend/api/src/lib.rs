@@ -9,7 +9,6 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
 use types::RequestContextStruct;
-
 mod auth;
 mod endpoints;
 pub mod types;

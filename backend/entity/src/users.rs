@@ -9,7 +9,8 @@ pub struct Model {
     pub id: String,
     #[sea_orm(unique)]
     pub email: String,
-    pub created_at: DateTimeWithTimeZone,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

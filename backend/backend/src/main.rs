@@ -8,7 +8,7 @@ use tracing_subscriber::{
 pub async fn main() {
     tracing_subscriber::registry()
         .with(EnvFilter::from(
-            "api=debug,auth=debug,data=debug,notifications=debug,sea_orm=error".to_string(),
+            "api=trace,auth=debug,data=trace,notifications=debug,sea_orm=trace".to_string(),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();

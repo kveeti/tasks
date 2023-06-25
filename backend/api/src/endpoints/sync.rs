@@ -6,7 +6,7 @@ use entity::{
 };
 use hyper::StatusCode;
 use sea_orm::{
-    prelude::DateTimeWithTimeZone, sea_query::OnConflict, ActiveValue, ColumnTrait, EntityTrait,
+    prelude::DateTimeUtc, sea_query::OnConflict, ActiveValue, ColumnTrait, EntityTrait,
     QueryFilter, QueryTrait,
 };
 use serde_json::json;
@@ -21,12 +21,12 @@ pub struct SyncEndpointTask {
     pub id: String,
     pub tag_id: String,
     pub is_manual: bool,
-    pub started_at: DateTimeWithTimeZone,
-    pub stopped_at: Option<DateTimeWithTimeZone>,
-    pub expires_at: DateTimeWithTimeZone,
-    pub deleted_at: Option<DateTimeWithTimeZone>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
+    pub started_at: DateTimeUtc,
+    pub stopped_at: Option<DateTimeUtc>,
+    pub expires_at: DateTimeUtc,
+    pub deleted_at: Option<DateTimeUtc>,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -34,14 +34,14 @@ pub struct SyncEndpointTag {
     pub id: String,
     pub label: String,
     pub color: String,
-    pub deleted_at: Option<DateTimeWithTimeZone>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
+    pub deleted_at: Option<DateTimeUtc>,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointBody {
-    pub last_synced_at: Option<DateTimeWithTimeZone>,
+    pub last_synced_at: Option<DateTimeUtc>,
     pub tasks: Vec<SyncEndpointTask>,
     pub tags: Vec<SyncEndpointTag>,
 }
@@ -88,7 +88,10 @@ pub async fn sync_endpoint(
             id: ActiveValue::Set(task.id),
             user_id: ActiveValue::Set(user_id.to_owned()),
             tag_id: ActiveValue::Set(task.tag_id),
-            is_manual: ActiveValue::Set(task.is_manual),
+            is_manual: match task.is_manual {
+                true => ActiveValue::Set(1),
+                false => ActiveValue::Set(0),
+            },
             started_at: ActiveValue::Set(task.started_at),
             stopped_at: match task.stopped_at {
                 Some(stopped_at) => ActiveValue::Set(Some(stopped_at)),
@@ -149,7 +152,7 @@ pub async fn sync_endpoint(
             "tasks": tasks_out_of_date_on_client .into_iter().map(|task| SyncEndpointTask {
                 id: task.id,
                 tag_id: task.tag_id,
-                is_manual: task.is_manual,
+                is_manual: task.is_manual == 1,
                 started_at: task.started_at,
                 stopped_at: task.stopped_at,
                 expires_at: task.expires_at,

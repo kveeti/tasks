@@ -9,13 +9,13 @@ pub struct Model {
     pub id: String,
     pub user_id: String,
     pub tag_id: String,
-    pub is_manual: bool,
-    pub started_at: DateTimeWithTimeZone,
-    pub expires_at: DateTimeWithTimeZone,
-    pub stopped_at: Option<DateTimeWithTimeZone>,
-    pub deleted_at: Option<DateTimeWithTimeZone>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
+    pub is_manual: i8,
+    pub started_at: DateTimeUtc,
+    pub expires_at: DateTimeUtc,
+    pub stopped_at: Option<DateTimeUtc>,
+    pub deleted_at: Option<DateTimeUtc>,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

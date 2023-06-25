@@ -11,7 +11,7 @@ use config::CONFIG;
 use data::create_id;
 use entity::users::{self, Entity as UserEntity};
 use hyper::{header, HeaderMap, StatusCode};
-use sea_orm::{sea_query::OnConflict, EntityTrait};
+use sea_orm::{sea_query::OnConflict, EntityTrait, IntoActiveModel};
 
 use crate::types::{ApiError, RequestContext};
 
@@ -110,19 +110,23 @@ pub async fn auth_verify_code_endpoint(
         .await
         .context("Failed to parse user response body")?;
 
-    let user = UserEntity::insert(users::ActiveModel {
-        id: sea_orm::ActiveValue::set(create_id()),
-        email: sea_orm::ActiveValue::Set(oauth_me_response_body.email),
-        created_at: sea_orm::ActiveValue::set(chrono::Utc::now().into()),
-    })
-    .on_conflict(
-        OnConflict::column(users::Column::Email)
-            .update_column(users::Column::Email)
-            .to_owned(),
-    )
-    .exec_with_returning(&state.db)
-    .await
-    .context("Failed to upsert user")?;
+    let user = users::Model {
+        id: create_id(),
+        email: oauth_me_response_body.email,
+        created_at: chrono::Utc::now().into(),
+        updated_at: chrono::Utc::now().into(),
+    };
+
+    UserEntity::insert(user.clone().into_active_model())
+        .on_conflict(
+            OnConflict::column(users::Column::Email)
+                .update_column(users::Column::Email)
+                .update_column(users::Column::UpdatedAt)
+                .to_owned(),
+        )
+        .exec(&state.db)
+        .await
+        .context("Failed to upsert user")?;
 
     let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
 
@@ -148,19 +152,22 @@ pub async fn auth_verify_code_endpoint(
 }
 
 pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
-    let user = UserEntity::insert(users::ActiveModel {
-        id: sea_orm::ActiveValue::set(create_id()),
-        email: sea_orm::ActiveValue::Set("test@test.test".to_string()),
-        created_at: sea_orm::ActiveValue::set(chrono::Utc::now().into()),
-    })
-    .on_conflict(
-        OnConflict::column(users::Column::Email)
-            .update_column(users::Column::Email)
-            .to_owned(),
-    )
-    .exec_with_returning(&ctx.db)
-    .await
-    .context("Failed to upsert user")?;
+    let user = users::Model {
+        id: create_id(),
+        email: "dev@dev.local".to_owned(),
+        created_at: chrono::Utc::now().into(),
+        updated_at: chrono::Utc::now().into(),
+    };
+
+    UserEntity::insert(user.clone().into_active_model())
+        .on_conflict(
+            OnConflict::column(users::Column::Email)
+                .update_column(users::Column::Email)
+                .to_owned(),
+        )
+        .exec(&ctx.db)
+        .await
+        .context("Failed to upsert user")?;
 
     let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
 
