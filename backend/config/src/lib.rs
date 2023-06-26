@@ -3,16 +3,14 @@ use anyhow::Context;
 #[derive(Clone, serde::Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Env {
-    Dev,
-    Staging,
+    NotProd,
     Prod,
 }
 
 impl std::fmt::Display for Env {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Env::Dev => write!(f, "dev"),
-            Env::Staging => write!(f, "staging"),
+            Env::NotProd => write!(f, "notprod"),
             Env::Prod => write!(f, "prod"),
         }
     }
