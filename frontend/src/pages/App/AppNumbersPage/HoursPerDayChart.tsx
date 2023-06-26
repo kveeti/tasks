@@ -60,7 +60,6 @@ function Chart(props: {
 				.filter(
 					(t) =>
 						!t.deleted_at &&
-						!t.is_manual &&
 						(!!t.stopped_at || !!t.expires_at) &&
 						t.started_at >= props.start &&
 						t.started_at <= props.end
@@ -168,17 +167,15 @@ function Chart(props: {
 
 			{/* Bars */}
 			{data.map((d, i) => (
-				<Fragment key={i}>
+				<g key={d.date.toISOString()} transform={`translate(${x(d.date)}, ${y(d.hours)})`}>
 					<rect
-						x={x(d.date)}
-						y={y(d.hours)}
-						width={(props.width - 15) / data.length - 3 ?? 0}
+						width={x(endOfDay(d.date)) - x(d.date)}
 						height={y(0) - y(d.hours)}
 						rx={2.5}
 						fill="currentColor"
 						className="text-gray-300"
 					/>
-				</Fragment>
+				</g>
 			))}
 		</svg>
 	);
