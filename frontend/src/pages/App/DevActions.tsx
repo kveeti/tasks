@@ -3,7 +3,7 @@ import eachDayOfInterval from "date-fns/eachDayOfInterval";
 import subDays from "date-fns/subDays";
 import { toast } from "sonner";
 
-import { type DbTag, db } from "@/db/db";
+import { type DbTag, type DbTask, db } from "@/db/db";
 import { createId } from "@/utils/createId";
 import { useHotkeys } from "@/utils/useHotkeys";
 
@@ -42,14 +42,16 @@ function useAddTasks() {
 					return newTag;
 				})();
 
-				const tasks = lastWeekToNowDays.map((day) => ({
+				const tasks: DbTask[] = lastWeekToNowDays.map((day) => ({
 					id: createId(),
 					tag_id: tag.id,
 					created_at: day,
 					updated_at: day,
+					started_at: day,
 					expires_at: addHours(day, 2),
 					stopped_at: addHours(day, 1.8),
 					deleted_at: null,
+					is_manual: true,
 				}));
 
 				await db.tasks.bulkAdd(tasks);
