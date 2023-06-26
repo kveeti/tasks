@@ -7,7 +7,7 @@ import { useUserContext } from "@/auth";
 
 export function UserMenu() {
 	const [isOpen, setIsOpen] = useState(false);
-	const { logout } = useUserContext();
+	const { logout, user } = useUserContext();
 
 	return (
 		<>
@@ -15,7 +15,7 @@ export function UserMenu() {
 				className="rounded-full bg-gray-600 h-10 w-10 flex items-center justify-center"
 				onPress={() => setIsOpen(true)}
 			>
-				T
+				{(user?.email[0] || "T").toUpperCase()}
 			</Button>
 
 			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
