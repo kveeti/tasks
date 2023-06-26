@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import differenceInHours from "date-fns/differenceInHours";
 import eachDayOfInterval from "date-fns/eachDayOfInterval";
+import endOfDay from "date-fns/endOfDay";
 import endOfMonth from "date-fns/endOfMonth";
 import endOfWeek from "date-fns/endOfWeek";
 import format from "date-fns/format";
@@ -130,16 +131,19 @@ function Chart(props: {
 		<svg viewBox={`0 0 ${props.width} ${props.height}`}>
 			{/* X axis dates */}
 			{datesToShow.map((date) => (
-				<text
-					key={date.toISOString()}
-					className="text-[12px] text-gray-400"
-					transform={`translate(${x(date)}, ${props.height})`}
-					fill="currentColor"
-				>
-					{props.timeframe === "week"
-						? format(date, "EEE").toLowerCase()
-						: format(date, "d.M")}
-				</text>
+				<g key={date.toISOString()} transform={`translate(${x(date)}, 0)`}>
+					<text
+						className="text-[12px] text-gray-400"
+						x={(x(endOfDay(date)) - x(date)) / 2}
+						y={props.height - 5}
+						fill="currentColor"
+						textAnchor="middle"
+					>
+						{props.timeframe === "week"
+							? format(date, "EEE").toLowerCase()
+							: format(date, "d.M")}
+					</text>
+				</g>
 			))}
 
 			{/* Y axis ticks */}
