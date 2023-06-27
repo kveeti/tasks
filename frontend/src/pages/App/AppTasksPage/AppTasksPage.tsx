@@ -110,7 +110,7 @@ export function AppTasksPage() {
 }
 
 const addTasksFormSchema = z.object({
-	start: z.string().transform(Date),
+	start: z.date(),
 	duration: z.number(),
 	tagId: z.string(),
 });
@@ -121,19 +121,17 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 	const newTaskForm = useForm<z.infer<typeof addTasksFormSchema>>({
 		resolver: zodResolver(addTasksFormSchema),
 		defaultValues: {
-			start: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
 			duration: 0,
 			tagId: "",
 		},
 		onSubmit: async (values) => {
-			const startDate = new Date(values.start);
-			const endDate = addHours(startDate, values.duration);
+			const endDate = addHours(values.start, values.duration);
 
 			const newTask: DbTask = {
 				id: createId(),
 				tag_id: values.tagId,
 				is_manual: true,
-				started_at: startDate,
+				started_at: values.start,
 				expires_at: endDate,
 				stopped_at: null,
 				deleted_at: null,
@@ -165,7 +163,8 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 							type="datetime-local"
 							label="start"
 							required
-							{...newTaskForm.register("start")}
+							{...newTaskForm.register("start", { valueAsDate: true })}
+							defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
 						/>
 
 						<Input
