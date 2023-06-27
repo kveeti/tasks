@@ -51,7 +51,7 @@ pub async fn start_api() -> () {
             ),
     );
 
-    if CONFIG.env == Env::Dev {
+    if CONFIG.env == Env::NotProd {
         v1_auth_routes = v1_auth_routes
             .route("/dev-login", get(endpoints::auth::dev_login))
             .to_owned();
