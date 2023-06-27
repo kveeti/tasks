@@ -1,4 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useButton } from "@react-aria/button";
+import { FocusRing } from "@react-aria/focus";
 import addDays from "date-fns/addDays";
 import addHours from "date-fns/addHours";
 import format from "date-fns/format";
@@ -10,8 +12,12 @@ import startOfDay from "date-fns/startOfDay";
 import subDays from "date-fns/subDays";
 import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus } from "lucide-react";
+import { useAnimate, useIsPresent } from "framer-motion";
+import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Trash } from "lucide-react";
 import { useState } from "react";
+import { useEffect } from "react";
+import { twMerge } from "tailwind-merge";
+import colors from "tailwindcss/colors";
 import { z } from "zod";
 
 import { Input } from "@/Ui/Input";
@@ -19,8 +25,7 @@ import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button, SelectButton } from "@/Ui/NewButton";
 import { Tag } from "@/Ui/shared/Tag";
-import { Task } from "@/Ui/shared/Task";
-import { type DbTask, addNotSynced, db } from "@/db/db";
+import { type DbTag, type DbTask, addNotSynced, db } from "@/db/db";
 import { useDbTags } from "@/db/useCommonDb";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
@@ -109,7 +114,7 @@ export function AppTasksPage() {
 	);
 }
 
-const addTasksFormSchema = z.object({
+const newTaskFormSchema = z.object({
 	start: z.date(),
 	duration: z.number(),
 	tagId: z.string(),
@@ -118,8 +123,8 @@ const addTasksFormSchema = z.object({
 function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 	const [isOpen, setIsOpen] = useState(false);
 
-	const newTaskForm = useForm<z.infer<typeof addTasksFormSchema>>({
-		resolver: zodResolver(addTasksFormSchema),
+	const newTaskForm = useForm<z.infer<typeof newTaskFormSchema>>({
+		resolver: zodResolver(newTaskFormSchema),
 		defaultValues: {
 			duration: 0,
 			tagId: "",
@@ -244,6 +249,154 @@ function NewTaskSelectTag(props: { selectedTagId: string; onSelect: (id: string)
 								}}
 							/>
 						))}
+					</div>
+				</div>
+			</Modal>
+		</>
+	);
+}
+
+export function Task(props: {
+	task: DbTask & { tag: DbTag };
+	onPress?: () => void;
+	isCreatedTask: boolean;
+	resetCreatedTask: () => void;
+	className?: string;
+}) {
+	const [ref, animate] = useAnimate();
+	const [wrapperRef] = useAnimate();
+	const isPresent = useIsPresent();
+
+	const aria = useButton(
+		{
+			...props,
+			onPressStart: async () => {
+				animate(ref.current, { backgroundColor: colors.neutral[800] }, { duration: 0 });
+			},
+			onPressEnd: async () => {
+				animate(ref.current, {
+					backgroundColor: "rgb(10 10 10 / 0.5)",
+					transition: { duration: 0.4 },
+				});
+			},
+			onPress: async () => {
+				animate(ref.current, {
+					backgroundColor: "rgb(10 10 10 / 0.5)",
+					transition: { duration: 0.4 },
+				});
+
+				props.onPress?.();
+			},
+			// @ts-expect-error undocumented prop
+			preventFocusOnPress: true,
+		},
+		ref
+	);
+
+	useEffect(() => {
+		if (!isPresent || !props.isCreatedTask) return;
+
+		(async () => {
+			wrapperRef.current.style = "height: 0; opacity: 0;";
+			ref.current.style = `background-color: ${colors.neutral[700]}`;
+
+			await animate(wrapperRef.current, { height: "auto", opacity: 1 });
+			animate(ref.current, {
+				backgroundColor: "rgb(10 10 10 / 0.5)",
+				transition: { duration: 0.4 },
+			});
+
+			props.resetCreatedTask();
+		})();
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isPresent]);
+
+	return (
+		<div ref={wrapperRef}>
+			<FocusRing focusRingClass="outline-gray-300">
+				<button
+					{...aria.buttonProps}
+					ref={ref}
+					className={twMerge(
+						"flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2",
+						props.className
+					)}
+				>
+					<div className="flex w-full items-center justify-between gap-3">
+						<div className="flex items-center gap-3">
+							<div
+								className="h-3 w-3 rounded-full"
+								style={{ backgroundColor: props.task.tag.color }}
+							/>
+							<span>{props.task.tag.label}</span>
+						</div>
+						<div className="flex gap-4 items-center">
+							<span className="text-gray-400">
+								{format(props.task.started_at, "HH:mm")} -{" "}
+								{format(props.task.stopped_at ?? props.task.expires_at, "HH:mm")}
+							</span>
+
+							<DeleteTask task={props.task} />
+						</div>
+					</div>
+				</button>
+			</FocusRing>
+		</div>
+	);
+}
+
+function DeleteTask(props: { task: DbTask & { tag: DbTag } }) {
+	const [isOpen, setIsOpen] = useState(false);
+
+	return (
+		<>
+			<Button className="rounded-full p-2" onPress={() => setIsOpen(true)}>
+				<Trash className="h-4 w-4" />
+			</Button>
+
+			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+				<div className="flex flex-col gap-4">
+					<h1 className="text-2xl font-bold">delete task</h1>
+
+					<div className="flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2">
+						<div className="flex w-full items-center justify-between gap-3">
+							<div className="flex items-center gap-3">
+								<div
+									className="h-3 w-3 rounded-full"
+									style={{ backgroundColor: props.task.tag.color }}
+								/>
+								<span>{props.task.tag.label}</span>
+							</div>
+							<div className="flex gap-4 items-center">
+								<span className="text-gray-400">
+									{format(props.task.started_at, "HH:mm")} -{" "}
+									{format(
+										props.task.stopped_at ?? props.task.expires_at,
+										"HH:mm"
+									)}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div className="flex w-full gap-3 pt-2">
+						<Button onPress={() => setIsOpen(false)} className="flex-1 p-4" isSecondary>
+							cancel
+						</Button>
+						<Button
+							className="flex-1 p-4"
+							onPress={async () => {
+								await Promise.all([
+									db.tasks.update(props.task.id, { deleted_at: new Date() }),
+									addNotSynced(props.task.id, "task"),
+								]);
+
+								setIsOpen(false);
+							}}
+						>
+							delete
+						</Button>
 					</div>
 				</div>
 			</Modal>
