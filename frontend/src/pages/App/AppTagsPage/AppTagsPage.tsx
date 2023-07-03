@@ -186,7 +186,7 @@ function EditTag(props: {
 				updated_at: new Date(),
 			};
 
-			await db.tags.put(newTag);
+            await Promise.all([db.tags.put(newTag), addNotSynced(newTag.id, "tag")])
 			editTagForm.reset();
 			props.setTagInEdit(null);
 		},
