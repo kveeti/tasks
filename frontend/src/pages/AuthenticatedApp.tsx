@@ -15,10 +15,12 @@ import { useDevActions } from "./App/DevActions";
 import { TimerContextProvider } from "./App/TimerContext";
 
 export function AuthenticatedApp() {
-	useDevActions();
 	useSync();
 
 	useNotifications();
+
+	// eslint-disable-next-line react-hooks/rules-of-hooks -- conditional is fine here
+	!import.meta.env.PROD && useDevActions();
 
 	return (
 		<TimerContextProvider>
