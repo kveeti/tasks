@@ -104,11 +104,13 @@ function Labels(props: { data: Data }) {
 
 			{props.data.chartData.map((d, i) => (
 				<div key={i} className="flex gap-4 py-2">
-					<div className="flex w-full items-center gap-2">
-						<div
-							className="h-3 w-3 rounded-full"
-							style={{ backgroundColor: d.tag.color }}
-						/>
+					<div className="flex w-full h-full items-center gap-2">
+						<div className="items-center flex">
+							<div
+								className="h-[0.6rem] w-[0.6rem] rounded-[50%]"
+								style={{ backgroundColor: d.tag.color }}
+							/>
+						</div>
 						<span className="w-full truncate">{d.tag.label}</span>
 					</div>
 
