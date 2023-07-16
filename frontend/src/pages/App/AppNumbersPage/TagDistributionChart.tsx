@@ -32,7 +32,7 @@ export function TagDistributionChart(props: {
 			<div className="mb-4 mt-2 border-b border-b-gray-800/70" />
 
 			<div ref={ref} className="mb-1 h-[200px]">
-				{data.length ? (
+				{data.chartData.length ? (
 					<Chart data={data} width={bounds.width} height={bounds.height} />
 				) : (
 					<span>no data</span>
@@ -53,11 +53,11 @@ function Chart(props: { data: Data; width: number; height: number }) {
 		.outerRadius(radius - 1);
 
 	const pie = d3
-		.pie<Data[number]>()
+		.pie<Data["chartData"][number]>()
 		.padAngle(0.005)
 		.value((d) => d.seconds);
 
-	const pieData = pie(props.data);
+	const pieData = pie(props.data.chartData);
 
 	return (
 		<svg viewBox={`0 0 ${props.width} ${props.height}`}>
@@ -86,11 +86,23 @@ function Chart(props: { data: Data; width: number; height: number }) {
 }
 
 function Labels(props: { data: Data }) {
-	if (!props.data.length) return null;
+	if (!props.data.chartData.length) return null;
 
 	return (
 		<div className="flex w-full flex-col divide-y divide-solid divide-gray-800/70 text-sm">
-			{props.data.map((d, i) => (
+			<div className="flex gap-4 py-2 font-bold">
+				<div className="flex w-full items-center gap-2">
+					<span className="w-full">Total</span>
+				</div>
+
+				<div className="flex gap-8">
+					<span className="whitespace-nowrap">{`${secondsToHours(
+						props.data.totalSeconds
+					)} h`}</span>
+				</div>
+			</div>
+
+			{props.data.chartData.map((d, i) => (
 				<div key={i} className="flex gap-4 py-2">
 					<div className="flex w-full items-center gap-2">
 						<div
@@ -146,7 +158,11 @@ function useData(props: { selectedDate: Date; timeframe: "year" | "month" | "wee
 		seconds: differenceInSeconds(task.stopped_at ?? task.expires_at, task.started_at),
 	}));
 
-	if (!dbTasks?.length) return [];
+	if (!dbTasks?.length)
+		return {
+			chartData: [],
+			totalSeconds: 0,
+		};
 
 	const totalSeconds = dbTasksWith?.reduce((acc, cur) => acc + cur.seconds, 0) || 0;
 
@@ -179,7 +195,10 @@ function useData(props: { selectedDate: Date; timeframe: "year" | "month" | "wee
 		) || []
 	).sort((a, b) => b.percentage - a.percentage);
 
-	return data;
+	return {
+		chartData: data,
+		totalSeconds,
+	};
 }
 
 type Data = ReturnType<typeof useData>;
