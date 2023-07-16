@@ -9,7 +9,6 @@ import isSameDay from "date-fns/isSameDay";
 import startOfMonth from "date-fns/startOfMonth";
 import startOfWeek from "date-fns/startOfWeek";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Fragment } from "react";
 import useMeasure from "react-use-measure";
 
 import { db } from "@/db/db";
