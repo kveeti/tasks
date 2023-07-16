@@ -90,7 +90,7 @@ function Labels(props: { data: Data }) {
 
 	return (
 		<div className="flex w-full flex-col divide-y divide-solid divide-gray-800/70 text-sm">
-			<div className="flex gap-4 py-2 font-bold">
+			<div className="flex gap-4 py-2 font-semibold">
 				<div className="flex w-full items-center gap-2">
 					<span className="w-full">Total</span>
 				</div>
