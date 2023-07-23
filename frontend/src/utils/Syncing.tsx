@@ -55,6 +55,8 @@ export function useSync() {
 }
 
 async function _sync(props: { signal: AbortSignal }) {
+    if (!navigator.onLine || !document.hasFocus()) return;
+    
 	const storageLastSyncedAt = localStorage.getItem("lastSyncedAt");
 	const lastSyncedAt = storageLastSyncedAt ? new Date(storageLastSyncedAt) : null;
 
