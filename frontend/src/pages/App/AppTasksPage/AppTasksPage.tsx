@@ -16,6 +16,7 @@ import { useAnimate, useIsPresent } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import colors from "tailwindcss/colors";
 import { z } from "zod";
@@ -130,6 +131,12 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 			tagId: "",
 		},
 		onSubmit: async (values) => {
+			if (!values.tagId || values.tagId === "") {
+				toast.error("Select a tag first");
+
+				return;
+			}
+
 			const endDate = addHours(values.start, values.duration);
 
 			const newTask: DbTask = {
