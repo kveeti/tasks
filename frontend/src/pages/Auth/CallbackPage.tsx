@@ -1,119 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Fragment, type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
 import { apiRequest } from "@/utils/api/apiRequest";
-import { cn } from "@/utils/classNames";
 
-import { type User, useUserContext } from "../../auth";
-import { LoginStep } from "./CallbackPage/LoginStep";
-import { SyncStep } from "./CallbackPage/SyncStep";
-
-const steps = [LoginStep, SyncStep];
+import { type User, useSetUser } from "../../auth";
 
 export function CallbackPage() {
-	const [activeStep, setActiveStep] = useState(-1);
-	const [_user, _setUser] = useState<User | null>(null);
+	const setUser = useSetUser();
 
-	const { setUser } = useUserContext();
+	const [searchParams] = useSearchParams();
+	const code = searchParams.get("code");
 
-	function nextStep() {
-		setActiveStep((s) => s + 1);
-	}
-
-	useEffect(() => setActiveStep(0), []);
+	const verifyQuery = useVerifyCodeQuery(code);
 
 	useEffect(() => {
-		const timeouts: number[] = [];
-
-		if (activeStep > 2 && _user) {
-			timeouts.push(
-				setTimeout(() => {
-					setUser(_user);
-				}, 500)
-			);
+		if (verifyQuery.data) {
+			setUser(verifyQuery.data);
 		}
+	}, [verifyQuery.status]);
 
-		if (activeStep === 2) {
-			timeouts.push(
-				setTimeout(() => {
-					setActiveStep(3);
-				}, 2000)
-			);
-		}
-
-		return () => {
-			timeouts.forEach(clearTimeout);
-		};
-	}, [activeStep]);
-
-	return (
-		<div className="relative flex flex-col gap-2 mx-auto h-full w-full max-w-[250px]">
-			<AnimatePresence initial={false} mode="wait">
-				{activeStep < 2 ? (
-					<motion.div
-						key="steps"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						className="flex flex-col"
-					>
-						{steps.map((Comp, i) => (
-							<Fragment key={i}>
-								<div className="w-full p-4 relative">
-									{activeStep === i && (
-										<motion.div
-											layoutId="active-step-indicator"
-											className="absolute inset-0 w-full rounded-xl border border-gray-800 bg-gray-900"
-											transition={{
-												type: "spring",
-												damping: 25,
-											}}
-										/>
-									)}
-									<div className="relative w-full">
-										<Comp
-											isActive={i === activeStep}
-											setUser={_setUser}
-											nextStep={nextStep}
-										/>
-									</div>
-								</div>
-								{i !== steps.length - 1 && (
-									<Separator margin={activeStep === i + 1} />
-								)}
-							</Fragment>
-						))}
-					</motion.div>
-				) : (
-					<motion.div
-						key="welcome"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						className="bg-gray-900 border flex-col gap-4 border-gray-800 flex items-center justify-center p-4 rounded-xl"
-					>
-						<span className="text-[4rem]">👋🏻</span>
-						<span className="text-lg">Welcome!</span>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
-	);
-}
-
-function Separator(props: { margin?: boolean }) {
-	return (
-		<motion.div
-			animate={{
-				marginTop: props.margin ? "-0.5rem" : "0.5rem",
-				marginBottom: props.margin ? "0.5rem" : "-0.5rem",
-			}}
-			transition={{ duration: 0.5, type: "tween" }}
-			className={cn("p-4 ml-8 my-2 border-l border-l-gray-800")}
-		/>
-	);
+	return null;
 }
 
 function useVerifyCodeQuery(code: string | null) {
@@ -134,14 +43,6 @@ function useVerifyCodeQuery(code: string | null) {
 					  }),
 			}),
 		isProd ? { enabled: !!code } : undefined
-	);
-}
-
-function Card(props: { children: ReactNode; keey?: string }) {
-	return (
-		<div className="mx-auto w-full max-w-[300px] rounded-xl border border-gray-800 bg-gray-900">
-			<Resizeable>{props.children}</Resizeable>
-		</div>
 	);
 }
 
@@ -223,98 +124,3 @@ function ignoreCircularReferences() {
 		return value;
 	};
 }
-
-// useEffect(() => {
-// 	if (verifyQuery.status === "loading") {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "login");
-// 			newSteps[index]!.status = "loading";
-
-// 			return newSteps;
-// 		});
-
-// 		return;
-// 	}
-
-// 	if (verifyQuery.isError) {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "login");
-// 			newSteps[index]!.status = "failed";
-
-// 			return newSteps;
-// 		});
-
-// 		return;
-// 	}
-
-// 	const timeouts: number[] = [];
-
-// 	if (verifyQuery.data) {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "login");
-// 			newSteps[index]!.status = "success";
-
-// 			return newSteps;
-// 		});
-// 		syncMutation.mutate();
-
-// 		timeouts.push(
-// 			setTimeout(() => {
-// 				// Entrypoint.tsx will redirect to /app if userId is set
-// 				// setUser(verifyQuery.data);
-// 			}, 1000)
-// 		);
-// 	}
-
-// 	return () => {
-// 		timeouts.forEach(clearTimeout);
-// 	};
-// }, [verifyQuery.status]);
-
-// useEffect(() => {
-// 	if (syncMutation.isLoading) {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "sync");
-// 			newSteps[index]!.status = "loading";
-
-// 			return newSteps;
-// 		});
-
-// 		return;
-// 	}
-
-// 	if (syncMutation.isError) {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "sync");
-// 			newSteps[index]!.status = "failed";
-
-// 			return newSteps;
-// 		});
-
-// 		return;
-// 	}
-
-// 	const timeouts: number[] = [];
-
-// 	if (syncMutation.isSuccess) {
-// 		setSteps((steps) => {
-// 			const newSteps = [...steps];
-// 			const index = newSteps.findIndex((step) => step.id === "sync");
-// 			newSteps[index]!.status = "success";
-
-// 			return newSteps;
-// 		});
-
-// 		timeouts.push(
-// 			setTimeout(() => {
-// 				// Entrypoint.tsx will redirect to /app if userId is set
-// 				// setUser(verifyQuery.data);
-// 			}, 1000)
-// 		);
-// 	}
-// }, [syncMutation.status]);

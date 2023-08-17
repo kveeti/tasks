@@ -3,19 +3,16 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import type { User } from "@/auth";
+import { type User, useSetUser } from "@/auth";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { sleep } from "@/utils/sleep";
 
 const isProd = import.meta.env.PROD;
 
-export function LoginStep(props: {
-	isActive: boolean;
-	nextStep: () => void;
-	setUser: (user: User) => void;
-}) {
+export function LoginStep(props: { isActive: boolean; nextStep: () => void }) {
 	const [searchParams] = useSearchParams();
-	const code = searchParams.get("code");
+
+	const setUser = useSetUser();
 
 	const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -47,7 +44,7 @@ export function LoginStep(props: {
 
 			setStatus("success");
 
-			props.setUser(res.value);
+			setUser(res.value);
 
 			timeouts.push(
 				setTimeout(() => {

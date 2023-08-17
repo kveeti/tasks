@@ -1,11 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useButton } from "@react-aria/button";
-import { FocusRing } from "@react-aria/focus";
-import type { AriaButtonProps } from "@react-types/button";
-import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
-import colors from "tailwindcss/colors";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { Error } from "@/Ui/Error";
@@ -15,7 +11,7 @@ import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { Tag } from "@/Ui/shared/Tag";
 import { type DbTag, addNotSynced, db } from "@/db/db";
-import { cn } from "@/utils/classNames";
+import { tryPutTags } from "@/utils/api/tryPost";
 import { createId } from "@/utils/createId";
 import { useForm } from "@/utils/useForm";
 
@@ -91,12 +87,13 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 				id: createId(),
 				label: values.label,
 				color: values.color,
+				was_last_used: false,
 				created_at: new Date(),
 				updated_at: new Date(),
 				deleted_at: null,
 			};
 
-			await Promise.all([db.tags.add(newTag), addNotSynced(newTag.id, "tag")]);
+			await Promise.all([db.tags.add(newTag), tryPutTags([newTag])]);
 
 			newTagForm.reset();
 			setIsModalOpen(false);
@@ -186,7 +183,7 @@ function EditTag(props: {
 				updated_at: new Date(),
 			};
 
-            await Promise.all([db.tags.put(newTag), addNotSynced(newTag.id, "tag")])
+			await Promise.all([db.tags.put(newTag), addNotSynced(newTag.id, "tag")]);
 			editTagForm.reset();
 			props.setTagInEdit(null);
 		},

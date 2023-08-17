@@ -1,13 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
-import { useUserContext } from "@/auth";
+import { db } from "@/db/db";
+import { useUser } from "@/utils/useUser";
 
 export function UserMenu() {
 	const [isOpen, setIsOpen] = useState(false);
-	const { logout, user } = useUserContext();
+
+	const user = useUser();
+
+	const navigate = useNavigate();
 
 	return (
 		<>
@@ -31,7 +36,14 @@ export function UserMenu() {
 							settings
 						</LinkButton>
 
-						<Button className="w-full p-3" onPress={() => logout()}>
+						<Button
+							className="w-full p-3"
+							onPress={() => {
+								db.delete();
+								localStorage.clear();
+								navigate("/auth/login");
+							}}
+						>
 							logout
 						</Button>
 					</div>

@@ -1,11 +1,12 @@
 use anyhow::Context;
-use auth::token::decode_token;
+use auth::token::{create_token, decode_token};
 use axum::{
     async_trait,
     extract::FromRequestParts,
     headers::{authorization::Bearer, Authorization, Cookie, HeaderMapExt},
     http::request::Parts,
 };
+use hyper::header;
 
 use crate::types::ApiError;
 
@@ -42,6 +43,22 @@ where
             decode_token(&token).context("Failed to decode token")?
         };
 
-        Ok(UserId(token.claims.sub))
+        let user_id = token.claims.sub;
+
+        let new_expiry = chrono::Utc::now().naive_utc() + chrono::Duration::days(7);
+
+        // update token in cookie so it doesn't expire
+        parts.headers.insert(
+            header::SET_COOKIE,
+            format!(
+                "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
+                create_token(&user_id, new_expiry)?,
+                new_expiry.format("%a, %d %b %Y %T GMT")
+            )
+            .parse()
+            .context("Failed to create new cookie")?,
+        );
+
+        Ok(UserId(user_id))
     }
 }

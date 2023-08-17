@@ -8,8 +8,7 @@ import { Input } from "@/Ui/Input";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { Checkmark, Loader } from "@/Ui/Status";
-import { useUser, useUserContext } from "@/auth";
-import { useSyncing } from "@/utils/Syncing";
+import { useUser } from "@/auth";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { sleep } from "@/utils/sleep";
 import { useForm } from "@/utils/useForm";
@@ -40,8 +39,6 @@ function deleteAccountFormSchema(userEmail: string) {
 }
 
 function DeleteAccount() {
-	const { disableSync, enableSync } = useSyncing();
-	const { logout } = useUserContext();
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [submitButtonStatus, setSubmitButtonStatus] = useState<
 		"idle" | "loading" | "success" | "error"
@@ -60,7 +57,6 @@ function DeleteAccount() {
 		defaultValues: { email: "" },
 		onSubmit: async () => {
 			setSubmitButtonStatus("loading");
-			disableSync();
 
 			const [res] = await Promise.allSettled([
 				deleteAccountMutation.mutateAsync(),
@@ -70,9 +66,7 @@ function DeleteAccount() {
 			if (res.status === "fulfilled") {
 				setSubmitButtonStatus("success");
 
-				enableSync();
 				await sleep(1000);
-				await logout();
 
 				setSubmitButtonStatus("idle");
 			} else {

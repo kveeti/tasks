@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { Time } from "@/Ui/Counter";
 import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
-import { type DbTask, addNotSynced, db } from "@/db/db";
+import { type DbTask, db } from "@/db/db";
 import { apiRequest } from "@/utils/api/apiRequest";
+import { tryPutTasks } from "@/utils/api/tryPost";
 import { createId } from "@/utils/createId";
 
 import { useTimerContext } from "../TimerContext";
@@ -85,22 +86,29 @@ export function AppIndexPage() {
 				})
 				.catch((err) => console.error("Failed to add notif:", err)),
 			db.tasks.add(task),
-			addNotSynced(task.id, "task"),
+			tryPutTasks([task]),
 		]);
 	}
 
-	function stopTimer() {
+	async function stopTimer() {
 		if (!selectedTagTime) return;
+
+		const task = await db.tasks.get(selectedTagTime.id);
+
+		if (!task) return;
+
+		const newTask = {
+			...task,
+			stopped_at: new Date(),
+			updated_at: new Date(),
+		};
 
 		Promise.all([
 			deleteNotifMutation
 				.mutateAsync({ task_id: selectedTagTime.id })
 				.catch((err) => console.error("Failed to delete notif:", err)),
-			db.tasks.update(selectedTagTime.id, {
-				stopped_at: new Date(),
-				updated_at: new Date(),
-			}),
-			addNotSynced(selectedTagTime.id, "task"),
+			db.tasks.put(newTask),
+			tryPutTasks([newTask]),
 		]);
 	}
 

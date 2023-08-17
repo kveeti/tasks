@@ -14,7 +14,7 @@ use crate::{
 pub struct AddNotifEndpointBody {
     pub title: String,
     pub message: String,
-    pub send_at: chrono::DateTime<chrono::Utc>,
+    pub send_at: chrono::NaiveDateTime,
     pub task_id: String,
 }
 
@@ -29,8 +29,8 @@ pub async fn add_notif_endpoint(
         task_id: sea_orm::ActiveValue::Set(body.task_id),
         title: sea_orm::ActiveValue::Set(body.title),
         message: sea_orm::ActiveValue::Set(body.message),
-        created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().into()),
-        send_at: sea_orm::ActiveValue::Set(body.send_at.into()),
+        created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().naive_utc()),
+        send_at: sea_orm::ActiveValue::Set(body.send_at),
     })
     .exec(&ctx.db)
     .await

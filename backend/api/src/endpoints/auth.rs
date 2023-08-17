@@ -122,8 +122,8 @@ pub async fn auth_verify_code_endpoint(
             let user = users::Model {
                 id: create_id(),
                 email: "dev@dev.local".to_owned(),
-                created_at: chrono::Utc::now().into(),
-                updated_at: chrono::Utc::now().into(),
+                created_at: chrono::Utc::now().naive_utc(),
+                updated_at: chrono::Utc::now().naive_utc(),
             };
 
             UserEntity::insert(user.clone().into_active_model())
@@ -135,7 +135,7 @@ pub async fn auth_verify_code_endpoint(
         }
     };
 
-    let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(30);
+    let expires_at = chrono::Utc::now().naive_utc() + chrono::Duration::days(7);
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
@@ -173,8 +173,8 @@ pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, 
             let user = users::Model {
                 id: create_id(),
                 email: email.to_owned(),
-                created_at: chrono::Utc::now().into(),
-                updated_at: chrono::Utc::now().into(),
+                created_at: chrono::Utc::now().naive_utc(),
+                updated_at: chrono::Utc::now().naive_utc(),
             };
 
             UserEntity::insert(user.clone().into_active_model())

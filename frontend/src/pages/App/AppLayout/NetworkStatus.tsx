@@ -1,9 +1,9 @@
-import { useNetworkStatus } from "@/utils/networkStatus";
+import { useIsOnline } from "@/utils/useIsOnline";
 
 export function NetworkStatus() {
-	const networkStatus = useNetworkStatus();
+	const isOnline = useIsOnline();
 
-	if (networkStatus.isOnline) return null;
+	if (isOnline) return null;
 
 	return (
 		<span className="text-sm bg-red-900 border border-red-700 px-2 py-1 rounded-full">

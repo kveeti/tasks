@@ -1,5 +1,10 @@
 use axum::routing::delete;
-use axum::{body::Body, response::Response, routing::get, routing::post, Router};
+use axum::{
+    body::Body,
+    response::Response,
+    routing::{get, post, put},
+    Router,
+};
 use config::{Env, CONFIG};
 use data::{create_id, get_db};
 use hyper::http::HeaderValue;
@@ -9,6 +14,7 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
 use types::RequestContextStruct;
+
 mod auth;
 mod endpoints;
 pub mod types;
@@ -66,17 +72,22 @@ pub async fn start_api() -> () {
             .delete(endpoints::notifs::delete_notif_endpoint),
     );
 
-    let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
-
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
+
+    let v1_tags_routes = Router::new().route("/", put(endpoints::tags::put_tags));
+
+    let v1_tasks_routes = Router::new().route("/", put(endpoints::tasks::put_tasks));
 
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
-        .nest("/sync", v1_sync_routes)
         .nest("/users", v1_users_routes)
-        .nest("/notifs", v1_notifs_routes);
+        .nest("/notifs", v1_notifs_routes)
+        .nest("/tags", v1_tags_routes)
+        .nest("/tasks", v1_tasks_routes)
+        .route("/init", get(endpoints::init::init))
+        .route("/ws", get(endpoints::ws::ws_handler));
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 
@@ -108,7 +119,7 @@ pub async fn start_api() -> () {
     tracing::info!("App started in {}, listening at {}", CONFIG.env, addr);
 
     axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
 }

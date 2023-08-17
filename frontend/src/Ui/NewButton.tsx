@@ -1,12 +1,13 @@
 import { type AriaButtonProps, useButton } from "@react-aria/button";
 import { FocusRing } from "@react-aria/focus";
+import { focusWithoutScrolling } from "@react-aria/utils";
 import { motion, useAnimation } from "framer-motion";
 import { useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import colors from "tailwindcss/colors";
 
 export function Button(props: { className?: string; isSecondary?: boolean } & AriaButtonProps) {
-	const ref = useRef<HTMLButtonElement | null>(null);
+	const ref = useRef(null);
 	const controls = useAnimation();
 
 	const baseColor = props.isSecondary ? colors.neutral[700] : colors.neutral[600];
@@ -28,7 +29,8 @@ export function Button(props: { className?: string; isSecondary?: boolean } & Ar
 				});
 			},
 			onPress: async (e) => {
-				ref.current?.focus();
+				// @ts-expect-error trust me it works - https://github.com/adobe/react-spectrum/issues/4355
+				focusWithoutScrolling(e.target);
 				controls.start({
 					backgroundColor: [null, baseColor],
 					transition: { duration: 0.4 },

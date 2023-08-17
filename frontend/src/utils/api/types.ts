@@ -14,6 +14,7 @@ export type ApiTag = {
 	id: string;
 	label: string;
 	color: string;
+	was_last_used: boolean;
 	created_at: string;
 	updated_at: string;
 	deleted_at: string | null;

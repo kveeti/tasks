@@ -3,9 +3,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { type ReactNode, useEffect, useState } from "react";
 
 import { useDbTags } from "@/db/useCommonDb";
+import { createCtx } from "@/utils/createCtx";
 
 import { type DbTaskWithTag, db } from "../../db/db";
-import { createCtx } from "../../utils/createContext";
 import { useSetInterval } from "../../utils/useSetInterval";
 
 const [useContextInner, Context] = createCtx<ReturnType<typeof useContextValue>>();
@@ -41,7 +41,7 @@ function useContextValue() {
 				getTimes(
 					dbActiveTasks.map((t) => ({
 						...t,
-						tag: dbTags?.find((tag) => tag.id === t.tag_id)!,
+						tag: dbTags?.find((tag) => tag.id === t.tag_id),
 					}))
 				)
 			);
@@ -53,11 +53,11 @@ function useContextValue() {
 
 	useEffect(() => {
 		if (activeTasks.length) {
-			setSelectedTagId(activeTasks[0]!.tag.id);
+			setSelectedTagId(activeTasks[0]?.tag?.id);
 		}
 	}, [activeTasks]);
 
-	const selectedTagTime = activeTasks.find((task) => task.tag.id === selectedTagId);
+	const selectedTagTime = activeTasks.find((task) => task.tag?.id === selectedTagId);
 
 	return {
 		activeTasks,

@@ -11,11 +11,9 @@ import isYesterday from "date-fns/isYesterday";
 import startOfDay from "date-fns/startOfDay";
 import subDays from "date-fns/subDays";
 import { useLiveQuery } from "dexie-react-hooks";
-import { AnimatePresence } from "framer-motion";
-import { useAnimate, useIsPresent } from "framer-motion";
+import { AnimatePresence, useAnimate, useIsPresent } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Trash } from "lucide-react";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import colors from "tailwindcss/colors";
@@ -28,6 +26,7 @@ import { Button, SelectButton } from "@/Ui/NewButton";
 import { Tag } from "@/Ui/shared/Tag";
 import { type DbTag, type DbTask, addNotSynced, db } from "@/db/db";
 import { useDbTags } from "@/db/useCommonDb";
+import { tryPutTasks } from "@/utils/api/tryPost";
 import { cn } from "@/utils/classNames";
 import { createId } from "@/utils/createId";
 import { useForm } from "@/utils/useForm";
@@ -151,7 +150,7 @@ function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
 				created_at: new Date(),
 			};
 
-			await Promise.all([db.tasks.add(newTask), addNotSynced(newTask.id, "task")]);
+			await Promise.all([db.tasks.add(newTask), tryPutTasks([newTask])]);
 
 			props.setCreatedTask(newTask);
 
@@ -264,7 +263,7 @@ function NewTaskSelectTag(props: { selectedTagId: string; onSelect: (id: string)
 }
 
 export function Task(props: {
-	task: DbTask & { tag: DbTag };
+	task: DbTask & { tag?: DbTag };
 	onPress?: () => void;
 	isCreatedTask: boolean;
 	resetCreatedTask: () => void;
@@ -334,9 +333,9 @@ export function Task(props: {
 						<div className="flex items-center gap-3">
 							<div
 								className="h-3 w-3 rounded-full"
-								style={{ backgroundColor: props.task.tag.color }}
+								style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
 							/>
-							<span>{props.task.tag.label}</span>
+							<span>{props.task.tag?.label ?? "no label"}</span>
 						</div>
 						<div className="flex gap-4 items-center">
 							<span className="text-gray-400">
@@ -353,7 +352,7 @@ export function Task(props: {
 	);
 }
 
-function DeleteTask(props: { task: DbTask & { tag: DbTag } }) {
+function DeleteTask(props: { task: DbTask & { tag?: DbTag } }) {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
@@ -371,9 +370,9 @@ function DeleteTask(props: { task: DbTask & { tag: DbTag } }) {
 							<div className="flex items-center gap-3">
 								<div
 									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: props.task.tag.color }}
+									style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
 								/>
-								<span>{props.task.tag.label}</span>
+								<span>{props.task.tag?.label ?? "no label"}</span>
 							</div>
 							<div className="flex gap-4 items-center">
 								<span className="text-gray-400">
