@@ -1,14 +1,12 @@
 use anyhow::Context;
 use axum::{extract::State, response::IntoResponse, Json};
-use entity::{
-    tags::{self, Entity as TagsEntity},
-    tasks::{self, Entity as TasksEntity},
-};
+
+use entity::{tags, tasks};
 use hyper::StatusCode;
 
 use sea_orm::{
-    prelude::DateTimeWithTimeZone, sea_query::OnConflict, ActiveValue, ColumnTrait, EntityTrait,
-    QueryFilter, QueryTrait,
+    prelude::DateTimeWithTimeZone, ActiveValue, ColumnTrait, DbErr, EntityTrait, QueryFilter,
+    QueryTrait, TransactionTrait,
 };
 use serde_json::json;
 
@@ -17,7 +15,7 @@ use crate::{
     types::{ApiError, RequestContext},
 };
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointTask {
     pub id: String,
     pub tag_id: String,
@@ -30,7 +28,7 @@ pub struct SyncEndpointTask {
     pub updated_at: DateTimeWithTimeZone,
 }
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointTag {
     pub id: String,
     pub label: String,
@@ -40,7 +38,7 @@ pub struct SyncEndpointTag {
     pub updated_at: DateTimeWithTimeZone,
 }
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct SyncEndpointBody {
     pub last_synced_at: Option<DateTimeWithTimeZone>,
     pub tasks: Vec<SyncEndpointTask>,
@@ -52,81 +50,108 @@ pub async fn sync_endpoint(
     State(ctx): RequestContext,
     Json(body): Json<SyncEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    if body.tags.len() > 0 {
-        tracing::debug!("Upserting {} tags", body.tags.len());
+    if body.tags.len() > 0 || body.tasks.len() > 0 {
+        tracing::info!("Syncing user {}", user_id);
 
-        TagsEntity::insert_many(body.tags.into_iter().map(|tag| tags::ActiveModel {
-            id: ActiveValue::Set(tag.id),
-            user_id: ActiveValue::Set(user_id.to_owned()),
-            label: ActiveValue::Set(tag.label),
-            color: ActiveValue::Set(tag.color.to_owned()),
-            deleted_at: match tag.deleted_at {
-                Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
-                None => ActiveValue::NotSet,
-            },
-            created_at: ActiveValue::Set(tag.created_at),
-            updated_at: ActiveValue::Set(tag.updated_at),
-            synced_at: ActiveValue::Set(chrono::Utc::now().into()),
-        }))
-        .on_conflict(
-            OnConflict::column(tags::Column::Id)
-                .update_columns(vec![
-                    tags::Column::Color,
-                    tags::Column::Label,
-                    tags::Column::CreatedAt,
-                    tags::Column::UpdatedAt,
-                    tags::Column::DeletedAt,
-                    tags::Column::SyncedAt,
-                ])
-                .to_owned(),
-        )
-        .exec(&ctx.db)
-        .await
-        .context("Failed to upsert tags")?;
+        if body.tags.len() > 0 {
+            tracing::info!("Syncing tags");
+
+            let user_id = user_id.to_owned();
+
+            let tag_ids = body
+                .tags
+                .iter()
+                .map(|tag| tag.id.to_owned())
+                .collect::<Vec<_>>();
+
+            ctx.db
+                .transaction::<_, (), DbErr>(|txn| {
+                    Box::pin(async move {
+                        tags::Entity::delete_many()
+                            .filter(tags::Column::UserId.eq(&user_id))
+                            .filter(tags::Column::Id.is_in(tag_ids))
+                            .exec(txn)
+                            .await?;
+
+                        for tag in body.tags {
+                            tags::Entity::insert(tags::ActiveModel {
+                                id: ActiveValue::Set(tag.id),
+                                user_id: ActiveValue::Set(user_id.to_owned()),
+                                label: ActiveValue::Set(tag.label),
+                                color: ActiveValue::Set(tag.color.to_owned()),
+                                deleted_at: match tag.deleted_at {
+                                    Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
+                                    None => ActiveValue::NotSet,
+                                },
+                                created_at: ActiveValue::Set(tag.created_at),
+                                updated_at: ActiveValue::Set(tag.updated_at),
+                                synced_at: ActiveValue::Set(chrono::Utc::now().into()),
+                            })
+                            .exec(txn)
+                            .await?;
+                        }
+
+                        Ok(())
+                    })
+                })
+                .await
+                .context("Failed to sync tags")?;
+        }
+
+        if body.tasks.len() > 0 {
+            tracing::info!("Syncing tasks");
+
+            let user_id = user_id.to_owned();
+
+            let task_ids = body
+                .tasks
+                .iter()
+                .map(|task| task.id.to_owned())
+                .collect::<Vec<_>>();
+
+            ctx.db
+                .transaction::<_, (), DbErr>(|txn| {
+                    Box::pin(async move {
+                        tasks::Entity::delete_many()
+                            .filter(tasks::Column::UserId.eq(&user_id))
+                            .filter(tasks::Column::Id.is_in(task_ids))
+                            .exec(txn)
+                            .await?;
+
+                        for task in body.tasks {
+                            tasks::Entity::insert(tasks::ActiveModel {
+                                id: ActiveValue::Set(task.id),
+                                user_id: ActiveValue::Set(user_id.to_owned()),
+                                tag_id: ActiveValue::Set(task.tag_id),
+                                is_manual: ActiveValue::Set(task.is_manual),
+                                started_at: ActiveValue::Set(task.started_at),
+                                stopped_at: match task.stopped_at {
+                                    Some(stopped_at) => ActiveValue::Set(Some(stopped_at)),
+                                    None => ActiveValue::NotSet,
+                                },
+                                expires_at: ActiveValue::Set(task.expires_at),
+                                deleted_at: match task.deleted_at {
+                                    Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
+                                    None => ActiveValue::NotSet,
+                                },
+                                updated_at: ActiveValue::Set(task.updated_at),
+                                created_at: ActiveValue::Set(task.created_at),
+                                synced_at: ActiveValue::Set(chrono::Utc::now().into()),
+                            })
+                            .exec(txn)
+                            .await?;
+                        }
+
+                        Ok(())
+                    })
+                })
+                .await
+                .context("Failed to sync tasks")?;
+        }
     }
 
-    if body.tasks.len() > 0 {
-        tracing::debug!("Upserting {} tasks", body.tasks.len());
-
-        TasksEntity::insert_many(body.tasks.into_iter().map(|task| tasks::ActiveModel {
-            id: ActiveValue::Set(task.id),
-            user_id: ActiveValue::Set(user_id.to_owned()),
-            tag_id: ActiveValue::Set(task.tag_id),
-            is_manual: ActiveValue::Set(task.is_manual),
-            started_at: ActiveValue::Set(task.started_at),
-            stopped_at: match task.stopped_at {
-                Some(stopped_at) => ActiveValue::Set(Some(stopped_at)),
-                None => ActiveValue::NotSet,
-            },
-            expires_at: ActiveValue::Set(task.expires_at),
-            deleted_at: match task.deleted_at {
-                Some(deleted_at) => ActiveValue::Set(Some(deleted_at)),
-                None => ActiveValue::NotSet,
-            },
-            updated_at: ActiveValue::Set(task.updated_at),
-            created_at: ActiveValue::Set(task.created_at),
-            synced_at: ActiveValue::Set(chrono::Utc::now().into()),
-        }))
-        .on_conflict(
-            OnConflict::column(tasks::Column::Id)
-                .update_columns(vec![
-                    tasks::Column::TagId,
-                    tasks::Column::IsManual,
-                    tasks::Column::CreatedAt,
-                    tasks::Column::UpdatedAt,
-                    tasks::Column::StoppedAt,
-                    tasks::Column::DeletedAt,
-                    tasks::Column::SyncedAt,
-                ])
-                .to_owned(),
-        )
-        .exec(&ctx.db)
-        .await
-        .context("Failed to upsert tasks")?;
-    }
-
-    let tags_out_of_date_on_client = TagsEntity::find()
-        .filter(tags::Column::UserId.eq(user_id.to_owned()))
+    let tags_out_of_date_on_client = tags::Entity::find()
+        .filter(tags::Column::UserId.eq(&user_id))
         .apply_if(body.last_synced_at, |q, last_synced_at| {
             q.filter(tags::Column::SyncedAt.gt(last_synced_at - chrono::Duration::minutes(2)))
         })
@@ -134,8 +159,8 @@ pub async fn sync_endpoint(
         .await
         .context("Failed to find tags out of date on client")?;
 
-    let tasks_out_of_date_on_client = TasksEntity::find()
-        .filter(tasks::Column::UserId.eq(user_id))
+    let tasks_out_of_date_on_client = tasks::Entity::find()
+        .filter(tasks::Column::UserId.eq(&user_id))
         .apply_if(body.last_synced_at, |q, last_synced_at| {
             q.filter(tasks::Column::SyncedAt.gt(last_synced_at - chrono::Duration::minutes(2)))
         })

@@ -1,0 +1,6 @@
+**/target
+**/sql
+*.sh
+*.md
+*.yml
+*.yaml

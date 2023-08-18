@@ -1,3 +1,5 @@
+use std::{thread, time::Duration};
+
 use config::CONFIG;
 use data::get_db;
 use entity::{notif_subs, notifs};
@@ -19,6 +21,10 @@ pub async fn start_notification_service() {
     tracing::info!("Notification service started");
 
     loop {
+        thread::sleep(Duration::from_secs(10));
+
+        tracing::debug!("Checking for notifications");
+
         let notifs = notifs::Entity::find()
             .filter(notifs::Column::SendAt.lt(chrono::Utc::now()))
             .all(&db)
@@ -121,7 +127,5 @@ pub async fn start_notification_service() {
                     .unwrap();
             }
         }
-
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
     }
 }
