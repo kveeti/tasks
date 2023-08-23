@@ -5,9 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { db } from "@/db/db";
 import { apiRequest } from "@/utils/api/apiRequest";
-import { mapApiTagToDbTag, mapApiTaskToDbTask } from "@/utils/api/mapTypes";
 import type { ApiTag, ApiTask } from "@/utils/api/types";
-import { useLastSyncedAt } from "@/utils/useLastSyncedAt";
 import { useNotifications } from "@/utils/useNotifications";
 import { useWs } from "@/utils/ws";
 
@@ -23,10 +21,9 @@ import { TimerContextProvider } from "./App/TimerContext";
 export function AuthenticatedApp() {
 	useNotifications();
 	useWs();
-	const { lastSyncedAt, setLastSyncedAt } = useLastSyncedAt();
-	const [isAppReady, setIsAppReady] = useState(!!lastSyncedAt);
+	const [isAppReady, setIsAppReady] = useState(false);
 
-	const initQuery = useInitQuery(lastSyncedAt);
+	const initQuery = useInitQuery();
 
 	useEffect(() => {
 		(async () => {
@@ -49,43 +46,43 @@ export function AuthenticatedApp() {
 		})();
 	}, [initQuery.status]);
 
-	async function syncNotSynced() {
-		const notSynced = await db.notSynced.toArray();
+	// async function syncNotSynced() {
+	// 	const notSynced = await db.notSynced.toArray();
 
-		if (notSynced.length === 0) {
-			return;
-		}
+	// 	if (notSynced.length === 0) {
+	// 		return;
+	// 	}
 
-		const notSyncedTaskIds = notSynced
-			.filter((ns) => ns.target_type === "task")
-			.map((ns) => ns.target_id);
-		const notSyncedTagIds = notSynced
-			.filter((ns) => ns.target_type === "tag")
-			.map((ns) => ns.target_id);
+	// 	const notSyncedTaskIds = notSynced
+	// 		.filter((ns) => ns.target_type === "task")
+	// 		.map((ns) => ns.target_id);
+	// 	const notSyncedTagIds = notSynced
+	// 		.filter((ns) => ns.target_type === "tag")
+	// 		.map((ns) => ns.target_id);
 
-		const notSyncedTasks = await db.tasks
-			.filter((t) => notSyncedTaskIds.includes(t.id))
-			.toArray();
-		const notSyncedTags = await db.tags.filter((t) => notSyncedTagIds.includes(t.id)).toArray();
+	// 	const notSyncedTasks = await db.tasks
+	// 		.filter((t) => notSyncedTaskIds.includes(t.id))
+	// 		.toArray();
+	// 	const notSyncedTags = await db.tags.filter((t) => notSyncedTagIds.includes(t.id)).toArray();
 
-		await Promise.allSettled([
-			apiRequest({
-				method: "POST",
-				path: "/tasks",
-				body: notSyncedTasks,
-			}),
-			apiRequest({
-				method: "POST",
-				path: "/tags",
-				body: notSyncedTags,
-			}),
-		]);
-	}
+	// 	await Promise.allSettled([
+	// 		apiRequest({
+	// 			method: "POST",
+	// 			path: "/tasks",
+	// 			body: notSyncedTasks,
+	// 		}),
+	// 		apiRequest({
+	// 			method: "POST",
+	// 			path: "/tags",
+	// 			body: notSyncedTags,
+	// 		}),
+	// 	]);
+	// }
 
 	// eslint-disable-next-line react-hooks/rules-of-hooks -- conditional is fine here
 	!import.meta.env.PROD && useDevActions();
 
-	return isAppReady ? (
+	return (
 		<TimerContextProvider>
 			<motion.div
 				initial={{ opacity: 0 }}
@@ -105,18 +102,19 @@ export function AuthenticatedApp() {
 				</Routes>
 			</motion.div>
 		</TimerContextProvider>
-	) : (
-		<div>syncing...</div>
 	);
 }
 
-function useInitQuery(lastSyncedAt: Date | null) {
+function useInitQuery() {
+	const lastSyncedAt = localStorage.getItem("last-synced-at");
+	const lastSyncedAtDate = lastSyncedAt ? new Date(lastSyncedAt) : null;
+
 	return useQuery(["init"], () =>
 		apiRequest<{ tasks: ApiTask[]; tags: ApiTag[] }>({
 			method: "GET",
 			path: "/init",
-			...(lastSyncedAt && {
-				query: new URLSearchParams({ from: lastSyncedAt?.toISOString() }),
+			...(lastSyncedAtDate && {
+				query: new URLSearchParams({ from: lastSyncedAtDate?.toISOString() }),
 			}),
 		})
 	);

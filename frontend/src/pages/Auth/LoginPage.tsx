@@ -1,4 +1,7 @@
+import { Button } from "@/Ui/NewButton";
 import { LinkButton } from "@/Ui/NewLink";
+import { useUserContext } from "@/auth";
+import { createId } from "@/utils/createId";
 
 export function LoginPage() {
 	return (
@@ -13,10 +16,31 @@ export function LoginPage() {
 					Login with Google
 				</LinkButton>
 			) : (
-				<LinkButton to={"/auth/callback"} className="px-3 py-2">
-					Dev login
-				</LinkButton>
+				<PreviewLogin />
 			)}
+		</div>
+	);
+}
+
+function PreviewLogin() {
+	const { setUser } = useUserContext();
+
+	function offlineLogin() {
+		setUser({
+			id: createId(),
+			email: "offline@tasks.local",
+		});
+	}
+
+	return (
+		<div className="space-y-4">
+			<LinkButton to={"/auth/callback"} className="px-3 py-2">
+				dev login
+			</LinkButton>
+
+			<Button onPress={offlineLogin} className="px-3 py-2">
+				offline login
+			</Button>
 		</div>
 	);
 }

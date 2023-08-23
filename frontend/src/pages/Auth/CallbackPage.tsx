@@ -6,10 +6,10 @@ import useMeasure from "react-use-measure";
 
 import { apiRequest } from "@/utils/api/apiRequest";
 
-import { type User, useSetUser } from "../../auth";
+import { type User, useUserContext } from "../../auth";
 
 export function CallbackPage() {
-	const setUser = useSetUser();
+	const { setUser } = useUserContext();
 
 	const [searchParams] = useSearchParams();
 	const code = searchParams.get("code");

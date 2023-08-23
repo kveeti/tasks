@@ -38,7 +38,7 @@
 		"framer-motion": "^10.12.16",
 		"jotai": "^2.3.1",
 		"lucide-react": "^0.246.0",
-		"react": "^18.2.0",
+		"react": "0.0.0-experimental-dd480ef92-20230822",
 		"react-dom": "^18.2.0",
 		"react-hook-form": "^7.45.0",
 		"react-router-dom": "^6.13.0",
@@ -56,7 +56,6 @@
 	"devDependencies": {
 		"@trivago/prettier-plugin-sort-imports": "^4.1.1",
 		"@types/d3": "^7.4.0",
-		"@types/react": "^18.2.13",
 		"@types/react-dom": "^18.2.6",
 		"@types/uuid": "^9.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.60.0",
