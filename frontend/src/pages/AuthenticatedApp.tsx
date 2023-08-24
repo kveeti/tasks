@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { db } from "@/db/db";
 import { apiRequest } from "@/utils/api/apiRequest";
+import { mapApiTagToDbTag, mapApiTaskToDbTask } from "@/utils/api/mapTypes";
 import type { ApiTag, ApiTask } from "@/utils/api/types";
 import { useNotifications } from "@/utils/useNotifications";
 import { useWs } from "@/utils/ws";
@@ -21,63 +21,32 @@ import { TimerContextProvider } from "./App/TimerContext";
 export function AuthenticatedApp() {
 	useNotifications();
 	useWs();
-	const [isAppReady, setIsAppReady] = useState(false);
 
-	const initQuery = useInitQuery();
+	const [canShowApp, setCanShowApp] = useState(!!localStorage.getItem("last-synced-at"));
 
 	useEffect(() => {
 		(async () => {
-			if (initQuery.isLoading) {
-				return <div>syncing...</div>;
-			} else if (initQuery.isError) {
-				console.log(initQuery.error);
+			const lastSyncedAt = localStorage.getItem("last-synced-at");
+			const lastSyncedAtDate = lastSyncedAt ? new Date(lastSyncedAt) : undefined;
 
-				return <div>error</div>;
-			} else if (initQuery.data) {
-				setLastSyncedAt(new Date().toISOString());
+			const res = await apiRequest<{ tasks: ApiTask[]; tags: ApiTag[] }>({
+				method: "GET",
+				path: "/init",
+				...(lastSyncedAtDate && {
+					query: new URLSearchParams({ from: lastSyncedAtDate?.toISOString() }),
+				}),
+			});
 
-				initQuery.data.tags?.length &&
-					(await db.tags.bulkPut(initQuery.data.tags.map(mapApiTagToDbTag)));
-				initQuery.data.tasks?.length &&
-					(await db.tasks.bulkPut(initQuery.data.tasks.map(mapApiTaskToDbTask)));
+			if (res) {
+				localStorage.setItem("last-synced-at", new Date().toISOString());
 
-				setIsAppReady(true);
+				res.tags && (await db.tags.bulkPut(res.tags.map(mapApiTagToDbTag)));
+				res.tasks && (await db.tasks.bulkPut(res.tasks.map(mapApiTaskToDbTask)));
+
+				setCanShowApp(true);
 			}
 		})();
-	}, [initQuery.status]);
-
-	// async function syncNotSynced() {
-	// 	const notSynced = await db.notSynced.toArray();
-
-	// 	if (notSynced.length === 0) {
-	// 		return;
-	// 	}
-
-	// 	const notSyncedTaskIds = notSynced
-	// 		.filter((ns) => ns.target_type === "task")
-	// 		.map((ns) => ns.target_id);
-	// 	const notSyncedTagIds = notSynced
-	// 		.filter((ns) => ns.target_type === "tag")
-	// 		.map((ns) => ns.target_id);
-
-	// 	const notSyncedTasks = await db.tasks
-	// 		.filter((t) => notSyncedTaskIds.includes(t.id))
-	// 		.toArray();
-	// 	const notSyncedTags = await db.tags.filter((t) => notSyncedTagIds.includes(t.id)).toArray();
-
-	// 	await Promise.allSettled([
-	// 		apiRequest({
-	// 			method: "POST",
-	// 			path: "/tasks",
-	// 			body: notSyncedTasks,
-	// 		}),
-	// 		apiRequest({
-	// 			method: "POST",
-	// 			path: "/tags",
-	// 			body: notSyncedTags,
-	// 		}),
-	// 	]);
-	// }
+	}, []);
 
 	// eslint-disable-next-line react-hooks/rules-of-hooks -- conditional is fine here
 	!import.meta.env.PROD && useDevActions();
@@ -91,31 +60,22 @@ export function AuthenticatedApp() {
 				transition={{ duration: 0.5, ease: "easeInOut" }}
 			>
 				<Routes>
-					<Route path="/app" element={<AppLayout />}>
-						<Route index element={<AppIndexPage />} />
-						<Route path="stats" element={<AppNumbersPage />} />
-						<Route path="tags" element={<AppTagsPage />} />
-						<Route path="tasks" element={<AppTasksPage />} />
-						<Route path="settings" element={<AppSettingsPage />} />
-					</Route>
-					<Route path="*" element={<Navigate to="/app" />} />
+					{canShowApp ? (
+						<>
+							<Route path="/app" element={<AppLayout />}>
+								<Route index element={<AppIndexPage />} />
+								<Route path="stats" element={<AppNumbersPage />} />
+								<Route path="tags" element={<AppTagsPage />} />
+								<Route path="tasks" element={<AppTasksPage />} />
+								<Route path="settings" element={<AppSettingsPage />} />
+							</Route>
+							<Route path="*" element={<Navigate to="/app" />} />
+						</>
+					) : (
+						<Route path="*" element={<Navigate to="/app" />} />
+					)}
 				</Routes>
 			</motion.div>
 		</TimerContextProvider>
-	);
-}
-
-function useInitQuery() {
-	const lastSyncedAt = localStorage.getItem("last-synced-at");
-	const lastSyncedAtDate = lastSyncedAt ? new Date(lastSyncedAt) : null;
-
-	return useQuery(["init"], () =>
-		apiRequest<{ tasks: ApiTask[]; tags: ApiTag[] }>({
-			method: "GET",
-			path: "/init",
-			...(lastSyncedAtDate && {
-				query: new URLSearchParams({ from: lastSyncedAtDate?.toISOString() }),
-			}),
-		})
 	);
 }

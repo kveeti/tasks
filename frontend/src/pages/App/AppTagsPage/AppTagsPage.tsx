@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -10,20 +10,17 @@ import { Label } from "@/Ui/Label";
 import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
 import { Tag } from "@/Ui/shared/Tag";
-import { type DbTag, addNotSynced, db } from "@/db/db";
+import { type DbTag, db } from "@/db/db";
+import { useDbTags } from "@/db/useCommonDb";
 import { tryPutTags } from "@/utils/api/tryPost";
 import { createId } from "@/utils/createId";
 import { useForm } from "@/utils/useForm";
 
-import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
-import { ColorSelector, type TagColors, tagColors, zodTagColors } from "./ColorSelector";
+import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
 
 export function AppTagsPage() {
-	const { dbTags } = useTimerContext();
-
-	const [tagInEdit, setTagInEdit] = useState<DbTag | null>(null);
-	const [createdTag, setCreatedTag] = useState<DbTag | null>(null);
+	const dbTags = useDbTags([]);
 
 	return (
 		<WithAnimation>
@@ -34,35 +31,47 @@ export function AppTagsPage() {
 					</div>
 
 					<div className="px-4 pt-4">
-						<NewTag setCreatedTag={setCreatedTag} />
+						<NewTag />
 					</div>
 				</div>
 
-				<div className="flex flex-col gap-2 overflow-auto p-4">
-					{dbTags?.length ? (
-						<AnimatePresence initial={false}>
-							{dbTags?.map((tag) => (
-								<Tag
-									key={tag.id}
-									tag={tag}
-									onPress={() => setTagInEdit(tag)}
-									isCreatedTag={tag.id === createdTag?.id}
-									resetCreatedTag={() => setCreatedTag(null)}
-								/>
-							))}
-						</AnimatePresence>
-					) : (
-						<div className="flex h-full flex-col items-center justify-center">
-							<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
-								no tags
-							</h2>
-						</div>
-					)}
+				<div className="overflow-auto">
+					<div className="flex flex-col p-4">
+						{!dbTags ? (
+							<div className="flex h-full flex-col items-center justify-center">
+								<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
+									loading...
+								</h2>
+							</div>
+						) : !dbTags.length ? (
+							<div className="flex h-full flex-col items-center justify-center">
+								<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
+									no tags
+								</h2>
+							</div>
+						) : (
+							<AnimatePresence initial={false}>
+								{dbTags?.map((tag) => (
+									<motion.div
+										key={tag.id}
+										initial={{ opacity: 0, height: 0 }}
+										animate={{ opacity: 1, height: "auto" }}
+										exit={{ opacity: 0, height: 0 }}
+									>
+										<motion.div
+											initial={{ backgroundColor: "rgba(210, 210, 210, 1)" }}
+											animate={{ backgroundColor: "rgba(255, 255, 255, 0)" }}
+											transition={{ duration: 1.2 }}
+											className="rounded-xl"
+										>
+											<Tag tag={tag} />
+										</motion.div>
+									</motion.div>
+								))}
+							</AnimatePresence>
+						)}
+					</div>
 				</div>
-
-				{tagInEdit && (
-					<EditTag tagInEdit={tagInEdit} setTagInEdit={setTagInEdit} dbTags={dbTags} />
-				)}
 			</div>
 		</WithAnimation>
 	);
@@ -73,7 +82,7 @@ const newTagFormSchema = z.object({
 	color: zodTagColors,
 });
 
-function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
+function NewTag() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const newTagForm = useForm<z.infer<typeof newTagFormSchema>>({
@@ -97,7 +106,6 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 
 			newTagForm.reset();
 			setIsModalOpen(false);
-			props.setCreatedTag(newTag);
 		},
 	});
 
@@ -150,81 +158,5 @@ function NewTag(props: { setCreatedTag: (tag: DbTag) => void }) {
 				</form>
 			</Modal>
 		</>
-	);
-}
-
-function EditTag(props: {
-	tagInEdit: DbTag;
-	setTagInEdit: (tag: DbTag | null) => void;
-	dbTags?: DbTag[];
-}) {
-	const editTagFormSchema = z.object({
-		label: z
-			.string()
-			.min(2, { message: "too short! must be at least 2 chars" })
-			.refine(
-				(label) =>
-					!props.dbTags?.some(
-						(tag) => tag.label === label && tag.id !== props.tagInEdit.id
-					),
-				"label in use! two tags can't have the same label"
-			),
-		color: zodTagColors,
-	});
-
-	const editTagForm = useForm<z.infer<typeof editTagFormSchema>>({
-		resolver: zodResolver(editTagFormSchema),
-		defaultValues: { label: props.tagInEdit.label, color: props.tagInEdit.color as TagColors },
-		onSubmit: async (values) => {
-			const newTag: DbTag = {
-				...props.tagInEdit,
-				label: values.label,
-				color: values.color,
-				updated_at: new Date(),
-			};
-
-			await Promise.all([db.tags.put(newTag), addNotSynced(newTag.id, "tag")]);
-			editTagForm.reset();
-			props.setTagInEdit(null);
-		},
-	});
-
-	return (
-		<Modal isOpen={true} onClose={() => props.setTagInEdit(null)}>
-			<form
-				onSubmit={editTagForm.handleSubmit}
-				className="flex h-full w-full flex-col justify-between gap-4"
-			>
-				<h1 className="text-2xl font-bold">edit tag</h1>
-
-				<Input
-					label="label"
-					required
-					error={editTagForm.formState.errors.label?.message}
-					{...editTagForm.register("label")}
-				/>
-
-				<div className="flex flex-col">
-					<Label required>color</Label>
-
-					<ColorSelector form={editTagForm} />
-
-					<Error message={editTagForm.formState.errors.color?.message} />
-				</div>
-
-				<div className="flex w-full gap-2">
-					<Button
-						onPress={() => props.setTagInEdit(null)}
-						className="flex-1 p-4"
-						isSecondary
-					>
-						cancel
-					</Button>
-					<Button className="flex-1 p-4" type="submit">
-						save
-					</Button>
-				</div>
-			</form>
-		</Modal>
 	);
 }

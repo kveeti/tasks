@@ -335,7 +335,7 @@ export function Task(props: {
 								className="h-3 w-3 rounded-full"
 								style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
 							/>
-							<span>{props.task.tag?.label ?? "no label"}</span>
+							<span>{props.task.tag?.label ?? "deleted tag"}</span>
 						</div>
 						<div className="flex gap-4 items-center">
 							<span className="text-gray-400">
@@ -372,7 +372,7 @@ function DeleteTask(props: { task: DbTask & { tag?: DbTag } }) {
 									className="h-3 w-3 rounded-full"
 									style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
 								/>
-								<span>{props.task.tag?.label ?? "no label"}</span>
+								<span>{props.task.tag?.label ?? "deleted tag"}</span>
 							</div>
 							<div className="flex gap-4 items-center">
 								<span className="text-gray-400">
@@ -394,7 +394,10 @@ function DeleteTask(props: { task: DbTask & { tag?: DbTag } }) {
 							className="flex-1 p-4"
 							onPress={async () => {
 								await Promise.all([
-									db.tasks.update(props.task.id, { deleted_at: new Date() }),
+									db.tasks.update(props.task.id, {
+										deleted_at: new Date(),
+										updated_at: new Date(),
+									}),
 									addNotSynced(props.task.id, "task"),
 								]);
 

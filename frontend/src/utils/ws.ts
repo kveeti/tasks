@@ -3,9 +3,7 @@ import useWebSocket from "react-use-websocket";
 
 import { db } from "@/db/db";
 
-import { useSetInterval } from "./useSetInterval";
-
-const wsUrl = "ws://192.168.0.81:11000/api/v1/ws";
+const wsUrl = import.meta.env.VITE_APP_API_WS_URL;
 
 export function useWs() {
 	const ws = useWebSocket<{ t: string; d: any }>(wsUrl, {
@@ -34,10 +32,4 @@ export function useWs() {
 			console.log("ws close");
 		}
 	}, [ws.readyState]);
-
-	useSetInterval(() => {
-		if (ws.readyState === WebSocket.OPEN) {
-			ws.sendMessage(new Uint8Array([0]));
-		}
-	}, 5000);
 }
