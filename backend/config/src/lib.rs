@@ -19,7 +19,7 @@ impl std::fmt::Display for Env {
 #[derive(Clone, serde::Deserialize)]
 pub struct Config {
     pub env: Env,
-    pub db_url: String,
+    pub database_url: String,
     pub jwt_secret: String,
     pub jwt_aud: String,
     pub jwt_iss: String,

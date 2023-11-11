@@ -1,13 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { z } from "zod";
 
-import { Input } from "@/Ui/Input";
-import { Modal } from "@/Ui/Modal";
 import { Button } from "@/Ui/NewButton";
-import { Checkmark, Loader } from "@/Ui/Status";
 import { useUser } from "@/auth";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { sleep } from "@/utils/sleep";
@@ -81,7 +77,7 @@ function DeleteAccount() {
 		<>
 			<Button onPress={() => setIsModalOpen(true)}>delete account</Button>
 
-			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+			{/* <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
 				<form onSubmit={deleteAccountForm.handleSubmit} className="flex flex-col gap-4">
 					<h1 className="text-2xl font-bold leading-none">delete account</h1>
 
@@ -133,7 +129,7 @@ function DeleteAccount() {
 						</Button>
 					</div>
 				</form>
-			</Modal>
+			</Modal> */}
 		</>
 	);
 }

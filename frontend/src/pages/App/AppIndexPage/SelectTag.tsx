@@ -1,9 +1,5 @@
 import { useState } from "react";
 
-import { Modal } from "@/Ui/Modal";
-import { Button } from "@/Ui/NewButton";
-import { Tag } from "@/Ui/shared/Tag";
-
 import { useTimerContext } from "../TimerContext";
 
 export function SelectTag() {
@@ -12,7 +8,7 @@ export function SelectTag() {
 
 	return (
 		<>
-			<Button className="px-4 py-2" onPress={() => setIsOpen(true)}>
+			{/* <Button className="px-4 py-2" onPress={() => setIsOpen(true)}>
 				{selectedTag ? (
 					<div className="flex items-center gap-2">
 						<div
@@ -44,7 +40,7 @@ export function SelectTag() {
 						))}
 					</div>
 				</div>
-			</Modal>
+			</Modal> */}
 		</>
 	);
 }

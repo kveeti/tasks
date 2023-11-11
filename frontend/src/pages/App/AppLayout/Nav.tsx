@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 
-export const links = [
+const links = [
 	{ id: "home", label: "home", href: "/app" },
 	{ id: "stats", label: "stats", href: "/app/stats" },
 	{ id: "tags", label: "tags", href: "/app/tags" },
@@ -13,7 +13,7 @@ export function Nav() {
 	const activeLinkId = links.find((link) => link.href === location.pathname)?.id;
 
 	return (
-		<div className="flex w-full max-w-[320px] rounded-full border border-gray-800 bg-gray-900 p-2">
+		<div className="flex w-full max-w-[320px] rounded-full border bg-card p-2">
 			{links.map((l) => (
 				<Link
 					key={l.id}
@@ -23,7 +23,7 @@ export function Nav() {
 					{activeLinkId === l.id && (
 						<motion.div
 							layoutId="active-indicator"
-							className="absolute inset-0 w-full rounded-full border border-gray-50/10 bg-gray-50/20"
+							className="absolute inset-0 w-full rounded-full bg-muted"
 							transition={{
 								duration: 0.1,
 								type: "spring",

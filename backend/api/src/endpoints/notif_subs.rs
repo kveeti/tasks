@@ -1,6 +1,6 @@
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, RequestContext},
+    types::{ApiError, RequestState},
 };
 use anyhow::Context;
 use axum::{extract::State, response::IntoResponse, Json};
@@ -20,7 +20,7 @@ pub struct AddNotifSubEndpointBody {
 
 pub async fn add_notif_sub_endpoint(
     UserId(user_id): UserId,
-    State(state): RequestContext,
+    State(state): RequestState,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
     notif_subs::Entity::insert(notif_subs::ActiveModel {

@@ -9,19 +9,19 @@ use entity::{tags, tasks};
 use futures_util::{SinkExt, StreamExt};
 use std::{net::SocketAddr, vec};
 
-use crate::types::{RequestContext, RequestContextStruct};
+use crate::types::{RequestState, RequestStateStruct};
 
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
 ) -> impl IntoResponse {
     tracing::info!("{}: connected", addr);
 
     return ws.on_upgrade(move |socket| handle_socket(socket, addr, ctx.clone()));
 }
 
-async fn handle_socket(mut socket: WebSocket, who: SocketAddr, ctx: RequestContextStruct) -> () {
+async fn handle_socket(mut socket: WebSocket, who: SocketAddr, ctx: RequestStateStruct) -> () {
     if socket.send(Message::Ping(vec![1])).await.is_ok() {
         tracing::info!("{}: Ping sent", who);
     } else {

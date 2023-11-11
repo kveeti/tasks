@@ -13,7 +13,7 @@ use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
-use types::RequestContextStruct;
+use types::RequestStateStruct;
 
 mod auth;
 mod endpoints;
@@ -46,7 +46,8 @@ pub async fn start_api() -> () {
         .allow_credentials(true);
 
     let db = get_db().await;
-    let state = RequestContextStruct::new(db);
+    let db2 = db::get_db().await;
+    let state = RequestStateStruct::new(db, db2);
 
     let mut v1_auth_routes = Router::new().merge(
         Router::new()
@@ -75,9 +76,26 @@ pub async fn start_api() -> () {
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
 
-    let v1_tags_routes = Router::new().route("/", put(endpoints::tags::put_tags));
+    let v1_tags_routes = Router::new().route(
+        "/",
+        put(endpoints::tags::put_tags)
+            .get(endpoints::tags::get_tags)
+            .post(endpoints::tags::add_tag),
+    );
 
-    let v1_tasks_routes = Router::new().route("/", put(endpoints::tasks::put_tasks));
+    let v1_tasks_routes = Router::new()
+        .route(
+            "/",
+            put(endpoints::tasks::put_tasks)
+                .get(endpoints::tasks::get_tasks)
+                .post(endpoints::tasks::add_manual_task),
+        )
+        .route("/:task_id", delete(endpoints::tasks::delete_task))
+        .route(
+            "/ongoing",
+            get(endpoints::tasks::get_ongoing_task).delete(endpoints::tasks::stop_ongoing_task),
+        )
+        .route("/start", post(endpoints::tasks::start_task));
 
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)

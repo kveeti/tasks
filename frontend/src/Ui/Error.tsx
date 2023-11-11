@@ -16,16 +16,18 @@ export const Error = ({ message, htmlFor, className }: Props) => {
 	return (
 		<AnimatePresence>
 			{hasError && (
-				<motion.span
+				<motion.label
 					initial={{ opacity: 0, height: 0 }}
 					animate={{ opacity: 1, height: "auto", transition: { duration: 0.15 } }}
 					exit={{ opacity: 0, height: 0, transition: { duration: 0.15 } }}
-					className={cn(className, "text-[15px] font-medium leading-[1] text-red-400")}
+					className={cn(
+						className,
+						"text-[15px] font-medium leading-[1] text-red-400 flex items-center gap-1 pt-2"
+					)}
+					htmlFor={htmlFor}
 				>
-					<label htmlFor={htmlFor} className="flex items-center gap-1 pt-2">
-						<XCircle strokeWidth={1} className="h-[1.2rem] w-[1.2rem]" /> {message}
-					</label>
-				</motion.span>
+					<XCircle strokeWidth={1} className="h-[1.2rem] w-[1.2rem]" /> {message}
+				</motion.label>
 			)}
 		</AnimatePresence>
 	);

@@ -9,7 +9,7 @@ type Props = {
 	method: string;
 	body?: any;
 	query?: URLSearchParams;
-    signal?: AbortSignal;
+	signal?: AbortSignal;
 };
 
 export async function apiRequest<TReturnValue>(props: Props) {
@@ -22,7 +22,7 @@ export async function apiRequest<TReturnValue>(props: Props) {
 				body: JSON.stringify(props.body),
 				headers: { "Content-Type": "application/json" },
 			}),
-            signal: props.signal,
+			signal: props.signal,
 		}
 	).then(async (res) => {
 		const json = await res.json().catch(() => null);
@@ -30,7 +30,7 @@ export async function apiRequest<TReturnValue>(props: Props) {
 		if (res.ok) {
 			return json as TReturnValue;
 		} else {
-			throw new Error(json?.error?.message ?? "Something went wrong");
+			throw new Error(String(json?.error) ?? "Something went wrong");
 		}
 	});
 }

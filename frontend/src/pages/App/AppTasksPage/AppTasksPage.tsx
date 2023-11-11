@@ -1,42 +1,70 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useButton } from "@react-aria/button";
-import { FocusRing } from "@react-aria/focus";
-import addDays from "date-fns/addDays";
-import addHours from "date-fns/addHours";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useMutation } from "@tanstack/react-query";
+import { CommandLoading } from "cmdk";
+import {
+	addDays,
+	addHours,
+	isToday,
+	isTomorrow,
+	isValid,
+	isYesterday,
+	parseISO,
+	startOfDay,
+	subDays,
+} from "date-fns";
 import format from "date-fns/format";
-import isSameDay from "date-fns/isSameDay";
-import isToday from "date-fns/isToday";
-import isTomorrow from "date-fns/isTomorrow";
-import isYesterday from "date-fns/isYesterday";
-import startOfDay from "date-fns/startOfDay";
-import subDays from "date-fns/subDays";
-import { useLiveQuery } from "dexie-react-hooks";
-import { AnimatePresence, useAnimate, useIsPresent } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronsUpDown, Plus, Trash } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { twMerge } from "tailwind-merge";
-import colors from "tailwindcss/colors";
-import { z } from "zod";
+import { AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, ChevronsUpDownIcon, Plus } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { type Output, date, number, object, string, ulid } from "valibot";
 
-import { Input } from "@/Ui/Input";
-import { Label } from "@/Ui/Label";
-import { Modal } from "@/Ui/Modal";
-import { Button, SelectButton } from "@/Ui/NewButton";
-import { Tag } from "@/Ui/shared/Tag";
-import { type DbTag, type DbTask, addNotSynced, db } from "@/db/db";
-import { useDbTags } from "@/db/useCommonDb";
-import { tryPutTasks } from "@/utils/api/tryPost";
-import { cn } from "@/utils/classNames";
-import { createId } from "@/utils/createId";
-import { useForm } from "@/utils/useForm";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+	CommandDialogWithTrigger,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { WithInitialAnimation } from "@/components/with-initial-animation";
+import { cn } from "@/lib/utils";
+import { apiRequest } from "@/utils/api/apiRequest";
+import { useTags } from "@/utils/api/tags";
+import { useTasks } from "@/utils/api/tasks";
+import { useDialog } from "@/utils/use-dialog";
 
-import { useTimerContext } from "../TimerContext";
 import { WithAnimation } from "../WithAnimation";
 
 export function AppTasksPage() {
-	const [createdTask, setCreatedTask] = useState<DbTask | null>(null);
-	const [selectedDay, setSelectedDay] = useState(startOfDay(new Date()));
+	const [searchParams, setSearchParams] = useSearchParams();
+	const dayParam = searchParams.get("day");
+	const selectedDay =
+		dayParam && isValid(dayParam) ? startOfDay(parseISO(dayParam)) : startOfDay(new Date());
+
+	const tasks = useTasks({ selectedDay });
+
 	const formattedSelectedDay = isToday(selectedDay)
 		? "today"
 		: isYesterday(selectedDay)
@@ -46,66 +74,61 @@ export function AppTasksPage() {
 		: format(selectedDay, "EEE, MMMM do");
 
 	function scrollTimeFrame(direction: "left" | "right") {
-		setSelectedDay((day) => {
-			if (direction === "right") {
-				return addDays(day, 1);
-			} else {
-				return subDays(day, 1);
-			}
+		setSearchParams({
+			...searchParams,
+			day: startOfDay(
+				direction === "right" ? addDays(selectedDay, 1) : subDays(selectedDay, 1)
+			).toISOString(),
 		});
 	}
-
-	const dbTags = useDbTags();
-	const dbTasks = useLiveQuery(
-		() =>
-			db.tasks
-				.orderBy("created_at")
-				.filter((t) => !t.deleted_at && isSameDay(t.started_at, selectedDay))
-				.reverse()
-				.toArray(),
-		[selectedDay]
-	);
-
-	const dbTasksWithTags = dbTasks?.map((task) => ({
-		...task,
-		tag: dbTags?.find((tag) => tag.id === task.tag_id),
-	}));
 
 	return (
 		<WithAnimation>
 			<div className="flex h-full w-full flex-col">
-				<div className="flex items-center justify-between gap-4 px-4 pt-4">
+				<div className="flex items-center justify-between gap-4 p-4 border-b">
 					<h1 className="text-2xl font-bold">tasks</h1>
 
-					<NewTask setCreatedTask={setCreatedTask} />
+					<AddTask selectedDay={selectedDay} />
 				</div>
 
-				<div className="flex h-full flex-col overflow-auto p-4">
+				<div className="flex h-full flex-col overflow-auto">
 					<AnimatePresence initial={false}>
-						{dbTasksWithTags?.map((task, i) => (
-							<Task
-								key={task.id}
-								task={task}
-								isCreatedTask={createdTask?.id === task.id}
-								resetCreatedTask={() => setCreatedTask(null)}
-								className={cn(i !== dbTasksWithTags.length && "mb-2")}
-							/>
-						))}
+						{tasks.isLoading ? (
+							<div>loading tasks...</div>
+						) : tasks.isError ? (
+							<div>failed to load tasks</div>
+						) : tasks.data?.length ? (
+							tasks.data.map((task) => (
+								<WithInitialAnimation className="px-4 py-2 flex justify-between">
+									<span>{task.id}</span>
+								</WithInitialAnimation>
+							))
+						) : (
+							<p className="p-8 text-center border-b">no tasks</p>
+						)}
 					</AnimatePresence>
 				</div>
 
-				<div className="border-t border-t-gray-800 bg-gray-900 p-4">
+				<div className="border-t p-4">
 					<div className="flex w-full justify-between gap-4">
-						<Button className="p-2" onPress={() => scrollTimeFrame("left")}>
-							<ChevronLeft />
+						<Button
+							className="p-3"
+							variant="secondary"
+							onClick={() => scrollTimeFrame("left")}
+						>
+							<ChevronLeft className="w-4 h-4" />
 						</Button>
 
-						<span className="flex w-full items-center justify-center rounded-xl bg-gray-600 px-4 py-2">
-							{formattedSelectedDay}
-						</span>
+						<Button asChild variant="secondary">
+							<span className="w-full">{formattedSelectedDay}</span>
+						</Button>
 
-						<Button className="p-2" onPress={() => scrollTimeFrame("right")}>
-							<ChevronRight />
+						<Button
+							className="p-3"
+							variant="secondary"
+							onClick={() => scrollTimeFrame("right")}
+						>
+							<ChevronRight className="w-4 h-4" />
 						</Button>
 					</div>
 				</div>
@@ -114,301 +137,238 @@ export function AppTasksPage() {
 	);
 }
 
-const newTaskFormSchema = z.object({
-	start: z.date(),
-	duration: z.number(),
-	tagId: z.string(),
+const newTaskFormSchema = object({
+	startDate: date(),
+	startTime: string(),
+	duration: number(),
+	tagId: string([ulid("required")]),
 });
 
-function NewTask(props: { setCreatedTask: (task: DbTask) => void }) {
-	const [isOpen, setIsOpen] = useState(false);
+function AddTask(props: { selectedDay: Date }) {
+	const dialog = useDialog();
+	const tags = useTags();
 
-	const newTaskForm = useForm<z.infer<typeof newTaskFormSchema>>({
-		resolver: zodResolver(newTaskFormSchema),
+	const mutation = useMutation<
+		unknown,
+		unknown,
+		{
+			tag_id: string;
+			started_at: string;
+			expires_at: string;
+		}
+	>({
+		mutationFn: (props) =>
+			apiRequest({
+				method: "POST",
+				path: "/tasks",
+				body: props,
+			}),
+	});
+
+	const form = useForm<Output<typeof newTaskFormSchema>>({
+		resolver: valibotResolver(newTaskFormSchema),
 		defaultValues: {
+			startDate: props.selectedDay,
+			startTime: format(props.selectedDay, "HH:mm"),
 			duration: 0,
 			tagId: "",
 		},
-		onSubmit: async (values) => {
-			if (!values.tagId || values.tagId === "") {
-				toast.error("Select a tag first");
-
-				return;
-			}
-
-			const endDate = addHours(values.start, values.duration);
-
-			const newTask: DbTask = {
-				id: createId(),
-				tag_id: values.tagId,
-				is_manual: true,
-				started_at: values.start,
-				expires_at: endDate,
-				stopped_at: null,
-				deleted_at: null,
-				updated_at: new Date(),
-				created_at: new Date(),
-			};
-
-			await Promise.all([db.tasks.add(newTask), tryPutTasks([newTask])]);
-
-			props.setCreatedTask(newTask);
-
-			newTaskForm.reset();
-			setIsOpen(false);
-		},
 	});
 
+	async function onSubmit(values: Output<typeof newTaskFormSchema>) {
+		const start = new Date(`${format(values.startDate, "yyyy-MM-dd")}T${values.startTime}`);
+
+		await mutation.mutateAsync({
+			tag_id: values.tagId,
+			started_at: start.toISOString(),
+			expires_at: addHours(start, values.duration).toISOString(),
+		});
+
+		dialog.close();
+	}
+
 	return (
-		<>
-			<Button className="rounded-full p-2" onPress={async () => setIsOpen(true)}>
-				<Plus className="h-4 w-4" />
-			</Button>
+		<Dialog {...dialog.props}>
+			<DialogTrigger asChild>
+				<Button size="sm" variant="secondary">
+					<Plus className="h-4 w-4" />
+				</Button>
+			</DialogTrigger>
 
-			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-				<div className="flex flex-col gap-4">
-					<h1 className="text-2xl font-bold">new task</h1>
+			<DialogContent>
+				<DialogTitle>add a task</DialogTitle>
 
-					<form onSubmit={newTaskForm.handleSubmit} className="flex flex-col gap-4">
-						<Input
-							type="datetime-local"
-							label="start"
-							required
-							{...newTaskForm.register("start", { valueAsDate: true })}
-							defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
-						/>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+						{!tags.data?.length && (
+							<FormDescription>
+								you dont have any tags yet.{" "}
+								<Button asChild variant="link" size="link">
+									<Link to={"/app/tags"}>create one</Link>
+								</Button>{" "}
+								to add a task
+							</FormDescription>
+						)}
+						<div className="flex gap-2 w-full">
+							<FormField
+								control={form.control}
+								name="startDate"
+								render={({ field }) => (
+									<FormItem className="flex flex-col w-full">
+										<FormLabel required>start date</FormLabel>
+										<Popover>
+											<PopoverTrigger asChild>
+												<FormControl>
+													<Button
+														variant={"outline"}
+														className={cn(
+															"pl-3 flex justify-between font-normal",
+															!field.value && "text-muted-foreground"
+														)}
+													>
+														{field.value ? (
+															format(field.value, "PPP")
+														) : (
+															<span>pick a date</span>
+														)}
+													</Button>
+												</FormControl>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0" align="start">
+												<Calendar
+													mode="single"
+													selected={field.value}
+													onSelect={field.onChange}
+													disabled={(date) =>
+														date > new Date() ||
+														date < new Date("1900-01-01")
+													}
+													initialFocus
+												/>
+											</PopoverContent>
+										</Popover>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<Input
-							type="number"
-							label="(h) duration"
-							required
-							{...newTaskForm.register("duration", { valueAsNumber: true })}
-						/>
-
-						<div className="flex flex-col gap-1">
-							<Label id="select-tag" required>
-								tag
-							</Label>
-
-							<NewTaskSelectTag
-								selectedTagId={newTaskForm.watch("tagId")}
-								onSelect={(tagId) => newTaskForm.setValue("tagId", tagId)}
+							<FormField
+								control={form.control}
+								name="startTime"
+								render={({ field }) => (
+									<FormItem className="flex flex-col">
+										<FormLabel required>start time</FormLabel>
+										<FormControl>
+											<Input {...field} type="time" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
 						</div>
 
-						<div className="flex w-full gap-3 pt-2">
+						<FormField
+							control={form.control}
+							name="duration"
+							render={({ field }) => (
+								<FormItem className="flex flex-col">
+									<FormLabel required>duration (h)</FormLabel>
+									<FormControl>
+										<Input {...field} type="number" />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						{!!tags.data?.length && (
+							<FormField
+								control={form.control}
+								name="tagId"
+								render={({ field }) => (
+									<FormItem className="flex flex-col">
+										<FormLabel required>tag</FormLabel>
+										<FormControl>
+											<TagSelect onSelect={field.onChange} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
+
+						<div className="float-right space-x-3">
+							<DialogClose asChild>
+								<Button variant="ghost">cancel</Button>
+							</DialogClose>
 							<Button
-								onPress={() => setIsOpen(false)}
-								className="flex-1 p-4"
-								isSecondary
+								type="submit"
+								disabled={!tags.data?.length || mutation.isLoading}
 							>
-								cancel
-							</Button>
-							<Button className="flex-1 p-4" type="submit">
 								add
 							</Button>
 						</div>
 					</form>
-				</div>
-			</Modal>
-		</>
+				</Form>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
-function NewTaskSelectTag(props: { selectedTagId: string; onSelect: (id: string) => void }) {
-	const [isOpen, setIsOpen] = useState(false);
-	const { dbTags } = useTimerContext();
+function TagSelect({ onSelect }: { onSelect: (tagId: string) => void }) {
+	const navigate = useNavigate();
+	const tags = useTags();
 
-	const selectedTag = dbTags?.find((tag) => tag.id === props.selectedTagId);
+	const [search, setSearch] = useState("");
 
-	return (
-		<>
-			<SelectButton onPress={() => setIsOpen(true)}>
-				{selectedTag ? (
-					<div className="flex items-center gap-3">
-						<div
-							className="h-3 w-3 rounded-full"
-							style={{ backgroundColor: selectedTag.color }}
-						/>
-
-						<span>{selectedTag.label}</span>
-					</div>
-				) : (
-					"select a tag"
-				)}
-
-				<ChevronsUpDown className="h-4 w-4 text-gray-200" />
-			</SelectButton>
-
-			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-				<div className="flex flex-col gap-4">
-					<h1 className="text-2xl font-bold">select a tag</h1>
-
-					<div className="flex w-full flex-col gap-2">
-						{dbTags?.map((tag) => (
-							<Tag
-								key={tag.id}
-								tag={tag}
-								onPress={() => {
-									props.onSelect(tag.id);
-									setIsOpen(false);
-								}}
-							/>
-						))}
-					</div>
-				</div>
-			</Modal>
-		</>
-	);
-}
-
-export function Task(props: {
-	task: DbTask & { tag?: DbTag };
-	onPress?: () => void;
-	isCreatedTask: boolean;
-	resetCreatedTask: () => void;
-	className?: string;
-}) {
-	const [ref, animate] = useAnimate();
-	const [wrapperRef] = useAnimate();
-	const isPresent = useIsPresent();
-
-	const aria = useButton(
-		{
-			...props,
-			onPressStart: async () => {
-				animate(ref.current, { backgroundColor: colors.neutral[800] }, { duration: 0 });
-			},
-			onPressEnd: async () => {
-				animate(ref.current, {
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.4 },
-				});
-			},
-			onPress: async () => {
-				animate(ref.current, {
-					backgroundColor: "rgb(10 10 10 / 0.5)",
-					transition: { duration: 0.4 },
-				});
-
-				props.onPress?.();
-			},
-			// @ts-expect-error undocumented prop
-			preventFocusOnPress: true,
-		},
-		ref
-	);
-
-	useEffect(() => {
-		if (!isPresent || !props.isCreatedTask) return;
-
-		(async () => {
-			wrapperRef.current.style = "height: 0; opacity: 0;";
-			ref.current.style = `background-color: ${colors.neutral[700]}`;
-
-			await animate(wrapperRef.current, { height: "auto", opacity: 1 });
-			animate(ref.current, {
-				backgroundColor: "rgb(10 10 10 / 0.5)",
-				transition: { duration: 0.4 },
-			});
-
-			props.resetCreatedTask();
-		})();
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isPresent]);
+	const shownTags = tags.data
+		?.filter((tag) => tag.label.toLowerCase().includes(search.toLowerCase()))
+		.sort((a, b) => a.label.localeCompare(b.label));
 
 	return (
-		<div ref={wrapperRef}>
-			<FocusRing focusRingClass="outline-gray-300">
-				<button
-					{...aria.buttonProps}
-					ref={ref}
-					className={twMerge(
-						"flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2",
-						props.className
-					)}
-				>
-					<div className="flex w-full items-center justify-between gap-3">
-						<div className="flex items-center gap-3">
-							<div
-								className="h-3 w-3 rounded-full"
-								style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
-							/>
-							<span>{props.task.tag?.label ?? "deleted tag"}</span>
-						</div>
-						<div className="flex gap-4 items-center">
-							<span className="text-gray-400">
-								{format(props.task.started_at, "HH:mm")} -{" "}
-								{format(props.task.stopped_at ?? props.task.expires_at, "HH:mm")}
-							</span>
+		<CommandDialogWithTrigger
+			trigger={
+				<Button type="button" variant="outline" className="flex justify-between">
+					<span>select a tag</span>
 
-							<DeleteTask task={props.task} />
-						</div>
-					</div>
-				</button>
-			</FocusRing>
-		</div>
-	);
-}
+					<ChevronsUpDownIcon className="h-4 w-4" />
+				</Button>
+			}
+		>
+			<CommandInput
+				value={search}
+				onValueChange={setSearch}
+				placeholder="search for tags..."
+			/>
+			<CommandList>
+				<CommandGroup>
+					{tags.isLoading ? (
+						<CommandLoading>loading tags...</CommandLoading>
+					) : tags.isError ? (
+						<CommandEmpty>failed to load tags</CommandEmpty>
+					) : shownTags?.length ? (
+						<>
+							{shownTags.map((tag) => (
+								<CommandItem key={tag.id} value={tag.id} onSelect={onSelect}>
+									{tag.label}
+								</CommandItem>
+							))}
+						</>
+					) : null}
 
-function DeleteTask(props: { task: DbTask & { tag?: DbTag } }) {
-	const [isOpen, setIsOpen] = useState(false);
-
-	return (
-		<>
-			<Button className="rounded-full p-2" onPress={() => setIsOpen(true)}>
-				<Trash className="h-4 w-4" />
-			</Button>
-
-			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-				<div className="flex flex-col gap-4">
-					<h1 className="text-2xl font-bold">delete task</h1>
-
-					<div className="flex w-full cursor-default items-center gap-4 p-4 rounded-xl bg-gray-950/50 outline-none outline-2 outline-offset-2">
-						<div className="flex w-full items-center justify-between gap-3">
-							<div className="flex items-center gap-3">
-								<div
-									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: props.task.tag?.color ?? "#fff" }}
-								/>
-								<span>{props.task.tag?.label ?? "deleted tag"}</span>
-							</div>
-							<div className="flex gap-4 items-center">
-								<span className="text-gray-400">
-									{format(props.task.started_at, "HH:mm")} -{" "}
-									{format(
-										props.task.stopped_at ?? props.task.expires_at,
-										"HH:mm"
-									)}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					<div className="flex w-full gap-3 pt-2">
-						<Button onPress={() => setIsOpen(false)} className="flex-1 p-4" isSecondary>
-							cancel
-						</Button>
-						<Button
-							className="flex-1 p-4"
-							onPress={async () => {
-								await Promise.all([
-									db.tasks.update(props.task.id, {
-										deleted_at: new Date(),
-										updated_at: new Date(),
-									}),
-									addNotSynced(props.task.id, "task"),
-								]);
-
-								setIsOpen(false);
-							}}
+					{search && !shownTags?.length ? (
+						<CommandItem
+							onSelect={() =>
+								search && navigate(`/app/tags?label=${encodeURIComponent(search)}`)
+							}
 						>
-							delete
-						</Button>
-					</div>
-				</div>
-			</Modal>
-		</>
+							create "{search}"
+						</CommandItem>
+					) : (
+						<CommandEmpty>no tags found</CommandEmpty>
+					)}
+				</CommandGroup>
+			</CommandList>
+		</CommandDialogWithTrigger>
 	);
 }

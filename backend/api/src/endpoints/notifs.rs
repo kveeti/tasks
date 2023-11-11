@@ -7,7 +7,7 @@ use sea_orm::{ColumnTrait, EntityTrait, ModelTrait, QueryFilter};
 
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, RequestContext},
+    types::{ApiError, RequestState},
 };
 
 #[derive(serde::Deserialize)]
@@ -20,7 +20,7 @@ pub struct AddNotifEndpointBody {
 
 pub async fn add_notif_endpoint(
     UserId(user_id): UserId,
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
     Json(body): Json<AddNotifEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
     notifs::Entity::insert(notifs::ActiveModel {
@@ -46,7 +46,7 @@ pub struct DeleteNotifEndpointBody {
 
 pub async fn delete_notif_endpoint(
     UserId(user_id): UserId,
-    State(state): RequestContext,
+    State(state): RequestState,
     Json(body): Json<DeleteNotifEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
     let notif = notifs::Entity::find()

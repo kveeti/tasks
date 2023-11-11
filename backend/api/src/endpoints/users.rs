@@ -6,12 +6,12 @@ use sea_orm::EntityTrait;
 
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, RequestContext},
+    types::{ApiError, RequestState},
 };
 
 pub async fn users_me_delete_endpoint(
     UserId(user_id): UserId,
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
     users::Entity::delete_by_id(user_id)
         .exec(&ctx.db)

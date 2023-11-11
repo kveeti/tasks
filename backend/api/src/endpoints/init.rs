@@ -11,7 +11,7 @@ use serde_json::json;
 
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, RequestContext},
+    types::{ApiError, RequestState},
 };
 
 #[derive(Debug, serde::Deserialize)]
@@ -20,7 +20,7 @@ pub struct QueryParams {
 }
 
 pub async fn init(
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
     UserId(user_id): UserId,
     Query(query): Query<QueryParams>,
 ) -> Result<impl IntoResponse, ApiError> {

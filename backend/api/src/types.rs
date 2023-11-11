@@ -4,26 +4,29 @@ use axum::{
     Json,
 };
 use data::types::Db;
+use db::Pool;
 use hyper::StatusCode;
 use serde_json::json;
 use tokio::sync::broadcast;
 
 #[derive(Clone)]
-pub struct RequestContextStruct {
+pub struct RequestStateStruct {
     pub db: Db,
+    pub db2: Pool,
     pub tx: broadcast::Sender<String>,
 }
 
-impl RequestContextStruct {
-    pub fn new(db: Db) -> Self {
+impl RequestStateStruct {
+    pub fn new(db: Db, db2: Pool) -> Self {
         Self {
             db,
+            db2,
             tx: broadcast::channel(1000).0,
         }
     }
 }
 
-pub type RequestContext = State<RequestContextStruct>;
+pub type RequestState = State<RequestStateStruct>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {

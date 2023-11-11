@@ -13,7 +13,7 @@ use entity::users::{self, Entity as UserEntity};
 use hyper::{header, HeaderMap, StatusCode};
 use sea_orm::{ColumnTrait, EntityTrait, IntoActiveModel, QueryFilter};
 
-use crate::types::{ApiError, RequestContext};
+use crate::types::{ApiError, RequestState};
 
 pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
     let url = hyper::Uri::builder()
@@ -46,7 +46,7 @@ struct AuthVerifyCodeResponseBody {
 }
 
 pub async fn auth_verify_code_endpoint(
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let client = reqwest::Client::new();
@@ -158,7 +158,7 @@ pub async fn auth_verify_code_endpoint(
     ));
 }
 
-pub async fn dev_login(State(ctx): RequestContext) -> Result<impl IntoResponse, ApiError> {
+pub async fn dev_login(State(ctx): RequestState) -> Result<impl IntoResponse, ApiError> {
     let email = "dev@dev.local";
 
     let existing_user = UserEntity::find()

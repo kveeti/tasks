@@ -1,162 +1,171 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion } from "framer-motion";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import { AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { type Output, minLength, object, picklist, string } from "valibot";
 
-import { Error } from "@/Ui/Error";
-import { Input } from "@/Ui/Input";
-import { Label } from "@/Ui/Label";
-import { Modal } from "@/Ui/Modal";
-import { Button } from "@/Ui/NewButton";
-import { Tag } from "@/Ui/shared/Tag";
-import { type DbTag, db } from "@/db/db";
-import { useDbTags } from "@/db/useCommonDb";
-import { tryPutTags } from "@/utils/api/tryPost";
-import { createId } from "@/utils/createId";
-import { useForm } from "@/utils/useForm";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { WithInitialAnimation } from "@/components/with-initial-animation";
+import { useAddTag, useTags } from "@/utils/api/tags";
+import { useDialog } from "@/utils/use-dialog";
 
 import { WithAnimation } from "../WithAnimation";
-import { ColorSelector, tagColors, zodTagColors } from "./ColorSelector";
+import { tagColors } from "./ColorSelector";
 
 export function AppTagsPage() {
-	const dbTags = useDbTags([]);
+	const tags = useTags();
 
 	return (
 		<WithAnimation>
-			<div className="flex h-full w-full flex-col gap-2">
-				<div className="flex items-center justify-between gap-4">
-					<div>
-						<h1 className="px-4 pt-4 text-2xl font-bold">tags</h1>
-					</div>
+			<div className="flex h-full w-full flex-col">
+				<div className="flex items-center justify-between gap-4 p-4 border-b">
+					<h1 className="text-2xl font-bold">tags</h1>
 
-					<div className="px-4 pt-4">
-						<NewTag />
-					</div>
+					<AddTag />
 				</div>
 
-				<div className="overflow-auto">
-					<div className="flex flex-col p-4">
-						{!dbTags ? (
-							<div className="flex h-full flex-col items-center justify-center">
-								<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
-									loading...
-								</h2>
-							</div>
-						) : !dbTags.length ? (
-							<div className="flex h-full flex-col items-center justify-center">
-								<h2 className="w-full rounded-xl bg-gray-950/50 p-4 text-center outline-none outline-2 outline-offset-2">
-									no tags
-								</h2>
-							</div>
+				<div className="flex h-full flex-col overflow-auto">
+					<AnimatePresence initial={false}>
+						{tags.isLoading ? (
+							<div>loading tags...</div>
+						) : tags.isError ? (
+							<div>failed to load tags</div>
+						) : tags.data?.length ? (
+							tags.data.map((tag) => (
+								<WithInitialAnimation className="px-4 py-2 flex justify-between">
+									<span>{tag.id}</span>
+								</WithInitialAnimation>
+							))
 						) : (
-							<AnimatePresence initial={false}>
-								{dbTags?.map((tag) => (
-									<motion.div
-										key={tag.id}
-										initial={{ opacity: 0, height: 0 }}
-										animate={{ opacity: 1, height: "auto" }}
-										exit={{ opacity: 0, height: 0 }}
-									>
-										<motion.div
-											initial={{ backgroundColor: "rgba(210, 210, 210, 1)" }}
-											animate={{ backgroundColor: "rgba(255, 255, 255, 0)" }}
-											transition={{ duration: 1.2 }}
-											className="rounded-xl"
-										>
-											<Tag tag={tag} />
-										</motion.div>
-									</motion.div>
-								))}
-							</AnimatePresence>
+							<p className="p-8 text-center border-b">no tags</p>
 						)}
-					</div>
+					</AnimatePresence>
 				</div>
 			</div>
 		</WithAnimation>
 	);
 }
 
-const newTagFormSchema = z.object({
-	label: z.string().nonempty(),
-	color: zodTagColors,
+const newTagFormSchema = object({
+	label: string([minLength(1, "required")]),
+	color: picklist(tagColors),
 });
 
-function NewTag() {
-	const [isModalOpen, setIsModalOpen] = useState(false);
+function AddTag() {
+	const dialog = useDialog();
 
-	const newTagForm = useForm<z.infer<typeof newTagFormSchema>>({
-		resolver: zodResolver(newTagFormSchema),
-		defaultValues: {
-			label: "",
-			color: tagColors.at(2),
-		},
-		onSubmit: async (values) => {
-			const newTag: DbTag = {
-				id: createId(),
-				label: values.label,
-				color: values.color,
-				was_last_used: false,
-				created_at: new Date(),
-				updated_at: new Date(),
-				deleted_at: null,
-			};
+	const mutation = useAddTag();
 
-			await Promise.all([db.tags.add(newTag), tryPutTags([newTag])]);
-
-			newTagForm.reset();
-			setIsModalOpen(false);
-		},
+	const form = useForm<Output<typeof newTagFormSchema>>({
+		resolver: valibotResolver(newTagFormSchema),
 	});
 
-	useEffect(() => {
-		(async () => {
-			const createTagParam = new URLSearchParams(window.location.search).get("create_tag");
+	async function onSubmit(values: Output<typeof newTagFormSchema>) {
+		await mutation.mutateAsync(values);
 
-			if (createTagParam) {
-				setIsModalOpen(true);
-				window.history.replaceState({}, "", window.location.pathname);
-			}
-		})();
-	}, []);
+		dialog.close();
+	}
 
 	return (
-		<>
-			<Button className="rounded-full p-2" onPress={() => setIsModalOpen(true)}>
-				<Plus className="h-4 w-4" />
-			</Button>
+		<Dialog {...dialog.props}>
+			<DialogTrigger asChild>
+				<Button size="sm" variant="secondary">
+					<Plus className="h-4 w-4" />
+				</Button>
+			</DialogTrigger>
 
-			<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-				<form
-					onSubmit={newTagForm.handleSubmit}
-					className="flex h-full w-full flex-col justify-between gap-4"
-				>
-					<h1 className="text-2xl font-bold">new tag</h1>
+			<DialogContent>
+				<DialogTitle>add a tag</DialogTitle>
 
-					<Input label="label" required {...newTagForm.register("label")} />
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+						<FormField
+							control={form.control}
+							name="label"
+							render={({ field }) => (
+								<FormItem className="flex flex-col">
+									<FormLabel required>label</FormLabel>
+									<FormControl>
+										<Input {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-					<div className="flex flex-col">
-						<Label required>color</Label>
+						<FormField
+							control={form.control}
+							name="color"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel required>color</FormLabel>
 
-						<ColorSelector form={newTagForm} />
+									<Select
+										onValueChange={field.onChange}
+										defaultValue={field.value}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue placeholder="select a color" />
+											</SelectTrigger>
+										</FormControl>
 
-						<Error message={newTagForm.formState.errors.color?.message} />
-					</div>
+										<SelectContent>
+											{tagColors.map((color) => (
+												<SelectItem key={color} value={color}>
+													<div className="space-x-2 flex items-center">
+														<div
+															aria-hidden
+															className={`w-3 h-3 rounded-full`}
+															style={{ backgroundColor: color }}
+														/>
+														<p>{color}</p>
+													</div>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 
-					<div className="flex w-full gap-2 pt-2">
-						<Button
-							onPress={() => setIsModalOpen(false)}
-							className="flex-1 p-4"
-							isSecondary
-						>
-							cancel
-						</Button>
-						<Button className="flex-1 p-4" type="submit">
-							create
-						</Button>
-					</div>
-				</form>
-			</Modal>
-		</>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<div className="float-right space-x-3">
+							<DialogClose asChild>
+								<Button variant="ghost">cancel</Button>
+							</DialogClose>
+
+							<Button type="submit" disabled={mutation.isLoading}>
+								add
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</DialogContent>
+		</Dialog>
 	);
 }

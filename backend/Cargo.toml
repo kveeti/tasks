@@ -11,7 +11,8 @@ members = [
     "config",
     "auth",
     "entity",
-    "notifications"
+    "notifications",
+    "db"
 ]
 
 [workspace.dependencies]
@@ -25,8 +26,6 @@ tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 chrono = { version = "0.4.23", features = ["serde"] }
 dotenv = "0.15.0"
-sea-orm = { version = "0.11.1", features = [ "sqlx-mysql", "runtime-tokio-rustls", "macros" ] }
-twilight-http = "0.15.1"
-twilight-model = "0.15.1"
+sea-orm = { version = "0.11.1", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
 tokio = { version = "1.25.0", features = ["full"] }
 reqwest = { version = "0.11.6", features = [ "json" ] }

@@ -7,12 +7,12 @@ use serde_json::json;
 
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, ClientTag, RequestContext},
+    types::{ApiError, ClientTag, RequestState},
 };
 
 pub async fn put_tags(
     UserId(user_id): UserId,
-    State(ctx): RequestContext,
+    State(ctx): RequestState,
     Json(tags): Json<Vec<ClientTag>>,
 ) -> Result<impl IntoResponse, ApiError> {
     tags::Entity::insert_many(tags.clone().into_iter().map(|tag| tags::ActiveModel {
@@ -56,4 +56,33 @@ pub async fn put_tags(
         .ok();
 
     return Ok(StatusCode::CREATED);
+}
+
+pub async fn get_tags(
+    UserId(user_id): UserId,
+    State(ctx): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    let tags = db::tags::get_all(&ctx.db2, &user_id)
+        .await
+        .context("error fetching tags")?;
+
+    Ok((StatusCode::OK, Json(tags)))
+}
+
+#[derive(serde::Deserialize)]
+pub struct AddTagBody {
+    pub label: String,
+    pub color: String,
+}
+
+pub async fn add_tag(
+    UserId(user_id): UserId,
+    State(ctx): RequestState,
+    Json(tag): Json<AddTagBody>,
+) -> Result<impl IntoResponse, ApiError> {
+    let tag = db::tags::insert(&ctx.db2, &user_id, &tag.label, &tag.color)
+        .await
+        .context("error inserting tag")?;
+
+    Ok((StatusCode::CREATED, Json(tag)))
 }
