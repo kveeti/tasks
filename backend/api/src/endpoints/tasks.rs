@@ -1,21 +1,19 @@
-use std::collections::HashMap;
-
-use anyhow::Context;
-use axum::{
-    extract::{Path, Query, State},
-    response::IntoResponse,
-    Json,
-};
-use chrono::{DateTime, Utc};
-use entity::tasks;
-use hyper::StatusCode;
-use sea_orm::{sea_query::OnConflict, ActiveValue, EntityTrait};
-use serde_json::json;
-
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, ClientTask, RequestState},
 };
+use anyhow::Context;
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Json,
+};
+use chrono::{DateTime, Utc};
+use db::tasks::TaskWithTag;
+use entity::tasks;
+use hyper::StatusCode;
+use sea_orm::{sea_query::OnConflict, ActiveValue, EntityTrait};
+use serde_json::json;
 
 pub async fn put_tasks(
     UserId(user_id): UserId,
@@ -74,33 +72,8 @@ pub async fn put_tasks(
 pub async fn get_tasks(
     UserId(user_id): UserId,
     State(ctx): RequestState,
-    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let day = match query.get("day") {
-        Some(day) => {
-            let date = DateTime::parse_from_rfc3339(day);
-
-            match date {
-                Ok(date) => date.with_timezone(&Utc),
-                Err(_) => {
-                    return Ok((
-                        StatusCode::BAD_REQUEST,
-                        Json(json!({ "error": "invalid day query parameter" })),
-                    )
-                        .into_response());
-                }
-            }
-        }
-        None => {
-            return Ok((
-                StatusCode::BAD_REQUEST,
-                Json(json!({ "error": "missing day query parameter" })),
-            )
-                .into_response());
-        }
-    };
-
-    let tasks = db::tasks::get_tasks_by_day(&ctx.db2, &user_id, &day)
+    let tasks = db::tasks::get_tasks(&ctx.db2, &user_id)
         .await
         .context("error fetching tasks")?;
 
@@ -130,29 +103,37 @@ pub async fn start_task(
     State(state): RequestState,
     Json(body): Json<StartTaskRequestBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let ongoing_task = db::tasks::get_ongoing_task(&state.db2, &user_id)
+    db::tasks::get_ongoing_task(&state.db2, &user_id)
         .await
-        .context("error getting ongoing task")?;
+        .context("error getting ongoing task")?
+        .map_or(Ok(()), |_| {
+            Err(ApiError::BadRequest(
+                "you already have an ongoing task".to_string(),
+            ))
+        })?;
 
-    if ongoing_task.is_some() {
-        return Ok((
-            StatusCode::BAD_REQUEST,
-            Json(json!({ "error": "you already have an ongoing task" })),
-        )
-            .into_response());
-    }
-
-    let owns_tag = db::tags::owns_tag(&state.db2, &user_id, &body.tag_id)
+    let tag = db::tags::get_one(&state.db2, &user_id, &body.tag_id)
         .await
-        .context("error checking tag owner")?;
-
-    if owns_tag == false {
-        return Ok(StatusCode::FORBIDDEN.into_response());
-    }
+        .context("error fetching tag")?
+        .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
 
     db::tasks::start_task(&state.db2, &user_id, &body.tag_id, body.expires_at).await?;
 
-    return Ok(StatusCode::CREATED.into_response());
+    let task_with_tag = TaskWithTag {
+        id: "".to_string(),
+        user_id: user_id.to_string(),
+        tag_id: body.tag_id.to_string(),
+        is_manual: false,
+        started_at: Utc::now(),
+        expires_at: body.expires_at,
+        stopped_at: None,
+        created_at: Utc::now(),
+
+        tag_label: tag.label,
+        tag_color: tag.color,
+    };
+
+    return Ok((StatusCode::CREATED, Json(task_with_tag)));
 }
 
 pub async fn stop_ongoing_task(
@@ -184,14 +165,6 @@ pub async fn delete_task(
     State(state): RequestState,
     task_id: Path<String>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let owns_task = db::tasks::owns_task(&state.db2, &user_id, &task_id)
-        .await
-        .context("error checking task owner")?;
-
-    if owns_task == false {
-        return Ok(StatusCode::FORBIDDEN.into_response());
-    }
-
     db::tasks::delete_task(&state.db2, &user_id, &task_id)
         .await
         .context("error deleting task")?;
@@ -211,15 +184,12 @@ pub async fn add_manual_task(
     State(state): RequestState,
     Json(body): Json<AddManualTaskRequestBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let owns_tag = db::tags::owns_tag(&state.db2, &user_id, &body.tag_id)
+    let tag = db::tags::get_one(&state.db2, &user_id, &body.tag_id)
         .await
-        .context("error checking tag owner")?;
+        .context("error fetching tag")?
+        .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
 
-    if owns_tag == false {
-        return Ok(StatusCode::FORBIDDEN.into_response());
-    }
-
-    db::tasks::add_manual_task(
+    let task = db::tasks::add_manual_task(
         &state.db2,
         &user_id,
         &body.tag_id,
@@ -229,5 +199,19 @@ pub async fn add_manual_task(
     .await
     .context("error adding manual task")?;
 
-    return Ok(StatusCode::CREATED.into_response());
+    let task_with_tag = TaskWithTag {
+        id: task.id,
+        user_id: task.user_id,
+        tag_id: task.tag_id,
+        is_manual: task.is_manual,
+        started_at: task.started_at,
+        expires_at: task.expires_at,
+        stopped_at: task.stopped_at,
+        created_at: task.created_at,
+
+        tag_label: tag.label,
+        tag_color: tag.color,
+    };
+
+    return Ok((StatusCode::CREATED, Json(task_with_tag)));
 }

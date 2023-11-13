@@ -6,6 +6,7 @@ use axum::{
     headers::{authorization::Bearer, Authorization, Cookie, HeaderMapExt},
     http::request::Parts,
 };
+use chrono::{Duration, Utc};
 use hyper::header;
 
 use crate::types::ApiError;
@@ -38,14 +39,14 @@ where
 
             let token = from_cookie
                 .or(from_bearer)
-                .ok_or_else(|| ApiError::UnauthorizedError("No auth provided".to_string()))?;
+                .ok_or_else(|| ApiError::Unauthorized("No auth provided".to_string()))?;
 
             decode_token(&token).context("Failed to decode token")?
         };
 
         let user_id = token.claims.sub;
 
-        let new_expiry = chrono::Utc::now().naive_utc() + chrono::Duration::days(7);
+        let new_expiry = Utc::now() + Duration::days(7);
 
         // update token in cookie so it doesn't expire
         parts.headers.insert(

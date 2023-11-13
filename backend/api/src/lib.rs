@@ -76,12 +76,14 @@ pub async fn start_api() -> () {
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
 
-    let v1_tags_routes = Router::new().route(
-        "/",
-        put(endpoints::tags::put_tags)
-            .get(endpoints::tags::get_tags)
-            .post(endpoints::tags::add_tag),
-    );
+    let v1_tags_routes = Router::new()
+        .route(
+            "/",
+            put(endpoints::tags::put_tags)
+                .get(endpoints::tags::get_tags)
+                .post(endpoints::tags::add_tag),
+        )
+        .route("/:tag_id", delete(endpoints::tags::delete_tag));
 
     let v1_tasks_routes = Router::new()
         .route(

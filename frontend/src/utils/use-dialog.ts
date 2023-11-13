@@ -17,7 +17,7 @@ export function useDialog() {
 		open,
 		close,
 		props: {
-			isOpen,
+			open: isOpen,
 			onOpenChange: setIsOpen,
 		},
 	};

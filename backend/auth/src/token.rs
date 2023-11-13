@@ -1,4 +1,5 @@
 use anyhow::Context;
+use chrono::{DateTime, Utc};
 use config::CONFIG;
 use jsonwebtoken::{
     decode, encode, Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation,
@@ -13,10 +14,7 @@ pub struct TokenClaims {
     pub iss: String,
 }
 
-pub fn create_token(
-    user_id: &str,
-    expires_at: chrono::NaiveDateTime,
-) -> Result<String, anyhow::Error> {
+pub fn create_token(user_id: &str, expires_at: DateTime<Utc>) -> Result<String, anyhow::Error> {
     return encode(
         &Header::new(Algorithm::HS256),
         &TokenClaims {

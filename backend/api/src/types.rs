@@ -34,16 +34,16 @@ pub enum ApiError {
     UnexpectedError(#[from] anyhow::Error),
 
     #[error("{0}")]
-    BadRequestError(String),
+    BadRequest(String),
 
     #[error("{0}")]
-    UnauthorizedError(String),
+    Unauthorized(String),
 
     #[error("{0}")]
-    NotFoundError(String),
+    NotFound(String),
 
-    #[error("Forbidden")]
-    ForbiddenError,
+    #[error("forbidden")]
+    Forbidden,
 }
 
 impl IntoResponse for ApiError {
@@ -52,28 +52,15 @@ impl IntoResponse for ApiError {
             ApiError::UnexpectedError(err) => {
                 tracing::error!("Unexpected error: {:#?}", err);
 
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    json!({ "message": "Internal server error" }),
-                )
+                (StatusCode::INTERNAL_SERVER_ERROR, "unexpected error".into())
             }
-            ApiError::BadRequestError(err) => {
-                tracing::info!("Validation error: {:#?}", err);
-
-                (StatusCode::BAD_REQUEST, json!({ "message": err }))
-            }
-            ApiError::UnauthorizedError(err) => {
-                (StatusCode::UNAUTHORIZED, json!({ "message": err }))
-            }
-            ApiError::NotFoundError(err) => (StatusCode::NOT_FOUND, json!({ "message": err })),
-            ApiError::ForbiddenError => (StatusCode::FORBIDDEN, json!({ "message": "Forbidden" })),
+            ApiError::BadRequest(err) => (StatusCode::BAD_REQUEST, err),
+            ApiError::Unauthorized(err) => (StatusCode::UNAUTHORIZED, err.into()),
+            ApiError::NotFound(err) => (StatusCode::NOT_FOUND, err.into()),
+            ApiError::Forbidden => (StatusCode::FORBIDDEN, "forbidden".into()),
         };
 
-        let body = Json(json!({
-            "error": error_message,
-        }));
-
-        return (status_code, body).into_response();
+        return (status_code, Json(json!({ "error": error_message }))).into_response();
     }
 }
 

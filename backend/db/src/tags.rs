@@ -14,6 +14,24 @@ pub struct Tag {
     pub updated_at: DateTime<Utc>,
 }
 
+pub async fn get_one(db: &Pool, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
+    let tag = sqlx::query_as!(
+        Tag,
+        r#"
+            SELECT * FROM tags
+            WHERE user_id = $1
+            AND id = $2
+        "#,
+        user_id,
+        tag_id
+    )
+    .fetch_optional(db)
+    .await
+    .context("error fetching tag")?;
+
+    return Ok(tag);
+}
+
 pub async fn get_all(db: &Pool, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> {
     let tags = sqlx::query_as!(
         Tag,
@@ -29,23 +47,6 @@ pub async fn get_all(db: &Pool, user_id: &str) -> Result<Vec<Tag>, anyhow::Error
     .context("error fetching tags")?;
 
     return Ok(tags);
-}
-
-pub async fn owns_tag(db: &Pool, user_id: &str, tag_id: &str) -> Result<bool, anyhow::Error> {
-    let tag = sqlx::query!(
-        r#"
-            SELECT id FROM tags
-            WHERE user_id = $1
-            AND id = $2
-        "#,
-        user_id,
-        tag_id
-    )
-    .fetch_optional(db)
-    .await
-    .context("error fetching tag")?;
-
-    return Ok(tag.is_some());
 }
 
 pub async fn insert(
@@ -82,4 +83,21 @@ pub async fn insert(
     .context("error inserting tag")?;
 
     return Ok(tag);
+}
+
+pub async fn delete(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            DELETE FROM tags
+            WHERE user_id = $1
+            AND id = $2
+        "#,
+        user_id,
+        tag_id
+    )
+    .execute(db)
+    .await
+    .context("error deleting tag")?;
+
+    return Ok(());
 }

@@ -1,5 +1,9 @@
 use anyhow::Context;
-use axum::{extract::State, response::IntoResponse, Json};
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Json,
+};
 use entity::tags;
 use hyper::StatusCode;
 use sea_orm::{sea_query::OnConflict, ActiveValue, EntityTrait};
@@ -66,7 +70,7 @@ pub async fn get_tags(
         .await
         .context("error fetching tags")?;
 
-    Ok((StatusCode::OK, Json(tags)))
+    return Ok((StatusCode::OK, Json(tags)));
 }
 
 #[derive(serde::Deserialize)]
@@ -84,5 +88,17 @@ pub async fn add_tag(
         .await
         .context("error inserting tag")?;
 
-    Ok((StatusCode::CREATED, Json(tag)))
+    return Ok((StatusCode::CREATED, Json(tag)));
+}
+
+pub async fn delete_tag(
+    UserId(user_id): UserId,
+    State(ctx): RequestState,
+    Path(tag_id): Path<String>,
+) -> Result<impl IntoResponse, ApiError> {
+    db::tags::delete(&ctx.db2, &user_id, &tag_id)
+        .await
+        .context("error deleting tag")?;
+
+    return Ok(StatusCode::OK);
 }

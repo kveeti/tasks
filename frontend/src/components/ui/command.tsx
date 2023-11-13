@@ -38,16 +38,24 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
 export const CommandDialogWithTrigger = ({
 	children,
 	trigger,
+	onValueChange,
+	shouldFilter,
+	value,
 	...props
 }: CommandDialogProps & {
 	trigger: React.ReactNode;
+	value?: React.ComponentPropsWithoutRef<typeof CommandPrimitive>["value"];
+	onValueChange?: React.ComponentPropsWithoutRef<typeof CommandPrimitive>["onValueChange"];
+	shouldFilter?: React.ComponentPropsWithoutRef<typeof CommandPrimitive>["shouldFilter"];
 }) => {
 	return (
 		<Dialog {...props}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className="overflow-hidden p-0 shadow-lg">
 				<Command
-					shouldFilter={false}
+					value={value}
+					onValueChange={onValueChange}
+					shouldFilter={shouldFilter}
 					className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
 				>
 					{children}

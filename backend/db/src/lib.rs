@@ -4,6 +4,7 @@ use ulid::Ulid;
 
 pub mod tags;
 pub mod tasks;
+pub mod users;
 
 pub type Pool = PgPool;
 

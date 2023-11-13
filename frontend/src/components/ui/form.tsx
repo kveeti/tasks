@@ -3,9 +3,9 @@ import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 import {
 	Controller,
-	ControllerProps,
-	FieldPath,
-	FieldValues,
+	type ControllerProps,
+	type FieldPath,
+	type FieldValues,
 	FormProvider,
 	useFormContext,
 } from "react-hook-form";
@@ -93,12 +93,14 @@ const FormLabel = React.forwardRef<
 			aria-required={props.required}
 			{...props}
 		>
-			<span>{children}</span>{" "}
-			{props.required && (
-				<span aria-hidden className="text-red-500">
-					*
-				</span>
-			)}
+			<span className="whitespace-nowrap">
+				<span>{children}</span>{" "}
+				{props.required && (
+					<span aria-hidden className="text-red-500">
+						*
+					</span>
+				)}
+			</span>
 		</Label>
 	);
 });
