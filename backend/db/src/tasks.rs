@@ -58,7 +58,7 @@ pub async fn get_tasks(db: &Pool, user_id: &str) -> Result<Vec<TaskWithTag>, any
             FROM tasks
             INNER JOIN tags ON tasks.tag_id = tags.id
             WHERE tasks.user_id = $1
-            ORDER BY tasks.started_at DESC;
+            ORDER BY tasks.created_at DESC;
         "#,
         user_id,
     )
@@ -177,7 +177,7 @@ pub async fn delete_task(db: &Pool, user_id: &str, task_id: &str) -> Result<(), 
         task_id,
         user_id
     )
-    .fetch_one(db)
+    .execute(db)
     .await
     .context("error deleting task")?;
 

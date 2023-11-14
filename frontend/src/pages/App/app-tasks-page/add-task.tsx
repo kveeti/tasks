@@ -51,12 +51,12 @@ export function AddTask() {
 		<Dialog {...dialog.props}>
 			<DialogTrigger asChild>
 				<Button className="w-full" variant="secondary">
-					add a task
+					add task
 				</Button>
 			</DialogTrigger>
 
 			<DialogContent>
-				<DialogTitle>add a task</DialogTitle>
+				<DialogTitle>add task</DialogTitle>
 
 				<AddTaskForm onSuccess={dialog.close} />
 			</DialogContent>

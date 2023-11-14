@@ -100,5 +100,23 @@ pub async fn delete_tag(
         .await
         .context("error deleting tag")?;
 
-    return Ok(StatusCode::OK);
+    return Ok(StatusCode::NO_CONTENT);
+}
+
+#[derive(serde::Deserialize)]
+pub struct UpdateTagBody {
+    pub label: String,
+    pub color: String,
+}
+pub async fn update_tag(
+    UserId(user_id): UserId,
+    State(ctx): RequestState,
+    Path(tag_id): Path<String>,
+    Json(tag): Json<UpdateTagBody>,
+) -> Result<impl IntoResponse, ApiError> {
+    let tag = db::tags::update(&ctx.db2, &user_id, &tag_id, &tag.label, &tag.color)
+        .await
+        .context("error updating tag")?;
+
+    return Ok((StatusCode::OK, Json(tag)));
 }

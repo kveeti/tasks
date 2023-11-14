@@ -83,7 +83,10 @@ pub async fn start_api() -> () {
                 .get(endpoints::tags::get_tags)
                 .post(endpoints::tags::add_tag),
         )
-        .route("/:tag_id", delete(endpoints::tags::delete_tag));
+        .route(
+            "/:tag_id",
+            delete(endpoints::tags::delete_tag).patch(endpoints::tags::update_tag),
+        );
 
     let v1_tasks_routes = Router::new()
         .route(

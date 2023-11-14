@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 		<Suspense fallback={"suspending"}>
 			<UserCtxProvider>
 				<ApiProvider>
-					<Toaster richColors position="top-center" theme="dark" />
+					<Toaster position="top-center" richColors theme="dark" />
 					<BrowserRouter>
 						<Entrypoint />
 					</BrowserRouter>

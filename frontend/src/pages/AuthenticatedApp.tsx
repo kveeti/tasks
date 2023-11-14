@@ -7,10 +7,10 @@ import { AppIndexPage } from "./App/AppIndexPage/AppIndexPage";
 import { AppLayout } from "./App/AppLayout/AppLayout";
 import { AppNumbersPage } from "./App/AppNumbersPage/AppNumbersPage";
 import { AppSettingsPage } from "./App/AppSettings/AppSettings";
-import { AppTagsPage } from "./App/AppTagsPage/AppTagsPage";
-import { AppTasksPage } from "./App/AppTasksPage/AppTasksPage";
 import { useDevActions } from "./App/DevActions";
 import { TimerContextProvider } from "./App/TimerContext";
+import { AppTagsPage } from "./App/app-tags-page/app-tags-page";
+import { AppTasksPage } from "./App/app-tasks-page/app-tasks-page";
 
 export function AuthenticatedApp() {
 	useNotifications();

@@ -1,17 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TagColors } from "@/pages/App/AppTagsPage/ColorSelector";
-
+import type { TagColors } from "../tag-colors";
 import { apiRequest } from "./apiRequest";
 
-export type Tag = {
+export type ApiTag = {
 	id: string;
 	label: string;
 	color: TagColors;
 };
 
 export function useTags() {
-	return useQuery<Tag[]>({
+	return useQuery<ApiTag[]>({
 		queryKey: ["tags"],
 		queryFn: ({ signal }) =>
 			apiRequest({
@@ -21,11 +20,39 @@ export function useTags() {
 			}),
 	});
 }
+export function useEditTag() {
+	const queryClient = useQueryClient();
+
+	return useMutation<ApiTag, unknown, { tagId: string; label: string; color: TagColors }>({
+		mutationFn: (variables) =>
+			apiRequest({
+				method: "PATCH",
+				path: `/tags/${variables.tagId}`,
+				body: variables,
+			}),
+		onSuccess: async (result) => {
+			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
+				if (oldTags) {
+					return oldTags.map((tag) => {
+						if (tag.id === result.id) {
+							return result;
+						}
+
+						return tag;
+					});
+				}
+			});
+
+			void queryClient.invalidateQueries(["tags"]);
+			void queryClient.invalidateQueries(["tasks"]);
+		},
+	});
+}
 
 export function useAddTag() {
 	const queryClient = useQueryClient();
 
-	return useMutation<Tag, unknown, { label: string; color: TagColors }>({
+	return useMutation<ApiTag, unknown, { label: string; color: TagColors }>({
 		mutationFn: (variables) =>
 			apiRequest({
 				method: "POST",
@@ -33,7 +60,7 @@ export function useAddTag() {
 				body: variables,
 			}),
 		onSuccess: async (result) => {
-			queryClient.setQueryData<Tag[] | undefined>(["tags"], (oldTags) => {
+			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
 				if (oldTags) {
 					return [result, ...oldTags];
 				}
@@ -54,7 +81,7 @@ export function useDeleteTag() {
 				path: `/tags/${variables.tagId}`,
 			}),
 		onSuccess: async (_, variables) => {
-			queryClient.setQueryData<Tag[] | undefined>(["tags"], (oldTags) => {
+			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
 				if (oldTags) {
 					return oldTags.filter((tag) => tag.id !== variables.tagId);
 				}

@@ -1,11 +1,13 @@
-import { motion, useAnimationControls, usePresence } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { type MotionProps, motion, useAnimationControls, usePresence } from "framer-motion";
+import { forwardRef, useEffect } from "react";
 
-export function WithInitialAnimation({ children }: { children: React.ReactNode }) {
+export const WithEnterExitAnimation = forwardRef<
+	HTMLDivElement,
+	React.ComponentPropsWithoutRef<"div"> & MotionProps
+>(({ children, ...props }, ref) => {
 	const [isPresent, safeToRemove] = usePresence();
 
 	const controls = useAnimationControls();
-	const ref = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		(async () => {
@@ -40,12 +42,13 @@ export function WithInitialAnimation({ children }: { children: React.ReactNode }
 
 	return (
 		<motion.div
-			ref={ref}
 			initial={{ height: 0, opacity: 0, backgroundColor: "rgba(50, 50, 50, 1)" }}
 			animate={controls}
 			className="overflow-hidden"
+			{...props}
+			ref={ref}
 		>
 			{children}
 		</motion.div>
 	);
-}
+});

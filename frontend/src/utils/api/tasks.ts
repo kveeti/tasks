@@ -2,24 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiRequest } from "./apiRequest";
 
-export type Task = {
+export type ApiTask = {
 	id: string;
 	user_id: string;
 	tag_id: string;
 	is_manual: boolean;
 	started_at: string;
-	expires_at?: string;
-	stopped_at: string;
+	expires_at: string;
+	stopped_at?: string;
 	created_at: string;
 };
 
-export type TaskWithTag = Task & {
+export type ApiTaskWithTag = ApiTask & {
 	tag_label: string;
 	tag_color: string;
 };
 
 export function useTasks() {
-	return useQuery<TaskWithTag[]>({
+	return useQuery<ApiTaskWithTag[]>({
 		queryKey: ["tasks"],
 		queryFn: ({ signal }) =>
 			apiRequest({
@@ -34,7 +34,7 @@ export function useAddTask() {
 	const queryClient = useQueryClient();
 
 	return useMutation<
-		Task,
+		ApiTask,
 		unknown,
 		{
 			tag_id: string;
@@ -49,7 +49,7 @@ export function useAddTask() {
 				body: props,
 			}),
 		onSuccess: async (newTask) => {
-			queryClient.setQueryData<Task[] | undefined>(["tasks"], (oldTasks) => {
+			queryClient.setQueryData<ApiTask[] | undefined>(["tasks"], (oldTasks) => {
 				if (oldTasks) {
 					return [newTask, ...oldTasks];
 				}
@@ -60,7 +60,7 @@ export function useAddTask() {
 	});
 }
 
-export async function useDeleteTask() {
+export function useDeleteTask() {
 	const queryClient = useQueryClient();
 
 	return useMutation<unknown, unknown, { taskId: string }>({
@@ -70,7 +70,7 @@ export async function useDeleteTask() {
 				path: `/tasks/${variables.taskId}`,
 			}),
 		onSuccess: async (_, variables) => {
-			queryClient.setQueryData<Task[] | undefined>(["tasks"], (oldTasks) => {
+			queryClient.setQueryData<ApiTask[] | undefined>(["tasks"], (oldTasks) => {
 				if (oldTasks) {
 					return oldTasks.filter((task) => task.id !== variables.taskId);
 				}

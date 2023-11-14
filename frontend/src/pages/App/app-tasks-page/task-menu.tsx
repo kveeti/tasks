@@ -7,11 +7,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { TaskWithTag } from "@/utils/api/tasks";
+import type { ApiTaskWithTag } from "@/utils/api/tasks";
+import { useDialog } from "@/utils/use-dialog";
 
-export function TaskMenu({ task }: { task: TaskWithTag }) {
+import { DeleteTask } from "./delete-task";
+
+export function TaskMenu({ task }: { task: ApiTaskWithTag }) {
+	const dialog = useDialog();
+
 	return (
-		<DropdownMenu>
+		<DropdownMenu {...dialog.props}>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" size="icon">
 					<MoreHorizontalIcon className="w-4 h-4" />
@@ -20,7 +25,7 @@ export function TaskMenu({ task }: { task: TaskWithTag }) {
 
 			<DropdownMenuContent>
 				<DropdownMenuItem>edit</DropdownMenuItem>
-				<DropdownMenuItem>delete</DropdownMenuItem>
+				<DeleteTask task={task} onSuccess={dialog.close} />
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

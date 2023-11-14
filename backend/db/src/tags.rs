@@ -101,3 +101,32 @@ pub async fn delete(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow
 
     return Ok(());
 }
+
+pub async fn update(
+    db: &Pool,
+    user_id: &str,
+    tag_id: &str,
+    label: &str,
+    color: &str,
+) -> Result<Option<Tag>, anyhow::Error> {
+    let tag = sqlx::query_as!(
+        Tag,
+        r#"
+            UPDATE tags
+            SET label = $3, color = $4, updated_at = $5
+            WHERE user_id = $1
+            AND id = $2
+            RETURNING *
+        "#,
+        user_id,
+        tag_id,
+        label,
+        color,
+        chrono::Utc::now()
+    )
+    .fetch_optional(db)
+    .await
+    .context("error updating tag")?;
+
+    return Ok(tag);
+}
