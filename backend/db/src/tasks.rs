@@ -14,7 +14,7 @@ pub struct Task {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, sqlx::FromRow)]
 pub struct TaskWithTag {
     pub id: String,
     pub user_id: String,

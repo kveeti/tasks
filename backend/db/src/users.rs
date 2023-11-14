@@ -7,7 +7,6 @@ pub struct User {
     pub id: String,
     pub email: String,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
 
 pub async fn get_by_email(db: &Pool, email: &str) -> Result<Option<User>, anyhow::Error> {
@@ -47,18 +46,16 @@ pub async fn create(db: &Pool, email: &str) -> Result<User, anyhow::Error> {
         id: create_id(),
         email: email.to_string(),
         created_at: Utc::now(),
-        updated_at: Utc::now(),
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO users (id, email, created_at, updated_at)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO users (id, email, created_at)
+            VALUES ($1, $2, $3)
         "#,
         user.id,
         user.email,
         user.created_at,
-        user.updated_at,
     )
     .execute(db)
     .await

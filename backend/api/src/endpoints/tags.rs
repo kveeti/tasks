@@ -1,6 +1,6 @@
 use anyhow::Context;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Json,
 };
@@ -95,10 +95,17 @@ pub async fn delete_tag(
     UserId(user_id): UserId,
     State(ctx): RequestState,
     Path(tag_id): Path<String>,
+    Query(permanent): Query<bool>,
 ) -> Result<impl IntoResponse, ApiError> {
-    db::tags::delete(&ctx.db2, &user_id, &tag_id)
-        .await
-        .context("error deleting tag")?;
+    if permanent {
+        db::tags::delete_permanent(&ctx.db2, &user_id, &tag_id)
+            .await
+            .context("error deleting tag permanently")?;
+    } else {
+        db::tags::delete_soft(&ctx.db2, &user_id, &tag_id)
+            .await
+            .context("error deleting tag")?;
+    }
 
     return Ok(StatusCode::NO_CONTENT);
 }

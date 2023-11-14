@@ -9,9 +9,8 @@ pub struct Tag {
     pub user_id: String,
     pub label: String,
     pub color: String,
-    pub was_last_used: bool,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 pub async fn get_one(db: &Pool, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
@@ -21,6 +20,7 @@ pub async fn get_one(db: &Pool, user_id: &str, tag_id: &str) -> Result<Option<Ta
             SELECT * FROM tags
             WHERE user_id = $1
             AND id = $2
+            AND deleted_at IS NULL
         "#,
         user_id,
         tag_id
@@ -38,7 +38,8 @@ pub async fn get_all(db: &Pool, user_id: &str) -> Result<Vec<Tag>, anyhow::Error
         r#"
             SELECT * FROM tags
             WHERE user_id = $1
-            ORDER BY was_last_used DESC, created_at DESC
+            AND deleted_at IS NULL
+            ORDER BY created_at DESC
         "#,
         user_id
     )
@@ -60,23 +61,20 @@ pub async fn insert(
         user_id: user_id.to_owned(),
         label: label.to_owned(),
         color: color.to_owned(),
-        was_last_used: false,
         created_at: chrono::Utc::now(),
-        updated_at: chrono::Utc::now(),
+        deleted_at: None,
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO tags (id, user_id, label, color, was_last_used, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO tags (id, user_id, label, color, created_at)
+            VALUES ($1, $2, $3, $4, $5)
         "#,
         tag.id,
         tag.user_id,
         tag.label,
         tag.color,
-        tag.was_last_used,
         tag.created_at,
-        tag.updated_at
     )
     .execute(db)
     .await
@@ -85,7 +83,25 @@ pub async fn insert(
     return Ok(tag);
 }
 
-pub async fn delete(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+pub async fn delete_soft(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE tags
+            SET deleted_at = NOW()
+            WHERE user_id = $1
+            AND id = $2
+        "#,
+        user_id,
+        tag_id
+    )
+    .execute(db)
+    .await
+    .context("error deleting tag")?;
+
+    return Ok(());
+}
+
+pub async fn delete_permanent(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             DELETE FROM tags
@@ -113,7 +129,7 @@ pub async fn update(
         Tag,
         r#"
             UPDATE tags
-            SET label = $3, color = $4, updated_at = $5
+            SET label = $3, color = $4
             WHERE user_id = $1
             AND id = $2
             RETURNING *
@@ -122,7 +138,6 @@ pub async fn update(
         tag_id,
         label,
         color,
-        chrono::Utc::now()
     )
     .fetch_optional(db)
     .await
