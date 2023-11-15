@@ -1,4 +1,4 @@
-use crate::{create_id, Pool};
+use crate::{create_id, Db};
 use anyhow::Context;
 use chrono::{DateTime, Utc};
 
@@ -9,7 +9,7 @@ pub struct User {
     pub created_at: DateTime<Utc>,
 }
 
-pub async fn get_by_email(db: &Pool, email: &str) -> Result<Option<User>, anyhow::Error> {
+pub async fn get_by_email(db: &Db, email: &str) -> Result<Option<User>, anyhow::Error> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -25,7 +25,7 @@ pub async fn get_by_email(db: &Pool, email: &str) -> Result<Option<User>, anyhow
     return Ok(user);
 }
 
-pub async fn get_by_id(db: &Pool, user_id: &str) -> Result<Option<User>, anyhow::Error> {
+pub async fn get_by_id(db: &Db, user_id: &str) -> Result<Option<User>, anyhow::Error> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -41,7 +41,7 @@ pub async fn get_by_id(db: &Pool, user_id: &str) -> Result<Option<User>, anyhow:
     return Ok(user);
 }
 
-pub async fn create(db: &Pool, email: &str) -> Result<User, anyhow::Error> {
+pub async fn create(db: &Db, email: &str) -> Result<User, anyhow::Error> {
     let user = User {
         id: create_id(),
         email: email.to_string(),

@@ -4,6 +4,13 @@ CREATE TABLE "users" (
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+CREATE TABLE "sessions" (
+    "id" VARCHAR(26) PRIMARY KEY,
+    "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "created_at" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 CREATE TABLE "tags" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,

@@ -1,7 +1,7 @@
 use anyhow::Context;
 use chrono::{DateTime, Utc};
 
-use crate::{create_id, Pool};
+use crate::{create_id, Db};
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Tag {
@@ -13,7 +13,7 @@ pub struct Tag {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-pub async fn get_one(db: &Pool, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
+pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
     let tag = sqlx::query_as!(
         Tag,
         r#"
@@ -32,7 +32,7 @@ pub async fn get_one(db: &Pool, user_id: &str, tag_id: &str) -> Result<Option<Ta
     return Ok(tag);
 }
 
-pub async fn get_all(db: &Pool, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> {
+pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> {
     let tags = sqlx::query_as!(
         Tag,
         r#"
@@ -51,7 +51,7 @@ pub async fn get_all(db: &Pool, user_id: &str) -> Result<Vec<Tag>, anyhow::Error
 }
 
 pub async fn insert(
-    db: &Pool,
+    db: &Db,
     user_id: &str,
     label: &str,
     color: &str,
@@ -83,7 +83,7 @@ pub async fn insert(
     return Ok(tag);
 }
 
-pub async fn delete_soft(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+pub async fn delete_soft(db: &Db, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             UPDATE tags
@@ -101,7 +101,7 @@ pub async fn delete_soft(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), a
     return Ok(());
 }
 
-pub async fn delete_permanent(db: &Pool, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+pub async fn delete_permanent(db: &Db, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             DELETE FROM tags
@@ -119,7 +119,7 @@ pub async fn delete_permanent(db: &Pool, user_id: &str, tag_id: &str) -> Result<
 }
 
 pub async fn update(
-    db: &Pool,
+    db: &Db,
     user_id: &str,
     tag_id: &str,
     label: &str,

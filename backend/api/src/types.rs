@@ -1,10 +1,11 @@
 use axum::{
-    extract::State,
+    async_trait,
+    extract::{FromRef, FromRequestParts, State},
+    http::request::Parts,
     response::{IntoResponse, Response},
     Json,
 };
 use data::types::Db;
-use db::Pool;
 use hyper::StatusCode;
 use serde_json::json;
 use tokio::sync::broadcast;
@@ -12,12 +13,12 @@ use tokio::sync::broadcast;
 #[derive(Clone)]
 pub struct RequestStateStruct {
     pub db: Db,
-    pub db2: Pool,
+    pub db2: db::Db,
     pub tx: broadcast::Sender<String>,
 }
 
 impl RequestStateStruct {
-    pub fn new(db: Db, db2: Pool) -> Self {
+    pub fn new(db: Db, db2: db::Db) -> Self {
         Self {
             db,
             db2,
@@ -27,6 +28,19 @@ impl RequestStateStruct {
 }
 
 pub type RequestState = State<RequestStateStruct>;
+
+#[async_trait]
+impl<S> FromRequestParts<S> for RequestStateStruct
+where
+    Self: FromRef<S>,
+    S: Send + Sync,
+{
+    type Rejection = ApiError;
+
+    async fn from_request_parts(_parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        Ok(Self::from_ref(state))
+    }
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {

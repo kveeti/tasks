@@ -1,8 +1,8 @@
 import { registerSW } from "virtual:pwa-register";
 
-import { useUser } from "./auth";
 import { AuthenticatedApp } from "./pages/AuthenticatedApp";
 import { UnauthenticatedApp } from "./pages/UnauthenticatedApp";
+import { useAuth } from "./utils/useUser";
 
 // const AuthenticatedApp = lazy(() =>
 // 	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))
@@ -13,9 +13,13 @@ import { UnauthenticatedApp } from "./pages/UnauthenticatedApp";
 // );
 
 export function Entrypoint() {
-	const user = useUser();
+	const auth = useAuth();
 
-	return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
+	if (auth.isLoading) {
+		return null;
+	}
+
+	return auth.data ? <AuthenticatedApp /> : <UnauthenticatedApp />;
 }
 
 if ("serviceWorker" in navigator) {

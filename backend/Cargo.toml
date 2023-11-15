@@ -29,3 +29,6 @@ dotenv = "0.15.0"
 sea-orm = { version = "0.11.1", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
 tokio = { version = "1.25.0", features = ["full"] }
 reqwest = { version = "0.11.6", features = [ "json" ] }
+sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls", "postgres", "chrono" ] }
+hex = "0.4.3"
+sha2 = "0.10.8"

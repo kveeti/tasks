@@ -16,26 +16,32 @@ export function Time(props: { seconds: number }) {
 	const time = getMinutesAndSeconds(props.seconds);
 
 	return (
-		<div style={{ fontSize }} className="flex overflow-hidden leading-none">
-			<AnimatePresence>
-				{time.minutes >= 100 && (
-					<motion.div
-						className="overflow-hidden"
-						initial={{ opacity: 0, width: 0 }}
-						animate={{ opacity: 1, width: "auto" }}
-						exit={{ opacity: 0, width: 0 }}
-					>
-						<Digit place={100} value={time.minutes} />
-					</motion.div>
-				)}
-			</AnimatePresence>
+		<>
+			<time className="sr-only">
+				{time.minutes}:{time.seconds}
+			</time>
 
-			<Digit place={10} value={time.minutes} />
-			<Digit place={1} value={time.minutes} />
-			<span>:</span>
-			<Digit place={10} value={time.seconds} />
-			<Digit place={1} value={time.seconds} />
-		</div>
+			<div aria-hidden style={{ fontSize }} className="flex overflow-hidden leading-none">
+				<AnimatePresence>
+					{time.minutes >= 100 && (
+						<motion.div
+							className="overflow-hidden"
+							initial={{ opacity: 0, width: 0 }}
+							animate={{ opacity: 1, width: "auto" }}
+							exit={{ opacity: 0, width: 0 }}
+						>
+							<Digit place={100} value={time.minutes} />
+						</motion.div>
+					)}
+				</AnimatePresence>
+
+				<Digit place={10} value={time.minutes} />
+				<Digit place={1} value={time.minutes} />
+				<span>:</span>
+				<Digit place={10} value={time.seconds} />
+				<Digit place={1} value={time.seconds} />
+			</div>
+		</>
 	);
 }
 

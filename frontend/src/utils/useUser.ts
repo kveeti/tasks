@@ -1,14 +1,15 @@
-import { object, parse, string } from "valibot";
+import { useQuery } from "@tanstack/react-query";
 
-import { useLocalStorage } from "./useLocalStorage";
+import { apiRequest } from "./api/apiRequest";
 
-const userSchema = object({
-	id: string(),
-	email: string(),
-});
-
-export function useUser() {
-	const [user] = useLocalStorage("user", null);
-
-	return user ? parse(userSchema, user) : null;
+export function useAuth() {
+	return useQuery({
+		queryKey: ["auth"],
+		queryFn: ({ signal }) =>
+			apiRequest({
+				method: "GET",
+				path: "/auth/me",
+				signal,
+			}),
+	});
 }

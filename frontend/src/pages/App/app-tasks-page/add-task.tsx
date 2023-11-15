@@ -32,7 +32,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useTags } from "@/utils/api/tags";
-import { useAddTask } from "@/utils/api/tasks";
+import { useAddManualTask } from "@/utils/api/tasks";
 import { cn } from "@/utils/classNames";
 import { errorToast } from "@/utils/errorToast";
 import { useDialog } from "@/utils/use-dialog";
@@ -66,7 +66,7 @@ export function AddTask() {
 
 export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 	const tags = useTags();
-	const mutation = useAddTask();
+	const mutation = useAddManualTask();
 
 	const form = useForm<Output<typeof newTaskFormSchema>>({
 		resolver: valibotResolver(newTaskFormSchema),

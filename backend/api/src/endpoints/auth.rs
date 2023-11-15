@@ -1,4 +1,7 @@
-use crate::types::{ApiError, RequestState};
+use crate::{
+    auth::user_id::UserId,
+    types::{ApiError, RequestState},
+};
 use anyhow::Context;
 use auth::token::create_token;
 use axum::{
@@ -8,7 +11,9 @@ use axum::{
 };
 use chrono::{Duration, Utc};
 use config::CONFIG;
+use db::create_id;
 use hyper::{header, HeaderMap, StatusCode};
+use serde_json::json;
 use std::collections::HashMap;
 
 pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
@@ -18,9 +23,9 @@ pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
         .path_and_query(format!(
             "/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope=email&prompt=select_account",
             CONFIG.google_client_id,
-            format!("{}/auth/callback", CONFIG.front_url),
+            format!("{}/api/auth/google-callback", CONFIG.front_url),
         ))
-        .build().context("Failed to build auth url")?;
+        .build().context("error building auth url")?;
 
     return Ok(Redirect::to(&url.to_string()));
 }
@@ -35,24 +40,18 @@ struct OAuthUserInfoResponseBody {
     pub email: String,
 }
 
-#[derive(serde::Serialize)]
-struct AuthVerifyCodeResponseBody {
-    pub id: String,
-    pub email: String,
-}
-
-pub async fn auth_verify_code_endpoint(
+pub async fn auth_callback_endpoint(
     State(state): RequestState,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let client = reqwest::Client::new();
-
     let code = query
         .get("code")
         .ok_or(ApiError::BadRequest(
-            "Missing 'code' query parameter".to_string(),
+            "missing 'code' query parameter".to_string(),
         ))?
         .to_string();
+
+    let client = reqwest::Client::new();
 
     let access_token_response = client
         .post("https://oauth2.googleapis.com/token")
@@ -120,26 +119,20 @@ pub async fn auth_verify_code_endpoint(
     };
 
     let expires_at = Utc::now() + Duration::days(7);
+    let session_id = create_id();
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-            create_token(&user_id, expires_at)?,
+            create_token(&user_id, &session_id),
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
         .context("error creating cookie header")?,
     )]);
 
-    return Ok((
-        StatusCode::OK,
-        headers,
-        Json(AuthVerifyCodeResponseBody {
-            id: user_id,
-            email: oauth_me_response_body.email.to_owned(),
-        }),
-    ));
+    return Ok((StatusCode::OK, headers));
 }
 
 pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, ApiError> {
@@ -162,20 +155,36 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
 
     let expires_at = Utc::now() + Duration::days(30);
 
+    let session_id = db::sessions::create(&state.db2, &user_id, &expires_at)
+        .await
+        .context("error creating session")?;
+
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-            create_token(&user_id, expires_at)?,
+            create_token(&user_id, &session_id),
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
-        .context("error creating cookie header")?,
+        .context("error parsing cookie header")?,
     )]);
 
     return Ok((
         StatusCode::OK,
         headers,
-        Json(AuthVerifyCodeResponseBody { id: user_id, email }),
+        Json(json!({ "user_id": user_id, "email": email })),
     ));
+}
+
+pub async fn auth_me_endpoint(
+    UserId(user_id): UserId,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    let user = db::users::get_by_id(&state.db2, &user_id)
+        .await
+        .context("error getting user")?
+        .ok_or(ApiError::NotFound("user not found".to_string()))?;
+
+    return Ok((StatusCode::OK, Json(user)));
 }

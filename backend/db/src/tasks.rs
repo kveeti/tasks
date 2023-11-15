@@ -1,4 +1,4 @@
-use crate::{create_id, Pool};
+use crate::{create_id, Db};
 use anyhow::Context;
 use chrono::{DateTime, Utc};
 
@@ -29,7 +29,7 @@ pub struct TaskWithTag {
     pub tag_color: String,
 }
 
-pub async fn owns_task(db: &Pool, user_id: &str, task_id: &str) -> Result<bool, anyhow::Error> {
+pub async fn owns_task(db: &Db, user_id: &str, task_id: &str) -> Result<bool, anyhow::Error> {
     let owns_task = sqlx::query!(
         r#"
             SELECT EXISTS (
@@ -50,7 +50,7 @@ pub async fn owns_task(db: &Pool, user_id: &str, task_id: &str) -> Result<bool, 
     return Ok(owns_task);
 }
 
-pub async fn get_tasks(db: &Pool, user_id: &str) -> Result<Vec<TaskWithTag>, anyhow::Error> {
+pub async fn get_tasks(db: &Db, user_id: &str) -> Result<Vec<TaskWithTag>, anyhow::Error> {
     let tasks_with_tags = sqlx::query_as!(
         TaskWithTag,
         r#"
@@ -69,7 +69,7 @@ pub async fn get_tasks(db: &Pool, user_id: &str) -> Result<Vec<TaskWithTag>, any
     return Ok(tasks_with_tags);
 }
 
-pub async fn get_ongoing_task(db: &Pool, user_id: &str) -> Result<Option<Task>, anyhow::Error> {
+pub async fn get_ongoing_task(db: &Db, user_id: &str) -> Result<Option<Task>, anyhow::Error> {
     let ongoing_task = sqlx::query_as!(
         Task,
         r#"
@@ -89,7 +89,7 @@ pub async fn get_ongoing_task(db: &Pool, user_id: &str) -> Result<Option<Task>, 
 }
 
 pub async fn add_manual_task(
-    db: &Pool,
+    db: &Db,
     user_id: &str,
     tag_id: &str,
     started_at: &DateTime<Utc>,
@@ -127,7 +127,7 @@ pub async fn add_manual_task(
 }
 
 pub async fn start_task(
-    db: &Pool,
+    db: &Db,
     user_id: &str,
     tag_id: &str,
     expires_at: DateTime<Utc>,
@@ -149,7 +149,7 @@ pub async fn start_task(
     return Ok(());
 }
 
-pub async fn stop_task(db: &Pool, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
+pub async fn stop_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             UPDATE tasks
@@ -167,7 +167,7 @@ pub async fn stop_task(db: &Pool, user_id: &str, task_id: &str) -> Result<(), an
     return Ok(());
 }
 
-pub async fn delete_task(db: &Pool, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
+pub async fn delete_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             DELETE FROM tasks

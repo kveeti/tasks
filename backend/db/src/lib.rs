@@ -2,13 +2,14 @@ use config::CONFIG;
 use sqlx::PgPool;
 use ulid::Ulid;
 
+pub mod sessions;
 pub mod tags;
 pub mod tasks;
 pub mod users;
 
-pub type Pool = PgPool;
+pub type Db = PgPool;
 
-pub async fn get_db() -> Pool {
+pub async fn get_db() -> Db {
     let pool = PgPool::connect(&CONFIG.database_url)
         .await
         .expect("error connecting to database");

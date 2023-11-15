@@ -49,14 +49,13 @@ pub async fn start_api() -> () {
     let db2 = db::get_db().await;
     let state = RequestStateStruct::new(db, db2);
 
-    let mut v1_auth_routes = Router::new().merge(
-        Router::new()
-            .route("/google-init", get(endpoints::auth::auth_init_endpoint))
-            .route(
-                "/google-verify-code",
-                get(endpoints::auth::auth_verify_code_endpoint),
-            ),
-    );
+    let mut v1_auth_routes = Router::new()
+        .route("/google-init", get(endpoints::auth::auth_init_endpoint))
+        .route(
+            "/google-callback",
+            get(endpoints::auth::auth_callback_endpoint),
+        )
+        .route("/me", get(endpoints::auth::auth_me_endpoint));
 
     if CONFIG.env == Env::NotProd {
         v1_auth_routes = v1_auth_routes
@@ -97,7 +96,7 @@ pub async fn start_api() -> () {
         )
         .route("/:task_id", delete(endpoints::tasks::delete_task))
         .route(
-            "/ongoing",
+            "/on-going",
             get(endpoints::tasks::get_ongoing_task).delete(endpoints::tasks::stop_ongoing_task),
         )
         .route("/start", post(endpoints::tasks::start_task));

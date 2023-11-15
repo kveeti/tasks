@@ -1,12 +1,6 @@
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
 import { useEventCallback, useEventListener } from "usehooks-ts";
 
-declare global {
-	interface WindowEventMap {
-		"local-storage": CustomEvent;
-	}
-}
-
 type SetValue<T> = Dispatch<SetStateAction<T>>;
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
@@ -39,8 +33,6 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
 			window.localStorage.setItem(key, JSON.stringify(newValue));
 
 			setStoredValue(newValue);
-
-			window.dispatchEvent(new Event("local-storage"));
 		} catch (error) {
 			console.warn(`Error setting localStorage key “${key}”:`, error);
 		}
