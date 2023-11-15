@@ -97,9 +97,10 @@ pub async fn start_api() -> () {
         .route("/:task_id", delete(endpoints::tasks::delete_task))
         .route(
             "/on-going",
-            get(endpoints::tasks::get_ongoing_task).delete(endpoints::tasks::stop_ongoing_task),
-        )
-        .route("/start", post(endpoints::tasks::start_task));
+            get(endpoints::tasks::get_ongoing_task)
+                .delete(endpoints::tasks::stop_ongoing_task)
+                .post(endpoints::tasks::start_task),
+        );
 
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)

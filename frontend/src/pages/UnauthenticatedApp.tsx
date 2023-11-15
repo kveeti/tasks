@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { WithAnimation } from "./App/WithAnimation";
+import { WithAnimation } from "../components/with-animation";
 import { AuthLayout } from "./Auth/AuthLayout";
 import { LoginPage } from "./Auth/LoginPage";
 

@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { WithEnterExitAnimation } from "@/components/with-initial-animation";
 import { type ApiTaskWithTag, useTasks } from "@/utils/api/tasks";
 
-import { WithAnimation } from "../WithAnimation";
+import { WithAnimation } from "../../../components/with-animation";
 import { AddTask } from "./add-task";
 import { BaseTask } from "./base-task";
 import { TaskMenu } from "./task-menu";

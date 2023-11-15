@@ -1,15 +1,20 @@
 import { type MotionProps, motion, useAnimationControls, usePresence } from "framer-motion";
 import { forwardRef, useEffect } from "react";
 
+import { useIsMounted } from "@/utils/use-is-mounted";
+
 export const WithEnterExitAnimation = forwardRef<
 	HTMLDivElement,
 	React.ComponentPropsWithoutRef<"div"> & MotionProps
 >(({ children, ...props }, ref) => {
 	const [isPresent, safeToRemove] = usePresence();
+	const isMounted = useIsMounted();
 
 	const controls = useAnimationControls();
 
 	useEffect(() => {
+		if (!isMounted) return;
+
 		(async () => {
 			if (isPresent) {
 				await controls.start({
@@ -38,7 +43,7 @@ export const WithEnterExitAnimation = forwardRef<
 				safeToRemove();
 			}
 		})();
-	}, [controls, isPresent, safeToRemove]);
+	}, [controls, isMounted, isPresent, safeToRemove]);
 
 	return (
 		<motion.div

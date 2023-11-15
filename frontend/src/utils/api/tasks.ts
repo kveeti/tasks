@@ -66,7 +66,7 @@ export function useAddManualTask() {
 				}
 			});
 
-			void queryClient.invalidateQueries(["tasks"]);
+			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
 		},
 	});
 }
@@ -88,13 +88,10 @@ export function useStartTask() {
 				}
 			});
 
-			queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], (oldTasks) => {
-				if (oldTasks) {
-					return newTask;
-				}
-			});
+			queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], () => newTask);
 
-			void queryClient.invalidateQueries(["tasks", "onGoingTask"]);
+			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
+			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
 		},
 	});
 }
@@ -109,16 +106,11 @@ export function useStopOnGoingTask() {
 				path: "/tasks/on-going",
 				body: variables,
 			}),
-		onSuccess: async (newTask) => {
-			queryClient.setQueryData<ApiTaskWithTag[] | undefined>(["tasks"], (oldTasks) => {
-				if (oldTasks) {
-					return [newTask, ...oldTasks];
-				}
-			});
+		onSuccess: async () => {
+			queryClient.setQueryData(["onGoingTask"], () => null);
 
-			queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], undefined);
-
-			void queryClient.invalidateQueries(["tasks", "onGoingTask"]);
+			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
+			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
 		},
 	});
 }
@@ -139,7 +131,15 @@ export function useDeleteTask() {
 				}
 			});
 
-			void queryClient.invalidateQueries(["tasks"]);
+			const onGoingTask = queryClient.getQueryData<ApiTaskWithTag | undefined>([
+				"onGoingTask",
+			]);
+			if (onGoingTask?.id === variables.taskId) {
+				queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], undefined);
+			}
+
+			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
+			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
 		},
 	});
 }

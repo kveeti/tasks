@@ -1,23 +1,26 @@
 import { differenceInSeconds } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useOnGoingTask } from "@/utils/api/tasks";
+import { type ApiTaskWithTag } from "@/utils/api/tasks";
 import { useSetInterval } from "@/utils/useSetInterval";
 
-export function useOnGoingSeconds() {
-	const onGoingTask = useOnGoingTask();
+export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTag }) {
 	const [onGoingSeconds, setOnGoingSeconds] = useState(0);
+
+	useEffect(() => {
+		if (!onGoingTask) return;
+
+		setOnGoingSeconds(differenceInSeconds(new Date(onGoingTask.expires_at), new Date()));
+	}, [onGoingTask]);
 
 	useSetInterval(
 		() => {
-			if (!onGoingTask.data) return;
+			if (!onGoingTask) return;
 
-			setOnGoingSeconds(
-				differenceInSeconds(new Date(), new Date(onGoingTask.data.started_at))
-			);
+			setOnGoingSeconds(differenceInSeconds(new Date(onGoingTask.expires_at), new Date()));
 		},
 		onGoingTask ? 1000 : null
 	);
 
-	return onGoingTask.data ? onGoingSeconds : null;
+	return onGoingTask ? onGoingSeconds : null;
 }

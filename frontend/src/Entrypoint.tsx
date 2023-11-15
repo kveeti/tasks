@@ -2,7 +2,7 @@ import { registerSW } from "virtual:pwa-register";
 
 import { AuthenticatedApp } from "./pages/AuthenticatedApp";
 import { UnauthenticatedApp } from "./pages/UnauthenticatedApp";
-import { useAuth } from "./utils/useUser";
+import { useAuth } from "./utils/api/auth";
 
 // const AuthenticatedApp = lazy(() =>
 // 	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))

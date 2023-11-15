@@ -13,7 +13,7 @@ import { useState } from "react";
 
 import { Button } from "@/Ui/NewButton";
 
-import { WithAnimation } from "../WithAnimation";
+import { WithAnimation } from "../../../components/with-animation";
 import { HoursPerDayChart } from "./HoursPerDayChart";
 import { TagDistributionChart } from "./TagDistributionChart";
 

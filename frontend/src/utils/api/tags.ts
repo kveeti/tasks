@@ -43,8 +43,8 @@ export function useEditTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries(["tags"]);
-			void queryClient.invalidateQueries(["tasks"]);
+			void queryClient.invalidateQueries({ queryKey: ["tags"] });
+			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
 		},
 	});
 }
@@ -66,7 +66,7 @@ export function useAddTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries(["tags"]);
+			void queryClient.invalidateQueries({ queryKey: ["tags"] });
 		},
 	});
 }
@@ -87,7 +87,7 @@ export function useDeleteTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries(["tags"]);
+			void queryClient.invalidateQueries({ queryKey: ["tags"] });
 		},
 	});
 }

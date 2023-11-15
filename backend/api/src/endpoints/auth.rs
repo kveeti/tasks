@@ -159,22 +159,26 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
         .await
         .context("error creating session")?;
 
-    let headers: HeaderMap = HeaderMap::from_iter(vec![(
-        header::SET_COOKIE,
-        format!(
-            "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-            create_token(&user_id, &session_id),
-            expires_at.format("%a, %d %b %Y %T GMT")
-        )
-        .parse()
-        .context("error parsing cookie header")?,
-    )]);
+    let headers: HeaderMap = HeaderMap::from_iter(vec![
+        (
+            header::SET_COOKIE,
+            format!(
+                "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
+                create_token(&user_id, &session_id),
+                expires_at.format("%a, %d %b %Y %T GMT")
+            )
+            .parse()
+            .context("error parsing cookie header")?,
+        ),
+        (
+            header::LOCATION,
+            "http://localhost:3000/app"
+                .parse()
+                .context("error parsing location header")?,
+        ),
+    ]);
 
-    return Ok((
-        StatusCode::OK,
-        headers,
-        Json(json!({ "user_id": user_id, "email": email })),
-    ));
+    return Ok((StatusCode::SEE_OTHER, headers));
 }
 
 pub async fn auth_me_endpoint(
@@ -184,7 +188,7 @@ pub async fn auth_me_endpoint(
     let user = db::users::get_by_id(&state.db2, &user_id)
         .await
         .context("error getting user")?
-        .ok_or(ApiError::NotFound("user not found".to_string()))?;
+        .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
 
     return Ok((StatusCode::OK, Json(user)));
 }

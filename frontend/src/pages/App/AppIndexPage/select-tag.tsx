@@ -3,12 +3,24 @@ import { SelectValue } from "@radix-ui/react-select";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useTags } from "@/utils/api/tags";
 
-import type { StartTaskForm } from "./AppIndexPage";
+import { BaseTag } from "../app-tags-page/base-tag";
+import { useTimerContext } from "../timer-context";
 
-export function SelectTag({ form }: { form: StartTaskForm }) {
+export function SelectTag() {
+	const { form, onGoingTask } = useTimerContext();
 	const tags = useTags();
 
-	return (
+	return onGoingTask ? (
+		<div className="mt-8 py-2 px-3 gap-3 border bg-black rounded-xl flex items-center">
+			<BaseTag
+				tag={{
+					id: onGoingTask.tag_id,
+					label: onGoingTask.tag_label,
+					color: onGoingTask.tag_color,
+				}}
+			/>
+		</div>
+	) : (
 		<Select
 			onValueChange={(value) => {
 				form.setValue("tagId", value);
@@ -23,14 +35,7 @@ export function SelectTag({ form }: { form: StartTaskForm }) {
 				{tags.data?.map((tag) => (
 					<SelectItem key={tag.id} value={tag.id}>
 						<div className="space-x-2 flex items-center">
-							<div
-								aria-hidden
-								className={`w-3 h-3 rounded-full`}
-								style={{
-									backgroundColor: tag.color,
-								}}
-							/>
-							<p>{tag.label}</p>
+							<BaseTag tag={tag} />
 						</div>
 					</SelectItem>
 				))}

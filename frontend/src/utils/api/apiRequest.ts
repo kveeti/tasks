@@ -30,7 +30,7 @@ export async function apiRequest<TReturnValue>(props: Props) {
 		if (res.ok) {
 			return json as TReturnValue;
 		} else {
-			throw new Error(json?.error ?? "unexpected server error");
+			throw new Error(json?.error ?? "unexpected server error", {});
 		}
 	});
 }

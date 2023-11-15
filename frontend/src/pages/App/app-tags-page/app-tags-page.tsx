@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { WithEnterExitAnimation } from "@/components/with-initial-animation";
 import { type ApiTag, useTags } from "@/utils/api/tags";
 
-import { WithAnimation } from "../WithAnimation";
+import { WithAnimation } from "../../../components/with-animation";
 import { AddTag } from "./add-tag";
 import { BaseTag } from "./base-tag";
 import { TagMenu } from "./tag-menu";

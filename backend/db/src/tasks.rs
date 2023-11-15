@@ -69,15 +69,20 @@ pub async fn get_tasks(db: &Db, user_id: &str) -> Result<Vec<TaskWithTag>, anyho
     return Ok(tasks_with_tags);
 }
 
-pub async fn get_ongoing_task(db: &Db, user_id: &str) -> Result<Option<Task>, anyhow::Error> {
+pub async fn get_ongoing_task(
+    db: &Db,
+    user_id: &str,
+) -> Result<Option<TaskWithTag>, anyhow::Error> {
     let ongoing_task = sqlx::query_as!(
-        Task,
+        TaskWithTag,
         r#"
-            SELECT * FROM tasks
-            WHERE user_id = $1
-            AND created_at <= NOW()
-            AND expires_at >= NOW()
-            AND stopped_at IS NULL
+            SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color 
+            FROM tasks
+            INNER JOIN tags ON tasks.tag_id = tags.id
+            WHERE tasks.user_id = $1
+            AND tasks.created_at <= NOW()
+            AND tasks.expires_at >= NOW()
+            AND tasks.stopped_at IS NULL
         "#,
         user_id
     )
@@ -134,15 +139,15 @@ pub async fn start_task(
 ) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, expires_at)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO tasks (id, user_id, tag_id, expires_at, is_manual, created_at, started_at)
+            VALUES ($1, $2, $3, $4, FALSE, NOW(), NOW())
         "#,
         create_id(),
         user_id,
         tag_id,
         expires_at,
     )
-    .fetch_one(db)
+    .execute(db)
     .await
     .context("error inserting task")?;
 
@@ -160,7 +165,7 @@ pub async fn stop_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyh
         task_id,
         user_id
     )
-    .fetch_one(db)
+    .execute(db)
     .await
     .context("error stopping task")?;
 

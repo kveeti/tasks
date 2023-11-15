@@ -142,22 +142,16 @@ pub async fn stop_ongoing_task(
 ) -> Result<impl IntoResponse, ApiError> {
     let ongoing_task = db::tasks::get_ongoing_task(&state.db2, &user_id)
         .await
-        .context("error getting ongoing task")?;
+        .context("error getting ongoing task")?
+        .ok_or(ApiError::BadRequest(
+            "you don't have an ongoing task".to_string(),
+        ))?;
 
-    return match ongoing_task {
-        Some(task) => {
-            db::tasks::stop_task(&state.db2, &user_id, &task.id)
-                .await
-                .context("error stopping task")?;
+    db::tasks::stop_task(&state.db2, &user_id, &ongoing_task.id)
+        .await
+        .context("error stopping task")?;
 
-            Ok(StatusCode::OK.into_response())
-        }
-        None => Ok((
-            StatusCode::BAD_REQUEST,
-            Json(json!({ "error": "you don't have an ongoing task" })),
-        )
-            .into_response()),
-    };
+    return Ok(StatusCode::OK.into_response());
 }
 
 pub async fn delete_task(
