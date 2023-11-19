@@ -63,3 +63,18 @@ pub async fn create(db: &Db, email: &str) -> Result<User, anyhow::Error> {
 
     return Ok(user);
 }
+
+pub async fn delete(db: &Db, user_id: &str) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            DELETE FROM users
+            WHERE id = $1
+        "#,
+        user_id
+    )
+    .execute(db)
+    .await
+    .context("error deleting user")?;
+
+    return Ok(());
+}

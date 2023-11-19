@@ -15,11 +15,10 @@ sea-orm = { workspace = true }
 chrono = { workspace = true }
 reqwest = { workspace = true }
 sqlx = { workspace = true }
-data = { path = "../data" }
-entity = { path = "../entity" }
 config = { path = "../config" }
 auth = { path = "../auth" }
 db = { path = "../db" }
+notifications = { path = "../notifications" }
 axum = { version = "0.6.18", features = [ "headers", "ws" ] }
 hyper = "0.14.25"
 tower = "0.4.13"

@@ -1,27 +1,17 @@
 use std::{collections::HashMap, time::Duration};
 
-use anyhow::Context;
-use config::CONFIG;
-use serde_json::json;
-use web_push::{
-    SubscriptionInfo, VapidSignatureBuilder, WebPushClient, WebPushMessageBuilder, URL_SAFE_NO_PAD,
-};
+pub use crate::send::send_notification;
+mod send;
 
 pub async fn start_notification_service() {
     tracing::info!("starting notification service");
 
     let db2 = db::get_db().await;
-    let client = WebPushClient::new().unwrap();
-    let signature_builder =
-        VapidSignatureBuilder::from_base64_no_sub(&CONFIG.vapid_private_key, URL_SAFE_NO_PAD)
-            .unwrap();
 
     tracing::info!("notification service started");
 
     loop {
-        let notifs = db::notifications::get_to_send(&db2)
-            .await
-            .context("error getting notifications");
+        let notifs = db::notifications::get_to_send(&db2).await;
 
         if let Err(e) = notifs {
             tracing::error!("failed to get notifications: {}", e);
@@ -67,47 +57,11 @@ pub async fn start_notification_service() {
                                 continue;
                             }
 
-                            let payload = json!({
-                                "title": notif.title,
-                                "message": notif.message,
-                            })
-                            .to_string();
-
                             let futures = subs.iter().map(|sub| {
-                                let client = client.clone();
-
-                                let subscription_info = SubscriptionInfo::new(
-                                    sub.endpoint.to_owned(),
-                                    sub.p256dh.to_owned(),
-                                    sub.auth.to_owned(),
-                                );
-
-                                let signature = signature_builder
-                                    .to_owned()
-                                    .add_sub_info(&subscription_info)
-                                    .build()
-                                    .unwrap();
-
-                                let mut message_builder =
-                                    WebPushMessageBuilder::new(&subscription_info).unwrap();
-                                message_builder.set_payload(
-                                    web_push::ContentEncoding::Aes128Gcm,
-                                    payload.as_bytes(),
-                                );
-                                message_builder.set_vapid_signature(signature.clone());
-
-                                let message = message_builder.build().unwrap();
-
-                                tracing::info!(
-                                    "Sending notification to {} {} {} {}",
-                                    sub.user_id,
-                                    sub.endpoint,
-                                    sub.p256dh,
-                                    sub.auth
-                                );
+                                let future = send_notification(&sub, &notif.title, &notif.message);
 
                                 async move {
-                                    let response = client.send(message).await;
+                                    let response = future.await;
 
                                     if let Err(e) = response {
                                         tracing::error!("Failed to send notification: {}", e);

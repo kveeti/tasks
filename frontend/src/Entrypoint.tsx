@@ -23,5 +23,9 @@ export function Entrypoint() {
 }
 
 if ("serviceWorker" in navigator) {
+	console.debug("registering service worker");
+
 	registerSW();
+} else {
+	console.warn("no service worker support");
 }

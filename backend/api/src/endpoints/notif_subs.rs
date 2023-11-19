@@ -28,7 +28,7 @@ pub async fn add_notif_sub_endpoint(
             ))
         })?;
 
-    db::notification_subs::insert(
+    let notification_sub = db::notification_subs::insert(
         &state.db2,
         &user_id,
         &body.endpoint,
@@ -37,6 +37,18 @@ pub async fn add_notif_sub_endpoint(
     )
     .await
     .context("error inserting notification sub")?;
+
+    tracing::info!("sending test notification to {}", user_id);
+
+    notifications::send_notification(
+        &notification_sub,
+        "Notifications enabled successfully!",
+        "This is a test notification to make sure everything is working",
+    )
+    .await
+    .context("error sending notification")?;
+
+    tracing::info!("sent notification to {}", user_id);
 
     return Ok(StatusCode::CREATED);
 }

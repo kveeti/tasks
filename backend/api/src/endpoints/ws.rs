@@ -5,7 +5,6 @@ use axum::{
     },
     response::IntoResponse,
 };
-use entity::{tags, tasks};
 use futures_util::{SinkExt, StreamExt};
 use std::{net::SocketAddr, vec};
 
@@ -43,10 +42,10 @@ async fn handle_socket(mut socket: WebSocket, who: SocketAddr, ctx: RequestState
     tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             match msg {
-                Message::Ping(d) => {
+                Message::Ping(_d) => {
                     tracing::info!("{}: Ping received", who);
                 }
-                Message::Pong(d) => {
+                Message::Pong(_d) => {
                     tracing::info!("{}: Pong received", who);
                 }
                 _ => {
@@ -57,20 +56,4 @@ async fn handle_socket(mut socket: WebSocket, who: SocketAddr, ctx: RequestState
     });
 
     tracing::info!("{}: destroyed", who);
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct WsMessage {
-    pub t: String,
-    pub d: serde_json::Value,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct TagSyncMessage {
-    pub d: Vec<tags::Model>,
-}
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-pub struct TaskSyncMessage {
-    pub d: Vec<tasks::Model>,
 }

@@ -1,13 +1,7 @@
-install bins:
+install watcher:
 
 ```bash
-cargo install cargo-watch sea-orm-cli
-```
-
-generate db rust entities:
-
-```bash
-sea-orm-cli generate entity -o entity/src --database-url postgres://postgres:postgres@localhost:5432/tasks_notprod_db
+cargo install cargo-watch
 ```
 
 start backend:

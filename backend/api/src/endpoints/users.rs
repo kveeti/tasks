@@ -1,22 +1,18 @@
-use anyhow::Context;
-use axum::{extract::State, response::IntoResponse};
-use entity::users;
-use hyper::{header, HeaderMap, StatusCode};
-use sea_orm::EntityTrait;
-
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, RequestState},
 };
+use anyhow::Context;
+use axum::{extract::State, response::IntoResponse};
+use hyper::{header, HeaderMap, StatusCode};
 
 pub async fn users_me_delete_endpoint(
     UserId(user_id): UserId,
-    State(ctx): RequestState,
+    State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    users::Entity::delete_by_id(user_id)
-        .exec(&ctx.db)
+    db::users::delete(&state.db2, &user_id)
         .await
-        .context("Failed to delete user")?;
+        .context("error deleting user")?;
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,

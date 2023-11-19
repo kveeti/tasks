@@ -2,11 +2,10 @@ use axum::routing::delete;
 use axum::{
     body::Body,
     response::Response,
-    routing::{get, post, put},
+    routing::{get, post},
     Router,
 };
 use config::{Env, CONFIG};
-use data::{create_id, get_db};
 use hyper::http::HeaderValue;
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
@@ -45,9 +44,8 @@ pub async fn start_api() -> () {
         )
         .allow_credentials(true);
 
-    let db = get_db().await;
     let db2 = db::get_db().await;
-    let state = RequestStateStruct::new(db, db2);
+    let state = RequestStateStruct::new(db2);
 
     let mut v1_auth_routes = Router::new()
         .route("/google-init", get(endpoints::auth::auth_init_endpoint))
@@ -66,21 +64,13 @@ pub async fn start_api() -> () {
     let v1_notif_subs_routes =
         Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
 
-    let v1_notifs_routes = Router::new().route(
-        "/",
-        post(endpoints::notifs::add_notif_endpoint)
-            .delete(endpoints::notifs::delete_notif_endpoint),
-    );
-
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
 
     let v1_tags_routes = Router::new()
         .route(
             "/",
-            put(endpoints::tags::put_tags)
-                .get(endpoints::tags::get_tags)
-                .post(endpoints::tags::add_tag),
+            get(endpoints::tags::get_tags).post(endpoints::tags::add_tag),
         )
         .route(
             "/:tag_id",
@@ -90,9 +80,7 @@ pub async fn start_api() -> () {
     let v1_tasks_routes = Router::new()
         .route(
             "/",
-            put(endpoints::tasks::put_tasks)
-                .get(endpoints::tasks::get_tasks)
-                .post(endpoints::tasks::add_manual_task),
+            get(endpoints::tasks::get_tasks).post(endpoints::tasks::add_manual_task),
         )
         .route("/:task_id", delete(endpoints::tasks::delete_task))
         .route(
@@ -106,10 +94,8 @@ pub async fn start_api() -> () {
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
         .nest("/users", v1_users_routes)
-        .nest("/notifs", v1_notifs_routes)
         .nest("/tags", v1_tags_routes)
         .nest("/tasks", v1_tasks_routes)
-        .route("/init", get(endpoints::init::init))
         .route("/ws", get(endpoints::ws::ws_handler));
 
     let api_routes = Router::new().nest("/v1", v1_routes);
@@ -122,7 +108,7 @@ pub async fn start_api() -> () {
                 .make_span_with(|request: &Request<Body>| {
                     info_span!(
                         "request",
-                        id = %create_id(),
+                        id = %db::create_id(),
                         method = %request.method(),
                         uri = %request.uri(),
                     )

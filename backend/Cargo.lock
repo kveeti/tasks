@@ -62,12 +62,11 @@ dependencies = [
  "axum",
  "chrono",
  "config",
- "data",
  "db",
- "entity",
  "futures",
  "futures-util",
  "hyper",
+ "notifications",
  "reqwest",
  "sea-orm",
  "serde",
@@ -1737,6 +1736,7 @@ dependencies = [
  "db",
  "entity",
  "futures",
+ "once_cell",
  "sea-orm",
  "serde",
  "serde_json",
@@ -3815,10 +3815,11 @@ checksum = "0046fef7e28c3804e5e38bfa31ea2a0f73905319b677e57ebe37e49358989b5d"
 
 [[package]]
 name = "web-push"
-version = "0.9.5"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8086b88fc29927a0eec28e7136738bb15a52172111d17414e352df743b8432c4"
+checksum = "30bdf799b4be6f04bfee94807548718de568834c9ea020e73b59af3dac66d72c"
 dependencies = [
+ "async-trait",
  "base64 0.13.1",
  "chrono",
  "ece",

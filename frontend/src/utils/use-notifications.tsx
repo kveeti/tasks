@@ -36,8 +36,6 @@ export function useNotifications() {
 				return;
 			}
 
-			console.debug("useNotifications subscription", subJson);
-
 			apiRequest<void>({
 				method: "POST",
 				path: "/notif-subs",

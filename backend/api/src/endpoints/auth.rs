@@ -13,7 +13,6 @@ use chrono::{Duration, Utc};
 use config::CONFIG;
 use db::create_id;
 use hyper::{header, HeaderMap, StatusCode};
-use serde_json::json;
 use std::collections::HashMap;
 
 pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
@@ -142,14 +141,14 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
         .await
         .context("error getting existing user")?;
 
-    let (user_id, email) = match existing_user {
-        Some(user) => (user.id, user.email),
+    let user_id = match existing_user {
+        Some(user) => user.id,
         None => {
             let user = db::users::create(&state.db2, email)
                 .await
                 .context("error creating user")?;
 
-            (user.id, user.email)
+            user.id
         }
     };
 

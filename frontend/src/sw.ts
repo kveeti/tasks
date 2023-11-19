@@ -6,6 +6,7 @@ import {
 import { NavigationRoute, registerRoute } from "workbox-routing";
 
 declare let self: ServiceWorkerGlobalScope;
+declare let clients: Clients;
 
 self.addEventListener("message", (event) => {
 	if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
@@ -45,7 +46,7 @@ self.addEventListener("notificationclick", (event) => {
 
 	event.notification.close();
 
-	const url = new URL("/", self.location.origin);
+	const url = new URL("/", self.location.origin).toString();
 
 	event.waitUntil(
 		clients

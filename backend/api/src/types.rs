@@ -5,22 +5,19 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use data::types::Db;
 use hyper::StatusCode;
 use serde_json::json;
 use tokio::sync::broadcast;
 
 #[derive(Clone)]
 pub struct RequestStateStruct {
-    pub db: Db,
     pub db2: db::Db,
     pub tx: broadcast::Sender<String>,
 }
 
 impl RequestStateStruct {
-    pub fn new(db: Db, db2: db::Db) -> Self {
+    pub fn new(db2: db::Db) -> Self {
         Self {
-            db,
             db2,
             tx: broadcast::channel(1000).0,
         }
