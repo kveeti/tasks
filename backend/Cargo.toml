@@ -7,10 +7,8 @@ lto = true
 members = [
     "backend",
     "api",
-    "data",
     "config",
     "auth",
-    "entity",
     "notifications",
     "db"
 ]

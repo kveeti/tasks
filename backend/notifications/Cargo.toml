@@ -11,12 +11,9 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
-sea-orm = { workspace = true }
 chrono = { workspace = true }
 once_cell = { workspace = true }
 config = { path = "../config" }
 db = { path = "../db" }
-data = { path = "../data" }
-entity = { path = "../entity" }
 web-push =  { version = "0.10.0" }
 futures = { version = "0.3.28" }
