@@ -2,6 +2,8 @@ use config::CONFIG;
 use sqlx::PgPool;
 use ulid::Ulid;
 
+pub mod notification_subs;
+pub mod notifications;
 pub mod sessions;
 pub mod tags;
 pub mod tasks;

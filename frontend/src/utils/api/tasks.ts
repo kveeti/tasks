@@ -32,7 +32,7 @@ export function useTasks() {
 
 export function useOnGoingTask() {
 	return useQuery({
-		queryKey: ["onGoingTask"],
+		queryKey: ["on-going-task"],
 		queryFn: () =>
 			apiRequest<ApiTaskWithTag>({
 				method: "GET",
@@ -59,14 +59,8 @@ export function useAddManualTask() {
 				path: "/tasks",
 				body: variables,
 			}),
-		onSuccess: async (newTask) => {
-			queryClient.setQueryData<ApiTaskWithTag[] | undefined>(["tasks"], (oldTasks) => {
-				if (oldTasks) {
-					return [newTask, ...oldTasks];
-				}
-			});
-
-			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+		onSuccess: async () => {
+			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
 		},
 	});
 }
@@ -82,16 +76,10 @@ export function useStartTask() {
 				body: variables,
 			}),
 		onSuccess: async (newTask) => {
-			queryClient.setQueryData<ApiTaskWithTag[] | undefined>(["tasks"], (oldTasks) => {
-				if (oldTasks) {
-					return [newTask, ...oldTasks];
-				}
-			});
+			queryClient.setQueryData<ApiTaskWithTag | undefined>(["on-going-task"], () => newTask);
 
-			queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], () => newTask);
-
-			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
-			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
+			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
 		},
 	});
 }
@@ -107,10 +95,10 @@ export function useStopOnGoingTask() {
 				body: variables,
 			}),
 		onSuccess: async () => {
-			queryClient.setQueryData(["onGoingTask"], () => null);
+			queryClient.setQueryData(["on-going-task"], () => null);
 
-			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
-			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
+			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
 		},
 	});
 }
@@ -125,21 +113,15 @@ export function useDeleteTask() {
 				path: `/tasks/${variables.taskId}`,
 			}),
 		onSuccess: async (_, variables) => {
-			queryClient.setQueryData<ApiTaskWithTag[] | undefined>(["tasks"], (oldTasks) => {
-				if (oldTasks) {
-					return oldTasks.filter((task) => task.id !== variables.taskId);
-				}
-			});
-
 			const onGoingTask = queryClient.getQueryData<ApiTaskWithTag | undefined>([
-				"onGoingTask",
+				"on-going-task",
 			]);
 			if (onGoingTask?.id === variables.taskId) {
-				queryClient.setQueryData<ApiTaskWithTag | undefined>(["onGoingTask"], undefined);
+				queryClient.setQueryData<ApiTaskWithTag | undefined>(["on-going-task"], undefined);
 			}
 
-			void queryClient.invalidateQueries({ queryKey: ["onGoingTask"] });
-			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
+			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
 		},
 	});
 }

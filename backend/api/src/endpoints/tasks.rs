@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, ClientTask, RequestState},
 };
 use anyhow::Context;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Json,
 };
@@ -72,8 +74,17 @@ pub async fn put_tasks(
 pub async fn get_tasks(
     UserId(user_id): UserId,
     State(ctx): RequestState,
+    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let tasks = db::tasks::get_tasks(&ctx.db2, &user_id)
+    let last_id = query.get("last_id").map_or(None, |last_id| {
+        if last_id.len() == 0 {
+            None
+        } else {
+            Some(last_id.as_str())
+        }
+    });
+
+    let tasks = db::tasks::get_tasks(&ctx.db2, &user_id, last_id)
         .await
         .context("error fetching tasks")?;
 
@@ -117,21 +128,32 @@ pub async fn start_task(
         .context("error fetching tag")?
         .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
 
-    db::tasks::start_task(&state.db2, &user_id, &body.tag_id, body.expires_at).await?;
+    let task = db::tasks::start_task(&state.db2, &user_id, &body.tag_id, body.expires_at).await?;
 
     let task_with_tag = TaskWithTag {
-        id: "".to_string(),
-        user_id: user_id.to_string(),
-        tag_id: body.tag_id.to_string(),
-        is_manual: false,
-        started_at: Utc::now(),
-        expires_at: body.expires_at,
-        stopped_at: None,
-        created_at: Utc::now(),
+        id: task.id.to_owned(),
+        user_id: task.user_id,
+        tag_id: task.tag_id,
+        is_manual: task.is_manual,
+        started_at: task.started_at,
+        expires_at: task.expires_at,
+        stopped_at: task.stopped_at,
+        created_at: task.created_at,
 
         tag_label: tag.label,
         tag_color: tag.color,
     };
+
+    db::notifications::insert(
+        &state.db2,
+        &user_id,
+        &task.id,
+        "test notif title",
+        "test notif message",
+        &task.expires_at,
+    )
+    .await
+    .context("error inserting notification")?;
 
     return Ok((StatusCode::CREATED, Json(task_with_tag)));
 }

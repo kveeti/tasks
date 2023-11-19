@@ -24,7 +24,7 @@ export function BaseTask({ task }: { task: ApiTaskWithTag }) {
 			<div>
 				<p>{task.tag_label}</p>
 				<p className="text-gray-300 text-sm">
-					{humanDuration} - ({times})
+					{humanDuration} - ({times}) - {format(started_at, "yyyy-MM-dd")}
 				</p>
 			</div>
 		</>

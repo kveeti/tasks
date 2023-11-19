@@ -42,7 +42,7 @@ function TimeControlsInner() {
 	}
 
 	return (
-		<motion.div
+		<motion.fieldset
 			initial={{ opacity: 0, height: 0 }}
 			animate={{ opacity: 1, height: "auto" }}
 			exit={{ opacity: 0, height: 0 }}
@@ -53,21 +53,27 @@ function TimeControlsInner() {
 			}}
 			className="flex w-full items-center justify-center"
 		>
+			<legend className="sr-only">select duration</legend>
+
 			<div className="flex w-full gap-2 pt-8 max-w-[250px]">
 				<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
-					<Button
-						className="w-full p-2 gap-1"
-						variant="secondary"
-						onClick={() => addTime(1800)}
-					>
-						<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 30 min
+					<Button className="w-full " variant="secondary" onClick={() => addTime(1800)}>
+						<span className="flex gap-1 items-center">
+							<Plus
+								aria-label="plus"
+								strokeWidth={1.8}
+								className="h-[16px] w-[16px]"
+							/>{" "}
+							<span>30 min</span>
+						</span>
 					</Button>
 					<Button
 						className="w-full p-2 gap-1"
 						variant="secondary"
 						onClick={() => subtractTime(1800)}
 					>
-						<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 30 min
+						<Minus aria-label="minus" strokeWidth={1.8} className="h-[16px] w-[16px]" />{" "}
+						30 min
 					</Button>
 				</div>
 				<div className="flex w-full flex-col gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-2">
@@ -76,17 +82,19 @@ function TimeControlsInner() {
 						variant="secondary"
 						onClick={() => addTime(300)}
 					>
-						<Plus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5 min
+						<Plus aria-label="plus" strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5
+						min
 					</Button>
 					<Button
 						className="w-full p-2 gap-1"
 						variant="secondary"
 						onClick={() => subtractTime(300)}
 					>
-						<Minus strokeWidth={1.8} className="h-[16px] w-[16px]" /> 5 min
+						<Minus aria-label="minus" strokeWidth={1.8} className="h-[16px] w-[16px]" />{" "}
+						5 min
 					</Button>
 				</div>
 			</div>
-		</motion.div>
+		</motion.fieldset>
 	);
 }

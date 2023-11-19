@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useOnGoingTask } from "@/utils/api/tasks";
-import { useNotifications } from "@/utils/useNotifications";
+import { useNotifications } from "@/utils/use-notifications";
 
 import { AppIndexPage } from "./App/AppIndexPage/app-index-page";
 import { AppLayout } from "./App/AppLayout/AppLayout";

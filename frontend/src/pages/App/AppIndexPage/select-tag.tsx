@@ -1,3 +1,4 @@
+import { Label } from "@radix-ui/react-label";
 import { SelectValue } from "@radix-ui/react-select";
 
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
@@ -21,25 +22,31 @@ export function SelectTag() {
 			/>
 		</div>
 	) : (
-		<Select
-			onValueChange={(value) => {
-				form.setValue("tagId", value);
-			}}
-			defaultValue={form.getValues("tagId") ?? undefined}
-		>
-			<SelectTrigger className="mt-8 w-max">
-				<SelectValue placeholder="select a tag" />
-			</SelectTrigger>
+		<>
+			<Label htmlFor="tag-select" className="sr-only">
+				tag
+			</Label>
 
-			<SelectContent>
-				{tags.data?.map((tag) => (
-					<SelectItem key={tag.id} value={tag.id}>
-						<div className="space-x-2 flex items-center">
-							<BaseTag tag={tag} />
-						</div>
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+			<Select
+				onValueChange={(value) => {
+					form.setValue("tagId", value);
+				}}
+				defaultValue={form.getValues("tagId") ?? undefined}
+			>
+				<SelectTrigger id="tag-select" className="mt-8 w-max">
+					<SelectValue placeholder="select a tag" />
+				</SelectTrigger>
+
+				<SelectContent>
+					{tags.data?.map((tag) => (
+						<SelectItem key={tag.id} value={tag.id}>
+							<div className="space-x-2 flex items-center">
+								<BaseTag tag={tag} />
+							</div>
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		</>
 	);
 }

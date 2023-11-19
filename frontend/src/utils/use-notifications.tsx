@@ -7,6 +7,8 @@ export function useNotifications() {
 	useEffect(() => {
 		(async () => {
 			if (Notification.permission !== "granted") {
+				console.debug("useNotifications no permission");
+
 				return;
 			}
 
@@ -21,9 +23,11 @@ export function useNotifications() {
 				return;
 			}
 
+			console.log(import.meta.env.VITE_APP_VAPID_PUB_KEY);
+
 			const subscription = await reg.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUB_KEY),
+				applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_APP_VAPID_PUB_KEY),
 			});
 
 			const subJson = subscription.toJSON();
@@ -31,6 +35,8 @@ export function useNotifications() {
 			if (!subJson.keys?.auth || !subJson.keys?.p256dh || !subJson.endpoint) {
 				return;
 			}
+
+			console.debug("useNotifications subscription", subJson);
 
 			apiRequest<void>({
 				method: "POST",

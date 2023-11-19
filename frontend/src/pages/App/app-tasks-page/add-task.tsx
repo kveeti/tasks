@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { type Output, date, number, object, string, ulid } from "valibot";
 
+import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -224,9 +225,13 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 					<DialogClose asChild>
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
-					<Button type="submit" disabled={!tags.data?.length || mutation.isLoading}>
+					<SpinnerButton
+						type="submit"
+						spin={!tags.data?.length || mutation.isPending}
+						disabled={!tags.data?.length || mutation.isPending}
+					>
 						add
-					</Button>
+					</SpinnerButton>
 				</div>
 			</form>
 		</Form>

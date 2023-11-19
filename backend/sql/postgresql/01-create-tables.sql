@@ -31,7 +31,7 @@ CREATE TABLE "tasks" (
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
-CREATE TABLE "notif_subs" (
+CREATE TABLE "notification_subs" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "endpoint" VARCHAR(255) NOT NULL UNIQUE,
@@ -40,7 +40,7 @@ CREATE TABLE "notif_subs" (
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
-CREATE TABLE "notifs" (
+CREATE TABLE "notifications" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "task_id" VARCHAR(26) NOT NULL REFERENCES "tasks"("id") ON DELETE CASCADE,

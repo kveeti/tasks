@@ -1,52 +1,54 @@
+use std::{collections::HashMap, time::Duration};
+
+use anyhow::Context;
 use config::CONFIG;
-use data::get_db;
-use entity::{notif_subs, notifs};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde_json::json;
 use web_push::{
     SubscriptionInfo, VapidSignatureBuilder, WebPushClient, WebPushMessageBuilder, URL_SAFE_NO_PAD,
 };
 
 pub async fn start_notification_service() {
-    tracing::info!("Starting notification service");
+    tracing::info!("starting notification service");
 
-    let db = get_db().await;
+    let db2 = db::get_db().await;
     let client = WebPushClient::new().unwrap();
     let signature_builder =
         VapidSignatureBuilder::from_base64_no_sub(&CONFIG.vapid_private_key, URL_SAFE_NO_PAD)
             .unwrap();
 
-    tracing::info!("Notification service started");
+    tracing::info!("notification service started");
 
     loop {
-        let notifs = notifs::Entity::find()
-            .filter(notifs::Column::SendAt.lt(chrono::Utc::now()))
-            .all(&db)
-            .await;
+        let notifs = db::notifications::get_to_send(&db2)
+            .await
+            .context("error getting notifications");
 
         if let Err(e) = notifs {
-            tracing::error!("Failed to get notifications: {}", e);
+            tracing::error!("failed to get notifications: {}", e);
         } else if let Ok(notifs) = notifs {
-            if notifs.len() <= 0 {
-                continue;
-            } else {
-                let user_ids = notifs.iter().map(|n| n.user_id.to_owned());
+            if notifs.len() > 0 {
+                let user_ids = notifs
+                    .iter()
+                    .map(|n| n.user_id.to_owned())
+                    .collect::<Vec<String>>();
 
-                let subs = notif_subs::Entity::find()
-                    .filter(notif_subs::Column::UserId.is_in(user_ids))
-                    .all(&db)
-                    .await;
+                let subs = db::notification_subs::get_by_user_ids(&db2, &user_ids).await;
 
-                if let Err(e) = subs {
-                    tracing::error!("Failed to get notification subscriptions: {}", e);
+                let notif_ids = notifs
+                    .iter()
+                    .map(|n| n.id.to_owned())
+                    .collect::<Vec<String>>();
+
+                if let Err(_) = subs {
+                    tracing::error!("error getting notification subs");
                 } else if let Ok(subs) = subs {
                     tracing::debug!(
-                        "Found {} notifications for {} subs",
+                        "found {} notifications for {} subs",
                         notifs.len(),
                         subs.len()
                     );
 
-                    let mut subs_by_user_id = std::collections::HashMap::new();
+                    let mut subs_by_user_id = HashMap::new();
 
                     for sub in subs {
                         let user_id = sub.user_id.to_owned();
@@ -54,7 +56,7 @@ pub async fn start_notification_service() {
                         subs.push(sub);
                     }
 
-                    for notif in notifs.clone() {
+                    for notif in notifs {
                         let user_id = notif.user_id.to_owned();
                         let subs = subs_by_user_id.get_mut(&user_id);
 
@@ -96,6 +98,14 @@ pub async fn start_notification_service() {
 
                                 let message = message_builder.build().unwrap();
 
+                                tracing::info!(
+                                    "Sending notification to {} {} {} {}",
+                                    sub.user_id,
+                                    sub.endpoint,
+                                    sub.p256dh,
+                                    sub.auth
+                                );
+
                                 async move {
                                     let response = client.send(message).await;
 
@@ -112,16 +122,10 @@ pub async fn start_notification_service() {
                     }
                 }
 
-                let notif_ids = notifs.iter().map(|n| n.id.to_owned());
-
-                notifs::Entity::delete_many()
-                    .filter(notifs::Column::Id.is_in(notif_ids))
-                    .exec(&db)
-                    .await
-                    .unwrap();
+                let _ = db::notifications::delete_by_ids(&db2, &notif_ids).await;
             }
         }
 
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        tokio::time::sleep(Duration::from_secs(10)).await;
     }
 }

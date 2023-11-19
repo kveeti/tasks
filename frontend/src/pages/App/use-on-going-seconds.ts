@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { differenceInSeconds } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -7,20 +8,25 @@ import { useSetInterval } from "@/utils/useSetInterval";
 export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTag }) {
 	const [onGoingSeconds, setOnGoingSeconds] = useState(0);
 
-	useEffect(() => {
+	const queryClient = useQueryClient();
+
+	function updateSeconds() {
 		if (!onGoingTask) return;
 
-		setOnGoingSeconds(differenceInSeconds(new Date(onGoingTask.expires_at), new Date()));
-	}, [onGoingTask]);
+		const diff = differenceInSeconds(new Date(onGoingTask.expires_at), new Date());
 
-	useSetInterval(
-		() => {
-			if (!onGoingTask) return;
+		setOnGoingSeconds(diff);
 
-			setOnGoingSeconds(differenceInSeconds(new Date(onGoingTask.expires_at), new Date()));
-		},
-		onGoingTask ? 1000 : null
-	);
+		if (diff === 0) {
+			queryClient.setQueryData(["on-going-task"], () => null);
+			queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
+			queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+		}
+	}
+
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	useEffect(() => updateSeconds(), [onGoingTask, queryClient]);
+	useSetInterval(() => updateSeconds(), onGoingTask ? 1000 : null);
 
 	return onGoingTask ? onGoingSeconds : null;
 }

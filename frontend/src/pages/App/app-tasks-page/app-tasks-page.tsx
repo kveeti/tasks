@@ -1,6 +1,9 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { Button } from "@/components/ui/button";
 import { WithEnterExitAnimation } from "@/components/with-initial-animation";
+import { apiRequest } from "@/utils/api/apiRequest";
 import { type ApiTaskWithTag, useTasks } from "@/utils/api/tasks";
 
 import { WithAnimation } from "../../../components/with-animation";
@@ -10,6 +13,20 @@ import { TaskMenu } from "./task-menu";
 
 export function AppTasksPage() {
 	const tasks = useTasks();
+
+	const tasks2 = useInfiniteQuery({
+		queryKey: ["infinite-tasks"],
+		queryFn: async ({ pageParam = "", signal }) =>
+			apiRequest<ApiTaskWithTag[]>({
+				method: "GET",
+				path: "/tasks",
+				query: new URLSearchParams({ last_id: pageParam }),
+				signal,
+			}),
+		initialPageParam: "",
+		getNextPageParam: (lastPage) => lastPage.at(-1)?.id ?? null,
+		getPreviousPageParam: (firstPage) => firstPage.at(0)?.id ?? null,
+	});
 
 	return (
 		<WithAnimation>
@@ -27,15 +44,23 @@ export function AppTasksPage() {
 						<AnimatePresence initial={false} mode="popLayout">
 							<ul key="tasks" className="border-b divide-y">
 								<AnimatePresence initial={false}>
-									{tasks.data?.map((task) => (
-										<li key={task.id}>
-											<WithEnterExitAnimation>
-												<Task task={task} />
-											</WithEnterExitAnimation>
-										</li>
-									))}
+									{tasks2.data?.pages.map((page) =>
+										page.map((task) => (
+											<li key={task.id}>
+												<WithEnterExitAnimation>
+													<Task task={task} />
+												</WithEnterExitAnimation>
+											</li>
+										))
+									)}
 								</AnimatePresence>
 							</ul>
+
+							{tasks2.hasNextPage && (
+								<Button className="m-4" onClick={() => tasks2.fetchNextPage()}>
+									load more
+								</Button>
+							)}
 
 							{!tasks.data?.length && (
 								<motion.p

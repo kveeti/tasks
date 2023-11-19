@@ -1734,6 +1734,7 @@ dependencies = [
  "chrono",
  "config",
  "data",
+ "db",
  "entity",
  "futures",
  "sea-orm",

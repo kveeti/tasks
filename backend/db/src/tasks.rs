@@ -50,21 +50,49 @@ pub async fn owns_task(db: &Db, user_id: &str, task_id: &str) -> Result<bool, an
     return Ok(owns_task);
 }
 
-pub async fn get_tasks(db: &Db, user_id: &str) -> Result<Vec<TaskWithTag>, anyhow::Error> {
-    let tasks_with_tags = sqlx::query_as!(
-        TaskWithTag,
-        r#"
-            SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color
-            FROM tasks
-            INNER JOIN tags ON tasks.tag_id = tags.id
-            WHERE tasks.user_id = $1
-            ORDER BY tasks.created_at DESC;
-        "#,
-        user_id,
-    )
-    .fetch_all(db)
-    .await
-    .context("error fetching tasks")?;
+const TASKS_PER_PAGE: i64 = 30;
+
+pub async fn get_tasks(
+    db: &Db,
+    user_id: &str,
+    last_id: Option<&str>,
+) -> Result<Vec<TaskWithTag>, anyhow::Error> {
+    let tasks_with_tags = if let Some(last_id) = last_id {
+        sqlx::query_as!(
+            TaskWithTag,
+            r#"
+                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color
+                FROM tasks
+                INNER JOIN tags ON tasks.tag_id = tags.id
+                WHERE tasks.user_id = $1
+                AND tasks.id < $2
+                ORDER BY tasks.id DESC
+                LIMIT 30;
+            "#,
+            user_id,
+            last_id,
+        )
+        .fetch_all(db)
+        .await
+        .context("error fetching tasks")?
+    } else {
+        sqlx::query_as!(
+            TaskWithTag,
+            r#"
+                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color
+                FROM tasks
+                INNER JOIN tags ON tasks.tag_id = tags.id
+                WHERE tasks.user_id = $1
+                ORDER BY tasks.id DESC
+                LIMIT $2;
+            "#,
+            user_id,
+            TASKS_PER_PAGE,
+        )
+        .fetch_all(db)
+        .await
+        .context("error fetching tasks")?
+    };
 
     return Ok(tasks_with_tags);
 }
@@ -80,11 +108,13 @@ pub async fn get_ongoing_task(
             FROM tasks
             INNER JOIN tags ON tasks.tag_id = tags.id
             WHERE tasks.user_id = $1
-            AND tasks.created_at <= NOW()
-            AND tasks.expires_at >= NOW()
+            AND tasks.started_at <= $2
+            AND tasks.expires_at >= $3
             AND tasks.stopped_at IS NULL
         "#,
-        user_id
+        user_id,
+        Utc::now(),
+        Utc::now(),
     )
     .fetch_optional(db)
     .await
@@ -102,8 +132,8 @@ pub async fn add_manual_task(
 ) -> Result<Task, anyhow::Error> {
     let task = Task {
         id: create_id(),
-        user_id: user_id.to_string(),
-        tag_id: tag_id.to_string(),
+        user_id: user_id.to_owned(),
+        tag_id: tag_id.to_owned(),
         is_manual: true,
         started_at: started_at.clone(),
         expires_at: expires_at.clone(),
@@ -136,34 +166,49 @@ pub async fn start_task(
     user_id: &str,
     tag_id: &str,
     expires_at: DateTime<Utc>,
-) -> Result<(), anyhow::Error> {
+) -> Result<Task, anyhow::Error> {
+    let task = Task {
+        id: create_id(),
+        user_id: user_id.to_owned(),
+        tag_id: tag_id.to_owned(),
+        is_manual: false,
+        started_at: Utc::now(),
+        expires_at,
+        stopped_at: None,
+        created_at: Utc::now(),
+    };
+
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, expires_at, is_manual, created_at, started_at)
-            VALUES ($1, $2, $3, $4, FALSE, NOW(), NOW())
+            INSERT INTO tasks (id, user_id, tag_id, is_manual, started_at, expires_at, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
         "#,
-        create_id(),
-        user_id,
-        tag_id,
-        expires_at,
+        task.id,
+        task.user_id,
+        task.tag_id,
+        task.is_manual,
+        task.started_at,
+        task.expires_at,
+        task.created_at,
     )
     .execute(db)
     .await
     .context("error inserting task")?;
 
-    return Ok(());
+    return Ok(task);
 }
 
 pub async fn stop_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             UPDATE tasks
-            SET stopped_at = NOW()
+            SET stopped_at = $3
             WHERE id = $1
             AND user_id = $2
         "#,
         task_id,
-        user_id
+        user_id,
+        Utc::now(),
     )
     .execute(db)
     .await
