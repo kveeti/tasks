@@ -28,7 +28,7 @@ export function AppTagsPage() {
 							<ul
 								key="tags"
 								className="border-b divide-y"
-								aria-hidden={!tags.data.length}
+								aria-hidden={!tags.data?.length}
 							>
 								<AnimatePresence initial={false}>
 									{tags.data?.map((tag) => (

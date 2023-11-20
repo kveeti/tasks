@@ -1,6 +1,7 @@
 CREATE TABLE "users" (
     "id" VARCHAR(26) PRIMARY KEY,
     "email" VARCHAR(255) UNIQUE NOT NULL,
+    "preferences" BIGINT NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 

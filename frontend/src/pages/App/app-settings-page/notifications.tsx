@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/Ui/NewButton";
+import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { urlBase64ToUint8Array } from "@/utils/urlBase64ToUint8Array";
 
@@ -10,9 +10,8 @@ export function EnableNotifications() {
 
 	return (
 		<Button
-			className="p-3"
-			isDisabled={enabled}
-			onPress={async () =>
+			disabled={enabled}
+			onClick={async () =>
 				toast.promise(enableNotifications, {
 					error: (err) => {
 						console.error("error enabling notifications:", err);

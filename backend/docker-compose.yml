@@ -1,34 +1,19 @@
 services:
-    db:
-        container_name: tasks_notprod_db
-        image: postgres:15.3
-        restart: always
-        environment:
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_USER: postgres
-            POSTGRES_DB: tasks_notprod_db
-        ports:
-            - 5432:5432
-        volumes:
-            - tasks_notprod_db_data:/var/lib/postgresql/data
-            - ./sql/postgresql/01-create-tables.sql:/docker-entrypoint-initdb.d/01-create-tables.sql
+  db:
+    image: postgres:15.5
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: db
+    ports:
+      - 5432:5432
 
-    pgadmin:
-        image: dpage/pgadmin4
-        restart: always
-        environment:
-            PGADMIN_DEFAULT_EMAIL: admin@admin.com
-            PGADMIN_DEFAULT_PASSWORD: admin
-        ports:
-            - "5050:80"
-
-    # backend:
-    #     build: .
-    #     restart: always
-    #     ports:
-    #         - 8000:8000
-    #     env_file:
-    #         - .env
-
-volumes:
-    tasks_notprod_db_data:
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"

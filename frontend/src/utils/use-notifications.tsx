@@ -23,8 +23,6 @@ export function useNotifications() {
 				return;
 			}
 
-			console.log(import.meta.env.VITE_APP_VAPID_PUB_KEY);
-
 			const subscription = await reg.pushManager.subscribe({
 				userVisibleOnly: true,
 				applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_APP_VAPID_PUB_KEY),

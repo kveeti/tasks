@@ -19,16 +19,7 @@ pub async fn add_notif_sub_endpoint(
     State(state): RequestState,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    db::notification_subs::get_by_endpoint(&state.db2, &body.endpoint)
-        .await
-        .context("error getting existing notification sub")?
-        .map_or(Ok(()), |_| {
-            Err(ApiError::BadRequest(
-                "notification sub already exists".to_owned(),
-            ))
-        })?;
-
-    let notification_sub = db::notification_subs::insert(
+    let notification_sub = db::notification_subs::upsert(
         &state.db2,
         &user_id,
         &body.endpoint,

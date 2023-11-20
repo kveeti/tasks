@@ -125,7 +125,7 @@ pub async fn start_api() -> () {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], CONFIG.port));
 
-    tracing::info!("App started in {}, listening at {}", CONFIG.env, addr);
+    tracing::info!("app started in {}, listening at {}", CONFIG.env, addr);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())

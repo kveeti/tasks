@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 pub struct User {
     pub id: String,
     pub email: String,
+    pub preferences: i64,
     pub created_at: DateTime<Utc>,
 }
 
@@ -44,6 +45,7 @@ pub async fn get_by_id(db: &Db, user_id: &str) -> Result<Option<User>, anyhow::E
 pub async fn create(db: &Db, email: &str) -> Result<User, anyhow::Error> {
     let user = User {
         id: create_id(),
+        preferences: 0,
         email: email.to_string(),
         created_at: Utc::now(),
     };

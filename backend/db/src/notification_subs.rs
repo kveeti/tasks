@@ -12,7 +12,7 @@ pub struct NotificationSub {
     pub created_at: DateTime<Utc>,
 }
 
-pub async fn insert(
+pub async fn upsert(
     db: &Db,
     user_id: &str,
     endpoint: &str,
@@ -34,6 +34,11 @@ pub async fn insert(
         r#"
             INSERT INTO notification_subs (id, user_id, endpoint, p256dh, auth, created_at)
             VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (endpoint) DO UPDATE SET
+                user_id = $2,
+                p256dh = $4,
+                auth = $5,
+                created_at = $6
         "#,
         notification_sub.id,
         notification_sub.user_id,

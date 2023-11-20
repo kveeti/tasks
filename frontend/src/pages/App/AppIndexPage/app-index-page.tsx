@@ -1,7 +1,6 @@
 import { Counter } from "@/Ui/Counter";
 
 import { WithAnimation } from "../../../components/with-animation";
-import { EnableNotifications } from "../AppSettings/Notifications";
 import { useTimerContext } from "../timer-context";
 import { SelectTag } from "./select-tag";
 import { TaskControls } from "./task-controls";
@@ -22,7 +21,6 @@ export function AppIndexPage() {
 				<SelectTag />
 
 				<TaskControls />
-				<EnableNotifications />
 			</div>
 		</WithAnimation>
 	);
