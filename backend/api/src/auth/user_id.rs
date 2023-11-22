@@ -44,7 +44,7 @@ where
 
             let token_string = from_cookie
                 .or(from_bearer)
-                .ok_or_else(|| ApiError::Unauthorized("no auth".to_string()))?;
+                .ok_or(ApiError::Unauthorized("no auth".to_string()))?;
 
             (
                 verify_token(&token_string).context("error verifying token")?,
@@ -60,9 +60,15 @@ where
         let session_id = &token.session_id;
         let user_id = &token.user_id;
         let new_expiry = Utc::now() + Duration::days(30);
-        db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
+        let ok = db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
             .await
             .context("error updating session")?;
+
+        if !ok {
+            return Err(ApiError::Unauthorized(
+                "session and/ user not found".to_string(),
+            ));
+        }
 
         if from_cookie {
             parts.headers.insert(

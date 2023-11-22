@@ -10,7 +10,6 @@ pub struct Notification {
     pub title: String,
     pub message: String,
     pub send_at: DateTime<Utc>,
-    pub created_at: DateTime<Utc>,
 }
 
 pub async fn insert(
@@ -30,13 +29,12 @@ pub async fn insert(
         title: title.to_owned(),
         message: message.to_owned(),
         send_at: send_at.to_owned(),
-        created_at: Utc::now(),
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO notifications (id, user_id, task_id, title, message, send_at, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO notifications (id, user_id, task_id, title, message, send_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
         "#,
         notification.id,
         notification.user_id,
@@ -44,7 +42,6 @@ pub async fn insert(
         notification.title,
         notification.message,
         notification.send_at,
-        notification.created_at,
     )
     .execute(db)
     .await

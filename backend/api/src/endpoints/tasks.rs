@@ -8,7 +8,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use db::tasks::TaskWithTag;
 use hyper::StatusCode;
 use serde_json::json;
@@ -49,7 +49,7 @@ pub async fn get_ongoing_task(
 #[derive(serde::Deserialize)]
 pub struct StartTaskRequestBody {
     pub tag_id: String,
-    pub expires_at: DateTime<Utc>,
+    pub seconds: i32,
 }
 
 pub async fn start_task(
@@ -71,17 +71,18 @@ pub async fn start_task(
         .context("error fetching tag")?
         .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
 
-    let task = db::tasks::start_task(&state.db2, &user_id, &body.tag_id, body.expires_at).await?;
+    let end_at = Utc::now() + Duration::seconds(body.seconds.into());
+
+    let task = db::tasks::start_task(&state.db2, &user_id, &body.tag_id, &end_at).await?;
 
     let task_with_tag = TaskWithTag {
         id: task.id.to_owned(),
         user_id: task.user_id,
         tag_id: task.tag_id,
         is_manual: task.is_manual,
-        started_at: task.started_at,
-        expires_at: task.expires_at,
-        stopped_at: task.stopped_at,
-        created_at: task.created_at,
+        seconds: task.seconds,
+        end_at: task.end_at,
+        start_at: task.start_at,
 
         tag_label: tag.label,
         tag_color: tag.color,
@@ -93,7 +94,7 @@ pub async fn start_task(
         &task.id,
         "test notif title",
         "test notif message",
-        &task.expires_at,
+        &task.end_at,
     )
     .await
     .context("error inserting notification")?;
@@ -163,10 +164,9 @@ pub async fn add_manual_task(
         user_id: task.user_id,
         tag_id: task.tag_id,
         is_manual: task.is_manual,
-        started_at: task.started_at,
-        expires_at: task.expires_at,
-        stopped_at: task.stopped_at,
-        created_at: task.created_at,
+        seconds: task.seconds,
+        end_at: task.end_at,
+        start_at: task.start_at,
 
         tag_label: tag.label,
         tag_color: tag.color,

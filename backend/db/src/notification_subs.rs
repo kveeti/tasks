@@ -1,7 +1,5 @@
-use anyhow::Context;
-use chrono::{DateTime, Utc};
-
 use crate::{create_id, Db};
+use anyhow::Context;
 
 pub struct NotificationSub {
     pub id: String,
@@ -9,7 +7,6 @@ pub struct NotificationSub {
     pub endpoint: String,
     pub p256dh: String,
     pub auth: String,
-    pub created_at: DateTime<Utc>,
 }
 
 pub async fn upsert(
@@ -27,25 +24,20 @@ pub async fn upsert(
         endpoint: endpoint.to_owned(),
         p256dh: p256dh.to_owned(),
         auth: auth.to_owned(),
-        created_at: Utc::now(),
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO notification_subs (id, user_id, endpoint, p256dh, auth, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (endpoint) DO UPDATE SET
-                user_id = $2,
-                p256dh = $4,
-                auth = $5,
-                created_at = $6
+            INSERT INTO notification_subs (id, user_id, endpoint, p256dh, auth)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (user_id, endpoint) DO UPDATE
+            SET p256dh = $4, auth = $5
         "#,
         notification_sub.id,
         notification_sub.user_id,
         notification_sub.endpoint,
         notification_sub.p256dh,
         notification_sub.auth,
-        notification_sub.created_at,
     )
     .execute(db)
     .await

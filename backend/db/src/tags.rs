@@ -9,7 +9,6 @@ pub struct Tag {
     pub user_id: String,
     pub label: String,
     pub color: String,
-    pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -39,7 +38,7 @@ pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> 
             SELECT * FROM tags
             WHERE user_id = $1
             AND deleted_at IS NULL
-            ORDER BY created_at DESC
+            ORDER BY id DESC
         "#,
         user_id
     )
@@ -61,20 +60,18 @@ pub async fn insert(
         user_id: user_id.to_owned(),
         label: label.to_owned(),
         color: color.to_owned(),
-        created_at: chrono::Utc::now(),
         deleted_at: None,
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO tags (id, user_id, label, color, created_at)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO tags (id, user_id, label, color)
+            VALUES ($1, $2, $3, $4)
         "#,
         tag.id,
         tag.user_id,
         tag.label,
         tag.color,
-        tag.created_at,
     )
     .execute(db)
     .await

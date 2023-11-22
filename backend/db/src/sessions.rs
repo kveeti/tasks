@@ -6,7 +6,6 @@ use chrono::{DateTime, Utc};
 pub struct Session {
     pub id: String,
     pub user_id: String,
-    pub created_at: DateTime<Utc>,
     pub expires_at: DateTime<Utc>,
 }
 
@@ -40,8 +39,8 @@ pub async fn create(
 
     sqlx::query!(
         r#"
-            INSERT INTO sessions (id, user_id, expires_at, created_at)
-            VALUES ($1, $2, $3, NOW())
+            INSERT INTO sessions (id, user_id, expires_at)
+            VALUES ($1, $2, $3)
         "#,
         session_id,
         user_id,
@@ -59,8 +58,8 @@ pub async fn update_expires_at(
     session_id: &str,
     user_id: &str,
     expires_at: &DateTime<Utc>,
-) -> Result<(), anyhow::Error> {
-    sqlx::query!(
+) -> Result<bool, anyhow::Error> {
+    let res = sqlx::query!(
         r#"
             UPDATE sessions
             SET expires_at = $1
@@ -74,7 +73,7 @@ pub async fn update_expires_at(
     .await
     .context("error updating session")?;
 
-    return Ok(());
+    return Ok(res.rows_affected() == 1);
 }
 
 pub async fn delete(db: &Db, session_id: &str, user_id: &str) -> Result<(), anyhow::Error> {

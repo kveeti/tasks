@@ -8,10 +8,9 @@ pub struct Task {
     pub user_id: String,
     pub tag_id: String,
     pub is_manual: bool,
-    pub started_at: DateTime<Utc>,
-    pub expires_at: DateTime<Utc>,
-    pub stopped_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
+    pub seconds: Option<i32>,
+    pub start_at: DateTime<Utc>,
+    pub end_at: DateTime<Utc>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, sqlx::FromRow)]
@@ -20,10 +19,9 @@ pub struct TaskWithTag {
     pub user_id: String,
     pub tag_id: String,
     pub is_manual: bool,
-    pub started_at: DateTime<Utc>,
-    pub expires_at: DateTime<Utc>,
-    pub stopped_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
+    pub seconds: Option<i32>,
+    pub start_at: DateTime<Utc>,
+    pub end_at: DateTime<Utc>,
 
     pub tag_label: String,
     pub tag_color: String,
@@ -108,9 +106,9 @@ pub async fn get_ongoing_task(
             FROM tasks
             INNER JOIN tags ON tasks.tag_id = tags.id
             WHERE tasks.user_id = $1
-            AND tasks.started_at <= $2
-            AND tasks.expires_at >= $3
-            AND tasks.stopped_at IS NULL
+            AND tasks.seconds IS NULL
+            AND tasks.start_at < $2
+            AND tasks.end_at > $3
         "#,
         user_id,
         Utc::now(),
@@ -127,32 +125,30 @@ pub async fn add_manual_task(
     db: &Db,
     user_id: &str,
     tag_id: &str,
-    started_at: &DateTime<Utc>,
-    expires_at: &DateTime<Utc>,
+    start_at: &DateTime<Utc>,
+    end_at: &DateTime<Utc>,
 ) -> Result<Task, anyhow::Error> {
     let task = Task {
         id: create_id(),
         user_id: user_id.to_owned(),
         tag_id: tag_id.to_owned(),
         is_manual: true,
-        started_at: started_at.clone(),
-        expires_at: expires_at.clone(),
-        stopped_at: None,
-        created_at: Utc::now(),
+        seconds: None,
+        start_at: start_at.to_owned(),
+        end_at: end_at.to_owned(),
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, is_manual, started_at, expires_at, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
         "#,
         task.id,
         task.user_id,
         task.tag_id,
         task.is_manual,
-        task.started_at,
-        task.expires_at,
-        task.created_at,
+        task.start_at,
+        task.end_at,
     )
     .execute(db)
     .await
@@ -165,31 +161,29 @@ pub async fn start_task(
     db: &Db,
     user_id: &str,
     tag_id: &str,
-    expires_at: DateTime<Utc>,
+    end_at: &DateTime<Utc>,
 ) -> Result<Task, anyhow::Error> {
     let task = Task {
         id: create_id(),
         user_id: user_id.to_owned(),
         tag_id: tag_id.to_owned(),
         is_manual: false,
-        started_at: Utc::now(),
-        expires_at,
-        stopped_at: None,
-        created_at: Utc::now(),
+        seconds: None,
+        start_at: Utc::now(),
+        end_at: end_at.to_owned(),
     };
 
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, is_manual, started_at, expires_at, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
         "#,
         task.id,
         task.user_id,
         task.tag_id,
         task.is_manual,
-        task.started_at,
-        task.expires_at,
-        task.created_at,
+        task.start_at,
+        task.end_at,
     )
     .execute(db)
     .await
@@ -202,13 +196,12 @@ pub async fn stop_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyh
     sqlx::query!(
         r#"
             UPDATE tasks
-            SET stopped_at = $3
+            SET end_at = NOW(), seconds = EXTRACT(EPOCH FROM NOW() - start_at)
             WHERE id = $1
             AND user_id = $2
         "#,
         task_id,
         user_id,
-        Utc::now(),
     )
     .execute(db)
     .await
@@ -232,4 +225,30 @@ pub async fn delete_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), an
     .context("error deleting task")?;
 
     return Ok(());
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct SecondsByDay {
+    pub day: Option<DateTime<Utc>>,
+    pub seconds: Option<i64>,
+}
+
+pub async fn get_seconds_by_day(
+    db: &Db,
+    user_id: &str,
+) -> Result<Vec<SecondsByDay>, anyhow::Error> {
+    return Ok(sqlx::query_as!(
+        SecondsByDay,
+        r#"
+            SELECT DATE_TRUNC('day', start_at) AS day, SUM(seconds) AS seconds
+            FROM tasks
+            WHERE user_id = $1
+            GROUP BY day
+            ORDER BY day DESC
+        "#,
+        user_id,
+    )
+    .fetch_all(db)
+    .await
+    .context("error fetching tasks")?);
 }

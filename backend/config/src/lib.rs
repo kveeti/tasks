@@ -20,9 +20,6 @@ impl std::fmt::Display for Env {
 pub struct Config {
     pub env: Env,
     pub database_url: String,
-    pub jwt_secret: String,
-    pub jwt_aud: String,
-    pub jwt_iss: String,
     pub secret: String,
     pub google_client_id: String,
     pub google_client_secret: String,

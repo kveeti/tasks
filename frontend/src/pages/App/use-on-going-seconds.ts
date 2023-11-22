@@ -13,7 +13,7 @@ export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTa
 	function updateSeconds() {
 		if (!onGoingTask) return;
 
-		const diff = differenceInSeconds(new Date(onGoingTask.expires_at), new Date());
+		const diff = differenceInSeconds(new Date(onGoingTask.end_at), new Date());
 
 		setOnGoingSeconds(diff);
 

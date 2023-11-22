@@ -1,4 +1,3 @@
-import { addSeconds } from "date-fns";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -29,7 +28,7 @@ export function StartTask() {
 		mutation
 			.mutateAsync({
 				tag_id: tagId,
-				expires_at: addSeconds(new Date(), seconds),
+				seconds,
 			})
 			.then(() => form.reset())
 			.catch(errorToast("error starting task"));

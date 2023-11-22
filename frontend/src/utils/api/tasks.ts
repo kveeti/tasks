@@ -7,10 +7,9 @@ export type ApiTask = {
 	user_id: string;
 	tag_id: string;
 	is_manual: boolean;
-	started_at: string;
-	expires_at: string;
-	stopped_at?: string;
-	created_at: string;
+	seconds: number | null;
+	start_at: string;
+	end_at: string;
 };
 
 export type ApiTaskWithTag = ApiTask & {
@@ -68,7 +67,7 @@ export function useAddManualTask() {
 export function useStartTask() {
 	const queryClient = useQueryClient();
 
-	return useMutation<ApiTaskWithTag, unknown, { tag_id: string; expires_at: Date }>({
+	return useMutation<ApiTaskWithTag, unknown, { tag_id: string; seconds: number }>({
 		mutationFn: (variables) =>
 			apiRequest({
 				method: "POST",

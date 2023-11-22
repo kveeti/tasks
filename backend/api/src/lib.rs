@@ -90,12 +90,15 @@ pub async fn start_api() -> () {
                 .post(endpoints::tasks::start_task),
         );
 
+    let v1_stats_routes = Router::new().route("/", get(endpoints::stats::get_stats_endpoint));
+
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
         .nest("/users", v1_users_routes)
         .nest("/tags", v1_tags_routes)
         .nest("/tasks", v1_tasks_routes)
+        .nest("/stats", v1_stats_routes)
         .route("/ws", get(endpoints::ws::ws_handler));
 
     let api_routes = Router::new().nest("/v1", v1_routes);
