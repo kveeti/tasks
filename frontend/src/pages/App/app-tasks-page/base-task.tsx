@@ -4,14 +4,14 @@ import type { ApiTaskWithTag } from "@/utils/api/tasks";
 import { humanizer } from "@/utils/humanizer";
 
 export function BaseTask({ task }: { task: ApiTaskWithTag }) {
-	const started_at = new Date(task.started_at);
-	const expires_at = new Date(task.stopped_at ?? task.expires_at);
+	const start = new Date(task.start_at);
+	const end = new Date(task.end_at);
 
-	const humanDuration = humanizer(differenceInMilliseconds(expires_at, started_at), {
+	const humanDuration = humanizer(differenceInMilliseconds(end, start), {
 		language: "shortEn",
 	});
 
-	const times = format(started_at, "hh:mm") + " - " + format(expires_at, "hh:mm");
+	const times = format(start, "hh:mm") + " - " + format(end, "hh:mm");
 
 	return (
 		<>
@@ -24,7 +24,7 @@ export function BaseTask({ task }: { task: ApiTaskWithTag }) {
 			<div>
 				<p>{task.tag_label}</p>
 				<p className="text-gray-300 text-sm">
-					{humanDuration} - ({times}) - {format(started_at, "yyyy-MM-dd")}
+					{humanDuration} - ({times})
 				</p>
 			</div>
 		</>
