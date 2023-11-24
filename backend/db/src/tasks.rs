@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{create_id, Db};
 use anyhow::Context;
 use chrono::{DateTime, Utc};
@@ -227,28 +229,59 @@ pub async fn delete_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), an
     return Ok(());
 }
 
+pub enum StatsTimeframe {
+    Day,
+    Week,
+    Month,
+    Year,
+}
+
+impl FromStr for StatsTimeframe {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "day" => Ok(StatsTimeframe::Day),
+            "week" => Ok(StatsTimeframe::Week),
+            "month" => Ok(StatsTimeframe::Month),
+            "year" => Ok(StatsTimeframe::Year),
+            _ => Err(anyhow::anyhow!("invalid timeframe")),
+        }
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct SecondsByDay {
-    pub day: Option<DateTime<Utc>>,
+    pub date: Option<DateTime<Utc>>,
     pub seconds: Option<i64>,
 }
 
 pub async fn get_seconds_by_day(
     db: &Db,
     user_id: &str,
+    timeframe: StatsTimeframe,
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
 ) -> Result<Vec<SecondsByDay>, anyhow::Error> {
-    return Ok(sqlx::query_as!(
+    let seconds_by_day = sqlx::query_as!(
         SecondsByDay,
         r#"
-            SELECT DATE_TRUNC('day', start_at) AS day, SUM(seconds) AS seconds
+            SELECT date_trunc($1, start_at) AS date, SUM(seconds) AS seconds
             FROM tasks
-            WHERE user_id = $1
-            GROUP BY day
-            ORDER BY day DESC
+            WHERE user_id = $2
+            AND start_at >= $3
+            AND start_at <= $4
+            GROUP BY date
+            ORDER BY date ASC
         "#,
+        "week",
         user_id,
+        start,
+        end,
     )
     .fetch_all(db)
     .await
-    .context("error fetching tasks")?);
+    .context("error fetching tasks")?;
+
+    return Ok(seconds_by_day);
 }
