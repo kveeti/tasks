@@ -229,6 +229,8 @@ pub async fn delete_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), an
     return Ok(());
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum StatsTimeframe {
     Day,
     Week,
@@ -250,18 +252,35 @@ impl FromStr for StatsTimeframe {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
+impl AsRef<str> for StatsTimeframe {
+    fn as_ref(&self) -> &str {
+        match self {
+            StatsTimeframe::Day => "day",
+            StatsTimeframe::Week => "week",
+            StatsTimeframe::Month => "month",
+            StatsTimeframe::Year => "year",
+        }
+    }
+}
+
+impl ToString for StatsTimeframe {
+    fn to_string(&self) -> String {
+        self.as_ref().to_string()
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct SecondsByDay {
     pub date: Option<DateTime<Utc>>,
     pub seconds: Option<i64>,
 }
 
-pub async fn get_seconds_by_day(
+pub async fn get_stats(
     db: &Db,
     user_id: &str,
-    timeframe: StatsTimeframe,
-    start: DateTime<Utc>,
-    end: DateTime<Utc>,
+    timeframe: &StatsTimeframe,
+    start: &DateTime<Utc>,
+    end: &DateTime<Utc>,
 ) -> Result<Vec<SecondsByDay>, anyhow::Error> {
     let seconds_by_day = sqlx::query_as!(
         SecondsByDay,
@@ -274,7 +293,7 @@ pub async fn get_seconds_by_day(
             GROUP BY date
             ORDER BY date ASC
         "#,
-        "week",
+        timeframe.as_ref(),
         user_id,
         start,
         end,

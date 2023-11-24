@@ -6,7 +6,7 @@ import { useNotifications } from "@/utils/use-notifications";
 
 import { AppIndexPage } from "./App/AppIndexPage/app-index-page";
 import { AppLayout } from "./App/AppLayout/AppLayout";
-import { AppNumbersPage } from "./App/AppNumbersPage/AppNumbersPage";
+import { AppNumbersPage } from "./App/app-numbers-page/app-numbers-page";
 import { AppSettingsPage } from "./App/app-settings-page/app-settings-page";
 import { AppTagsPage } from "./App/app-tags-page/app-tags-page";
 import { AppTasksPage } from "./App/app-tasks-page/app-tasks-page";

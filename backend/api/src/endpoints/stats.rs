@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 use crate::{
     auth::user_id::UserId,
@@ -10,8 +10,13 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use chrono::{DateTime, NaiveDateTime, Utc};
-use db::tasks::{get_seconds_by_day, StatsTimeframe};
+use chrono::{DateTime, Duration, Utc};
+use common::date::{
+    end_of_day, end_of_month, end_of_week, end_of_year, start_of_day, start_of_month,
+    start_of_week, start_of_year,
+};
+use db::tasks::{get_stats, SecondsByDay, StatsTimeframe};
+use serde_json::json;
 
 pub async fn get_stats_endpoint(
     UserId(user_id): UserId,
@@ -21,7 +26,7 @@ pub async fn get_stats_endpoint(
     let date = query
         .get("date")
         .ok_or(ApiError::BadRequest("no date".to_string()))?
-        .parse::<DateTime<chrono::Utc>>()
+        .parse::<DateTime<Utc>>()
         .map_err(|_| ApiError::BadRequest("invalid date".to_string()))?;
 
     let timeframe = query
@@ -30,100 +35,51 @@ pub async fn get_stats_endpoint(
         .parse::<StatsTimeframe>()
         .map_err(|_| ApiError::BadRequest("invalid timeframe".to_string()))?;
 
-    let start = match timeframe {
-        StatsTimeframe::Day => date,
-        StatsTimeframe::Week => date - chrono::Duration::days(7),
-        StatsTimeframe::Month => date - chrono::Duration::days(30),
-        StatsTimeframe::Year => date - chrono::Duration::days(365),
+    let (start, end) = match timeframe {
+        StatsTimeframe::Day => (start_of_day(date), end_of_day(date)),
+        StatsTimeframe::Week => (start_of_week(date), end_of_week(date)),
+        StatsTimeframe::Month => (start_of_month(date), end_of_month(date)),
+        StatsTimeframe::Year => (start_of_year(date), end_of_year(date)),
     };
 
-    Ok(())
+    let stats = get_stats(&state.db2, &user_id, &timeframe, &start, &end)
+        .await
+        .context("error getting seconds by day")?;
+
+    return Ok(Json(json!({
+        "timeframe": timeframe,
+        "start": start,
+        "end": end,
+        "stats": fill_in_missing_days(&timeframe, &start, &end, &stats),
+    })));
 }
 
-fn start_of_day(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), date.day()),
-            chrono::NaiveTime::from_hms(0, 0, 0),
-        ),
-        Utc,
-    );
-}
+fn fill_in_missing_days(
+    timeframe: &StatsTimeframe,
+    start: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+    stats: &Vec<SecondsByDay>,
+) -> Vec<SecondsByDay> {
+    let mut new_stats: Vec<SecondsByDay> = stats.to_vec();
+    let mut date = start_of_day(start.clone());
 
-fn end_of_day(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), date.day()),
-            chrono::NaiveTime::from_hms(23, 59, 59),
-        ),
-        Utc,
-    );
-}
+    while date <= *end {
+        if !new_stats.iter().any(|s| s.date == Some(date)) {
+            new_stats.push(SecondsByDay {
+                date: Some(date),
+                seconds: Some(0),
+            });
+        }
 
-fn start_of_week(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), date.day()),
-            chrono::NaiveTime::from_hms(0, 0, 0),
-        )
-        .with_previous_or_same(chrono::Weekday::Mon)
-        .unwrap(),
-        Utc,
-    );
-}
+        let new_date = match timeframe {
+            StatsTimeframe::Day => date + Duration::hours(1),
+            StatsTimeframe::Week => date + Duration::days(1),
+            StatsTimeframe::Month => date + Duration::weeks(1),
+            StatsTimeframe::Year => date + Duration::days(30),
+        };
 
-fn end_of_week(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), date.day()),
-            chrono::NaiveTime::from_hms(23, 59, 59),
-        )
-        .with_next_or_same(chrono::Weekday::Sun)
-        .unwrap(),
-        Utc,
-    );
-}
+        date = new_date;
+    }
 
-fn start_of_month(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), 1),
-            chrono::NaiveTime::from_hms(0, 0, 0),
-        ),
-        Utc,
-    );
-}
-
-fn end_of_month(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), date.month(), 1),
-            chrono::NaiveTime::from_hms(23, 59, 59),
-        )
-        .with_last_day_of_month()
-        .unwrap(),
-        Utc,
-    );
-}
-
-fn start_of_year(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), 1, 1),
-            chrono::NaiveTime::from_hms(0, 0, 0),
-        ),
-        Utc,
-    );
-}
-
-fn end_of_year(date: DateTime<Utc>) -> DateTime<Utc> {
-    return DateTime::from_utc(
-        NaiveDateTime::new(
-            chrono::NaiveDate::from_ymd(date.year(), 1, 1),
-            chrono::NaiveTime::from_hms(23, 59, 59),
-        )
-        .with_last_day_of_year()
-        .unwrap(),
-        Utc,
-    );
+    return new_stats;
 }
