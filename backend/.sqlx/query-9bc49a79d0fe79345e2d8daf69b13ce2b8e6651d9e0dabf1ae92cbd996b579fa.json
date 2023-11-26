@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE tasks\n            SET end_at = NOW(), seconds = EXTRACT(EPOCH FROM NOW() - start_at)\n            WHERE id = $1\n            AND user_id = $2\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9bc49a79d0fe79345e2d8daf69b13ce2b8e6651d9e0dabf1ae92cbd996b579fa"
+}
