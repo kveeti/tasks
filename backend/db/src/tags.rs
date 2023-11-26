@@ -31,6 +31,28 @@ pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>
     return Ok(tag);
 }
 
+pub async fn get_by_label(
+    db: &Db,
+    user_id: &str,
+    label: &str,
+) -> Result<Option<Tag>, anyhow::Error> {
+    let tag = sqlx::query_as!(
+        Tag,
+        r#"
+            SELECT * FROM tags
+            WHERE user_id = $1
+            AND label = $2
+        "#,
+        user_id,
+        label
+    )
+    .fetch_optional(db)
+    .await
+    .context("error fetching tag")?;
+
+    return Ok(tag);
+}
+
 pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> {
     let tags = sqlx::query_as!(
         Tag,
@@ -139,6 +161,42 @@ pub async fn update(
     .fetch_optional(db)
     .await
     .context("error updating tag")?;
+
+    return Ok(tag);
+}
+
+pub async fn upsert(
+    db: &Db,
+    user_id: &str,
+    tag_id: &str,
+    label: &str,
+    color: &str,
+    deleted_at: &Option<DateTime<Utc>>,
+) -> Result<Tag, anyhow::Error> {
+    let tag = Tag {
+        id: tag_id.to_owned(),
+        user_id: user_id.to_owned(),
+        label: label.to_owned(),
+        color: color.to_owned(),
+        deleted_at: deleted_at.to_owned(),
+    };
+
+    sqlx::query!(
+        r#"
+            INSERT INTO tags (id, user_id, label, color, deleted_at)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (user_id, label)
+            DO UPDATE SET label = $3, color = $4, deleted_at = $5
+        "#,
+        tag.id,
+        tag.user_id,
+        tag.label,
+        tag.color,
+        tag.deleted_at,
+    )
+    .execute(db)
+    .await
+    .context("error upserting tag")?;
 
     return Ok(tag);
 }

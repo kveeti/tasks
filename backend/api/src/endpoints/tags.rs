@@ -32,13 +32,30 @@ pub struct AddTagBody {
 pub async fn add_tag(
     UserId(user_id): UserId,
     State(ctx): RequestState,
-    Json(tag): Json<AddTagBody>,
+    Json(body): Json<AddTagBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let tag = db::tags::insert(&ctx.db2, &user_id, &tag.label, &tag.color)
+    let existing_tag = db::tags::get_by_label(&ctx.db2, &user_id, &body.label)
         .await
-        .context("error inserting tag")?;
+        .context("error fetching existing tag")?;
 
-    return Ok((StatusCode::CREATED, Json(tag)));
+    let (tag, status_code) = match existing_tag {
+        Some(tag) => {
+            let tag = db::tags::upsert(&ctx.db2, &user_id, &tag.id, &tag.label, &body.color, &None)
+                .await
+                .context("error upserting tag")?;
+
+            (tag, StatusCode::OK)
+        }
+        None => {
+            let tag = db::tags::insert(&ctx.db2, &user_id, &body.label, &body.color)
+                .await
+                .context("error creating tag")?;
+
+            (tag, StatusCode::CREATED)
+        }
+    };
+
+    return Ok((status_code, Json(tag)));
 }
 
 pub async fn delete_tag(
