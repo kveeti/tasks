@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { FullscreenLoading } from "@/components/fullscreen-loading";
+import { useTags } from "@/utils/api/tags";
 import { useOnGoingTask } from "@/utils/api/tasks";
 import { useNotifications } from "@/utils/use-notifications";
 
-import { AppIndexPage } from "./App/AppIndexPage/app-index-page";
-import { AppLayout } from "./App/AppLayout/AppLayout";
+import { AppIndexPage } from "./App/app-index-page/app-index-page";
+import { AppLayout } from "./App/app-layout/app-layout";
 import { AppNumbersPage } from "./App/app-numbers-page/app-numbers-page";
 import { AppSettingsPage } from "./App/app-settings-page/app-settings-page";
 import { AppTagsPage } from "./App/app-tags-page/app-tags-page";
@@ -15,10 +17,11 @@ import { TimerContext } from "./App/timer-context";
 export function AuthenticatedApp() {
 	useNotifications();
 
-	const { isLoading } = useOnGoingTask();
+	const onGoingTask = useOnGoingTask();
+	const tags = useTags();
 
-	if (isLoading) {
-		return null;
+	if (onGoingTask.isLoading || tags.isLoading) {
+		return <FullscreenLoading />;
 	}
 
 	return (

@@ -1,7 +1,7 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { addHours, format } from "date-fns";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { type Output, date, number, object, string, ulid } from "valibot";
 
 import { SpinnerButton } from "@/components/spinner-button";
@@ -17,7 +17,6 @@ import {
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -38,20 +37,24 @@ import { cn } from "@/utils/classNames";
 import { errorToast } from "@/utils/errorToast";
 import { useDialog } from "@/utils/use-dialog";
 
-const newTaskFormSchema = object({
-	startDate: date(),
-	startTime: string(),
-	duration: number(),
-	tagId: string([ulid("required")]),
-});
-
 export function AddTask() {
 	const dialog = useDialog();
+	const tags = useTags();
 
 	return (
 		<Dialog {...dialog.props}>
 			<DialogTrigger asChild>
-				<Button className="w-full">add task</Button>
+				<Button
+					className="w-full"
+					onClick={(e) => {
+						if (!tags.data?.length) {
+							e.preventDefault();
+							toast.error("you need to add a tag first");
+						}
+					}}
+				>
+					add task
+				</Button>
 			</DialogTrigger>
 
 			<DialogContent>
@@ -63,12 +66,19 @@ export function AddTask() {
 	);
 }
 
+const addTaskFormSchema = object({
+	startDate: date(),
+	startTime: string(),
+	duration: number(),
+	tagId: string([ulid("required")]),
+});
+
 export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 	const tags = useTags();
 	const mutation = useAddManualTask();
 
-	const form = useForm<Output<typeof newTaskFormSchema>>({
-		resolver: valibotResolver(newTaskFormSchema),
+	const form = useForm<Output<typeof addTaskFormSchema>>({
+		resolver: valibotResolver(addTaskFormSchema),
 		defaultValues: {
 			startDate: new Date(),
 			startTime: "00:00",
@@ -77,7 +87,7 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 		},
 	});
 
-	function onSubmit(values: Output<typeof newTaskFormSchema>) {
+	function onSubmit(values: Output<typeof addTaskFormSchema>) {
 		const start = new Date(`${format(values.startDate, "yyyy-MM-dd")}T${values.startTime}`);
 
 		mutation
@@ -95,15 +105,6 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-				{!tags.data?.length && (
-					<FormDescription>
-						you dont have any tags yet.{" "}
-						<Button asChild variant="link" size="link">
-							<Link to={"/app/tags"}>create one</Link>
-						</Button>{" "}
-						to add a task
-					</FormDescription>
-				)}
 				<div className="flex gap-2 w-full">
 					<FormField
 						control={form.control}

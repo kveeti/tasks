@@ -33,8 +33,8 @@ export function useTagDistributionStats({
 	timeframe: StatsTimeframe;
 }) {
 	return useQuery({
-		queryKey: ["stats-tag-distribution", date, timeframe],
-		queryFn: ({ signal }) =>
+		queryKey: ["stats-tag-distribution", date, timeframe] as const,
+		queryFn: ({ queryKey, signal }) =>
 			apiRequest<{
 				timeframe: StatsTimeframe;
 				start: string;
@@ -49,7 +49,10 @@ export function useTagDistributionStats({
 			}>({
 				method: "GET",
 				path: "/stats/tag-distribution",
-				query: new URLSearchParams({ date: date.toISOString(), timeframe }),
+				query: new URLSearchParams({
+					date: queryKey[1].toISOString(),
+					timeframe: queryKey[2],
+				}),
 				signal,
 			}),
 	});

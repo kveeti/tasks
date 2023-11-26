@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { Outlet } from "react-router-dom";
 
-import { Nav } from "./Nav";
+import { Nav } from "./nav";
 
 export function AppLayout() {
 	return (
