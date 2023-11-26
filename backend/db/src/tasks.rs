@@ -66,7 +66,7 @@ pub async fn get_tasks(
                 INNER JOIN tags ON tasks.tag_label = tags.label
                 WHERE tasks.user_id = $1
                 AND tasks.id < $2
-                ORDER BY tasks.id DESC
+                ORDER BY tasks.start_at DESC
                 LIMIT $3;
             "#,
             user_id,
@@ -84,7 +84,7 @@ pub async fn get_tasks(
                 FROM tasks
                 INNER JOIN tags ON tasks.tag_label = tags.label
                 WHERE tasks.user_id = $1
-                ORDER BY tasks.id DESC
+                ORDER BY tasks.start_at DESC
                 LIMIT $2;
             "#,
             user_id,
