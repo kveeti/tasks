@@ -67,10 +67,11 @@ pub async fn get_tasks(
                 WHERE tasks.user_id = $1
                 AND tasks.id < $2
                 ORDER BY tasks.id DESC
-                LIMIT 30;
+                LIMIT $3;
             "#,
             user_id,
             last_id,
+            TASKS_PER_PAGE,
         )
         .fetch_all(db)
         .await

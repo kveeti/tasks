@@ -2,6 +2,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
 import { type Output, minLength, object, picklist, string } from "valibot";
 
+import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -142,9 +143,9 @@ function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void })
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
 
-					<Button type="submit" disabled={mutation.isLoading}>
+					<SpinnerButton type="submit" spin={mutation.isPending}>
 						save
-					</Button>
+					</SpinnerButton>
 				</div>
 			</form>
 		</Form>

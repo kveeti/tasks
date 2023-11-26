@@ -35,8 +35,6 @@ export function StartTask() {
 	}
 
 	useEffect(() => {
-		console.log("start-task.tsx: useEffect");
-
 		function onPress(e: KeyboardEvent) {
 			if (e.key === "l") {
 				const firstTag = tags.data?.[0];

@@ -1,3 +1,4 @@
+import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -63,14 +64,14 @@ export function DeleteTask({ task, onSuccess }: { task: ApiTaskWithTag; onSucces
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
 
-					<Button
+					<SpinnerButton
 						type="submit"
 						variant="destructive"
-						disabled={mutation.isPending}
+						spin={mutation.isPending}
 						onClick={onConfirm}
 					>
 						delete
-					</Button>
+					</SpinnerButton>
 				</div>
 			</DialogContent>
 		</Dialog>

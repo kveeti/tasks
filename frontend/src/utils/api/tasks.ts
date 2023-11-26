@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiRequest } from "./apiRequest";
 
@@ -25,6 +25,23 @@ export function useTasks() {
 				method: "GET",
 				path: "/tasks",
 			}),
+	});
+}
+
+const MAX_TASKS_PER_PAGE = 30;
+export function useInfiniteTasks() {
+	return useInfiniteQuery({
+		queryKey: ["infinite-tasks"],
+		queryFn: async ({ pageParam = "", signal }) =>
+			apiRequest<ApiTaskWithTag[]>({
+				method: "GET",
+				path: "/tasks",
+				query: new URLSearchParams({ last_id: pageParam }),
+				signal,
+			}),
+		initialPageParam: "",
+		getNextPageParam: (lastPage) =>
+			lastPage.length === MAX_TASKS_PER_PAGE ? lastPage.at(-1)?.id : null,
 	});
 }
 

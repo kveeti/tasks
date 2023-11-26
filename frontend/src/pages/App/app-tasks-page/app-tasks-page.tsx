@@ -1,42 +1,23 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { ExecWhenOnScreen } from "@/components/exec-when-on-screen";
 import { PageLayout } from "@/components/page-layout";
-import { Button } from "@/components/ui/button";
 import { WithEnterExitAnimation } from "@/components/with-initial-animation";
-import { apiRequest } from "@/utils/api/apiRequest";
-import { type ApiTaskWithTag, useTasks } from "@/utils/api/tasks";
+import { type ApiTaskWithTag, useInfiniteTasks } from "@/utils/api/tasks";
 
 import { AddTask } from "./add-task";
 import { BaseTask } from "./base-task";
 import { TaskMenu } from "./task-menu";
 
 export function AppTasksPage() {
-	const tasks = useTasks();
-
-	const tasks2 = useInfiniteQuery({
-		queryKey: ["infinite-tasks"],
-		queryFn: async ({ pageParam = "", signal }) =>
-			apiRequest<ApiTaskWithTag[]>({
-				method: "GET",
-				path: "/tasks",
-				query: new URLSearchParams({ last_id: pageParam }),
-				signal,
-			}),
-		initialPageParam: "",
-		getNextPageParam: (lastPage) => lastPage.at(-1)?.id ?? null,
-		getPreviousPageParam: (firstPage) => firstPage.at(0)?.id ?? null,
-	});
-
+	const tasks2 = useInfiniteTasks();
 	return (
 		<PageLayout>
 			<PageLayout.Title>tasks</PageLayout.Title>
 
 			<div className="flex h-full relative flex-col overflow-auto bg-card-item">
-				{tasks.isLoading ? (
-					<p className="p-8 text-center border-b">loading tasks...</p>
-				) : tasks.isError ? (
-					<p className="p-8 text-center border-b">error loading tasks</p>
+				{tasks2.isLoading ? null : tasks2.isError ? (
+					<p>error</p>
 				) : (
 					<AnimatePresence initial={false} mode="popLayout">
 						<ul key="tasks" className="border-b divide-y">
@@ -53,13 +34,7 @@ export function AppTasksPage() {
 							</AnimatePresence>
 						</ul>
 
-						{tasks2.hasNextPage && (
-							<Button className="m-4" onClick={() => tasks2.fetchNextPage()}>
-								load more
-							</Button>
-						)}
-
-						{!tasks.data?.length && (
+						{!tasks2.data?.pages.length && (
 							<motion.p
 								key="no-tasks"
 								initial={{ opacity: 0 }}
@@ -72,6 +47,8 @@ export function AppTasksPage() {
 						)}
 					</AnimatePresence>
 				)}
+
+				<ExecWhenOnScreen func={tasks2.fetchNextPage} />
 			</div>
 
 			<PageLayout.Footer>

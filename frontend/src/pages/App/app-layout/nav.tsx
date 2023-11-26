@@ -78,7 +78,7 @@ function MoreMenu() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger>
+			<DropdownMenuTrigger asChild>
 				<button className="relative flex w-full items-center justify-center rounded-full py-2 px-4 outline-none outline-2 outline-offset-2 transition-[outline,opacity] duration-200 focus-visible:outline-gray-300">
 					{showIndicator && <ActiveIndicator />}
 					<span className="relative">more</span>

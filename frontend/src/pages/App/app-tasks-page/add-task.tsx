@@ -224,11 +224,7 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 					<DialogClose asChild>
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
-					<SpinnerButton
-						type="submit"
-						spin={!tags.data?.length || mutation.isPending}
-						disabled={!tags.data?.length || mutation.isPending}
-					>
+					<SpinnerButton type="submit" spin={mutation.isPending}>
 						add
 					</SpinnerButton>
 				</div>
