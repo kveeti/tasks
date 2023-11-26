@@ -73,12 +73,11 @@ pub async fn start_task(
 
     let end_at = Utc::now() + Duration::seconds(body.seconds.into());
 
-    let task = db::tasks::start_task(&state.db2, &user_id, &body.tag_id, &end_at).await?;
+    let task = db::tasks::start_task(&state.db2, &user_id, &tag.label, &end_at).await?;
 
     let task_with_tag = TaskWithTag {
         id: task.id.to_owned(),
         user_id: task.user_id,
-        tag_id: task.tag_id,
         is_manual: task.is_manual,
         seconds: task.seconds,
         end_at: task.end_at,
@@ -152,7 +151,7 @@ pub async fn add_manual_task(
     let task = db::tasks::add_manual_task(
         &state.db2,
         &user_id,
-        &body.tag_id,
+        &tag.label,
         &body.started_at,
         &body.expires_at,
     )
@@ -162,7 +161,6 @@ pub async fn add_manual_task(
     let task_with_tag = TaskWithTag {
         id: task.id,
         user_id: task.user_id,
-        tag_id: task.tag_id,
         is_manual: task.is_manual,
         seconds: task.seconds,
         end_at: task.end_at,

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, RequestState},
@@ -43,8 +45,10 @@ pub async fn delete_tag(
     UserId(user_id): UserId,
     State(ctx): RequestState,
     Path(tag_id): Path<String>,
-    Query(permanent): Query<bool>,
+    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
+    let permanent = query.get("permanent").map(|v| v == "true").unwrap_or(false);
+
     if permanent {
         db::tags::delete_permanent(&ctx.db2, &user_id, &tag_id)
             .await

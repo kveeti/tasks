@@ -5,7 +5,7 @@ import { apiRequest } from "./apiRequest";
 export type ApiTask = {
 	id: string;
 	user_id: string;
-	tag_id: string;
+	tag_label: string;
 	is_manual: boolean;
 	seconds: number | null;
 	start_at: string;
@@ -13,7 +13,6 @@ export type ApiTask = {
 };
 
 export type ApiTaskWithTag = ApiTask & {
-	tag_label: string;
 	tag_color: string;
 };
 

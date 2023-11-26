@@ -9,7 +9,7 @@ use common::date::difference_in_seconds;
 pub struct Task {
     pub id: String,
     pub user_id: String,
-    pub tag_id: String,
+    pub tag_label: String,
     pub is_manual: bool,
     pub seconds: Option<i32>,
     pub start_at: DateTime<Utc>,
@@ -20,13 +20,12 @@ pub struct Task {
 pub struct TaskWithTag {
     pub id: String,
     pub user_id: String,
-    pub tag_id: String,
+    pub tag_label: String,
     pub is_manual: bool,
     pub seconds: Option<i32>,
     pub start_at: DateTime<Utc>,
     pub end_at: DateTime<Utc>,
 
-    pub tag_label: String,
     pub tag_color: String,
 }
 
@@ -62,9 +61,9 @@ pub async fn get_tasks(
         sqlx::query_as!(
             TaskWithTag,
             r#"
-                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color
+                SELECT tasks.*, tags.color AS tag_color
                 FROM tasks
-                INNER JOIN tags ON tasks.tag_id = tags.id
+                INNER JOIN tags ON tasks.tag_label = tags.label
                 WHERE tasks.user_id = $1
                 AND tasks.id < $2
                 ORDER BY tasks.id DESC
@@ -80,9 +79,9 @@ pub async fn get_tasks(
         sqlx::query_as!(
             TaskWithTag,
             r#"
-                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color
+                SELECT tasks.*, tags.color AS tag_color
                 FROM tasks
-                INNER JOIN tags ON tasks.tag_id = tags.id
+                INNER JOIN tags ON tasks.tag_label = tags.label
                 WHERE tasks.user_id = $1
                 ORDER BY tasks.id DESC
                 LIMIT $2;
@@ -105,9 +104,9 @@ pub async fn get_ongoing_task(
     let ongoing_task = sqlx::query_as!(
         TaskWithTag,
         r#"
-            SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color 
+            SELECT tasks.*, tags.color AS tag_color 
             FROM tasks
-            INNER JOIN tags ON tasks.tag_id = tags.id
+            INNER JOIN tags ON tasks.tag_label = tags.label
             WHERE tasks.user_id = $1
             AND tasks.seconds IS NULL
             AND tasks.start_at < $2
@@ -127,35 +126,28 @@ pub async fn get_ongoing_task(
 pub async fn add_manual_task(
     db: &Db,
     user_id: &str,
-    tag_id: &str,
+    tag_label: &str,
     start_at: &DateTime<Utc>,
     end_at: &DateTime<Utc>,
 ) -> Result<Task, anyhow::Error> {
     let task = Task {
         id: create_id(),
         user_id: user_id.to_owned(),
-        tag_id: tag_id.to_owned(),
+        tag_label: tag_label.to_owned(),
         is_manual: true,
         seconds: Some(difference_in_seconds(*start_at, *end_at)),
         start_at: start_at.to_owned(),
         end_at: end_at.to_owned(),
     };
 
-    tracing::info!(
-        "start_at: {:?} end at: {:?} diff: {:?}",
-        start_at,
-        end_at,
-        task.seconds
-    );
-
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at, seconds)
+            INSERT INTO tasks (id, user_id, tag_label, is_manual, start_at, end_at, seconds)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
         "#,
         task.id,
         task.user_id,
-        task.tag_id,
+        task.tag_label,
         task.is_manual,
         task.start_at,
         task.end_at,
@@ -171,13 +163,13 @@ pub async fn add_manual_task(
 pub async fn start_task(
     db: &Db,
     user_id: &str,
-    tag_id: &str,
+    tag_label: &str,
     end_at: &DateTime<Utc>,
 ) -> Result<Task, anyhow::Error> {
     let task = Task {
         id: create_id(),
         user_id: user_id.to_owned(),
-        tag_id: tag_id.to_owned(),
+        tag_label: tag_label.to_owned(),
         is_manual: false,
         seconds: None,
         start_at: Utc::now(),
@@ -186,12 +178,12 @@ pub async fn start_task(
 
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at)
+            INSERT INTO tasks (id, user_id, tag_label, is_manual, start_at, end_at)
             VALUES ($1, $2, $3, $4, $5, $6)
         "#,
         task.id,
         task.user_id,
-        task.tag_id,
+        task.tag_label,
         task.is_manual,
         task.start_at,
         task.end_at,
@@ -339,11 +331,11 @@ pub async fn get_tag_distribution_stats(
         TagDistributionStat,
         r#"
             SELECT 
-                tags.label AS tag_label, 
+                tag_label,
                 tags.color as tag_color, 
                 CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
             FROM tasks
-            INNER JOIN tags ON tasks.tag_id = tags.id
+            INNER JOIN tags ON tasks.tag_label = tags.label
             WHERE tasks.user_id = $1
             AND tasks.start_at >= $2
             AND tasks.start_at <= $3
