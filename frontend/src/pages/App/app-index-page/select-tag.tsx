@@ -16,7 +16,7 @@ export function SelectTag() {
 	return (
 		<div className="mt-8">
 			{onGoingTask ? (
-				<div className="py-2 px-3 gap-3 border bg-black rounded-xl flex items-center">
+				<div className="h-12 px-3 gap-3 border bg-card-item rounded-xl flex items-center">
 					<BaseTag
 						tag={{
 							id: onGoingTask.tag_id,
