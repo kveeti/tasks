@@ -53,7 +53,7 @@ export function DeleteTask({ task, onSuccess }: { task: ApiTaskWithTag; onSucces
 						are you sure you want to delete this task?
 					</DialogDescription>
 
-					<div className="flex gap-3 p-3 items-center border rounded-md bg-black">
+					<div className="flex gap-3 p-3 items-center border rounded-md bg-card-item">
 						<BaseTask task={task} />
 					</div>
 				</div>
@@ -66,7 +66,7 @@ export function DeleteTask({ task, onSuccess }: { task: ApiTaskWithTag; onSucces
 					<Button
 						type="submit"
 						variant="destructive"
-						disabled={mutation.isLoading}
+						disabled={mutation.isPending}
 						onClick={onConfirm}
 					>
 						delete

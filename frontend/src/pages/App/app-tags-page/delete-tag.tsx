@@ -51,7 +51,7 @@ export function DeleteTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => vo
 				<div className="space-y-3">
 					<DialogDescription>are you sure you want to delete this tag?</DialogDescription>
 
-					<div className="flex gap-3 p-3 items-center border rounded-md bg-black">
+					<div className="flex gap-3 p-3 items-center border rounded-md bg-card-item">
 						<BaseTag tag={tag} />
 					</div>
 				</div>
@@ -64,7 +64,7 @@ export function DeleteTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => vo
 					<Button
 						type="submit"
 						variant="destructive"
-						disabled={mutation.isLoading}
+						disabled={mutation.isPending}
 						onClick={onConfirm}
 					>
 						delete

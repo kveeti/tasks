@@ -38,7 +38,7 @@ function ActiveIndicator() {
 	return (
 		<motion.div
 			layoutId="active-indicator"
-			className="absolute inset-0 w-full rounded-full bg-muted"
+			className="absolute inset-0 w-full rounded-full bg-primary border border-gray-600"
 			transition={{
 				duration: 0.1,
 				type: "spring",

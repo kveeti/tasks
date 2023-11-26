@@ -3,6 +3,7 @@ use std::str::FromStr;
 use crate::{create_id, Db};
 use anyhow::Context;
 use chrono::{DateTime, Utc};
+use common::date::difference_in_seconds;
 
 #[derive(Debug, serde::Serialize)]
 pub struct Task {
@@ -135,15 +136,22 @@ pub async fn add_manual_task(
         user_id: user_id.to_owned(),
         tag_id: tag_id.to_owned(),
         is_manual: true,
-        seconds: None,
+        seconds: Some(difference_in_seconds(*start_at, *end_at)),
         start_at: start_at.to_owned(),
         end_at: end_at.to_owned(),
     };
 
+    tracing::info!(
+        "start_at: {:?} end at: {:?} diff: {:?}",
+        start_at,
+        end_at,
+        task.seconds
+    );
+
     sqlx::query!(
         r#"
-            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at, seconds)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
         "#,
         task.id,
         task.user_id,
@@ -151,6 +159,7 @@ pub async fn add_manual_task(
         task.is_manual,
         task.start_at,
         task.end_at,
+        task.seconds,
     )
     .execute(db)
     .await
@@ -269,23 +278,22 @@ impl ToString for StatsTimeframe {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
-pub struct SecondsByDay {
+#[derive(serde::Serialize, Clone)]
+pub struct HoursByStat {
     pub date: Option<DateTime<Utc>>,
-    pub seconds: Option<i64>,
+    pub hours: Option<f64>,
 }
 
-pub async fn get_stats(
+pub async fn get_hours_by_stats(
     db: &Db,
     user_id: &str,
     timeframe: &StatsTimeframe,
     start: &DateTime<Utc>,
     end: &DateTime<Utc>,
-) -> Result<Vec<SecondsByDay>, anyhow::Error> {
-    let seconds_by_day = sqlx::query_as!(
-        SecondsByDay,
+) -> Result<Vec<HoursByStat>, anyhow::Error> {
+    let seconds_by_day = sqlx::query!(
         r#"
-            SELECT date_trunc($1, start_at) AS date, SUM(seconds) AS seconds
+            SELECT date_trunc($1, start_at) AS date, CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
             FROM tasks
             WHERE user_id = $2
             AND start_at >= $3
@@ -302,5 +310,53 @@ pub async fn get_stats(
     .await
     .context("error fetching tasks")?;
 
-    return Ok(seconds_by_day);
+    return Ok(seconds_by_day
+        .into_iter()
+        .map(|s| HoursByStat {
+            date: s.date,
+            hours: match s.hours {
+                Some(h) => Some(h.round()),
+                None => None,
+            },
+        })
+        .collect());
+}
+
+#[derive(serde::Serialize, Debug)]
+pub struct TagDistributionStat {
+    pub tag_label: String,
+    pub tag_color: String,
+    pub hours: Option<f64>,
+}
+
+pub async fn get_tag_distribution_stats(
+    db: &Db,
+    user_id: &str,
+    start: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+) -> Result<Vec<TagDistributionStat>, anyhow::Error> {
+    let tag_distribution = sqlx::query_as!(
+        TagDistributionStat,
+        r#"
+            SELECT 
+                tags.label AS tag_label, 
+                tags.color as tag_color, 
+                CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
+            FROM tasks
+            INNER JOIN tags ON tasks.tag_id = tags.id
+            WHERE tasks.user_id = $1
+            AND tasks.start_at >= $2
+            AND tasks.start_at <= $3
+            GROUP BY tag_label, tag_color
+            ORDER BY hours DESC
+        "#,
+        user_id,
+        start,
+        end,
+    )
+    .fetch_all(db)
+    .await
+    .context("error fetching tasks")?;
+
+    return Ok(tag_distribution);
 }

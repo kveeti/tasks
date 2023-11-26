@@ -46,6 +46,23 @@ pub async fn upsert(
     return Ok(notification_sub);
 }
 
+pub async fn delete(db: &Db, user_id: &str, endpoint: &str) -> Result<bool, anyhow::Error> {
+    let result = sqlx::query!(
+        r#"
+            DELETE FROM notification_subs
+            WHERE user_id = $1 
+            AND endpoint = $2
+        "#,
+        user_id,
+        endpoint
+    )
+    .execute(db)
+    .await
+    .context("error deleting notification sub")?;
+
+    return Ok(result.rows_affected() == 1);
+}
+
 pub async fn get_by_endpoint(
     db: &Db,
     endpoint: &str,

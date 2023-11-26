@@ -1,47 +1,114 @@
+import {
+	addMonths,
+	addWeeks,
+	addYears,
+	endOfWeek,
+	format,
+	isSameWeek,
+	isSameYear,
+	subMonths,
+	subWeeks,
+	subYears,
+} from "date-fns";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 
-import { WithAnimation } from "@/components/with-animation";
-import { type StatsTimeframe, useStats } from "@/utils/api/stats";
+import { PageLayout } from "@/components/page-layout";
+import { Button } from "@/components/ui/button";
+import { type StatsTimeframe } from "@/utils/api/stats";
+
+import { ChartHoursBy } from "./chart-hours-by";
+import { ChartTagDistribution } from "./chart-tag-distribution";
 
 export function AppNumbersPage() {
-	const [date, setDate] = useState(new Date());
-	const [timeframe, setTimeframe] = useState<StatsTimeframe>("week");
+	const { date, timeframe, formattedDate, toggleTimeFrame, scrollTimeframe } = usePageState();
 
 	return (
-		<WithAnimation>
-			<div className="flex h-full w-full flex-col">
-				<div className="flex items-center justify-between gap-4 p-4 border-b">
-					<h1 className="text-xl font-bold">stats</h1>
-				</div>
+		<PageLayout>
+			<PageLayout.Title>stats</PageLayout.Title>
 
-				<div className="flex h-full relative flex-col overflow-auto bg-black p-4">
-					<ChartHoursBy date={date} timeframe={timeframe} />
-				</div>
+			<div className="flex gap-4 h-full relative flex-col overflow-auto bg-card p-4">
+				<ChartHoursBy date={date} timeframe={timeframe} />
 
-				<div className="border-t p-4"></div>
+				<ChartTagDistribution date={date} timeframe={timeframe} />
 			</div>
-		</WithAnimation>
+
+			<PageLayout.Footer className="flex gap-4">
+				<Button size="icon" onClick={() => scrollTimeframe("left")}>
+					<ChevronLeftIcon className="w-5 h-5" />
+				</Button>
+				<Button size="icon" className="grow" onClick={toggleTimeFrame}>
+					{formattedDate}
+				</Button>
+				<Button size="icon" onClick={() => scrollTimeframe("right")}>
+					<ChevronRightIcon className="w-5 h-5" />
+				</Button>
+			</PageLayout.Footer>
+		</PageLayout>
 	);
 }
 
-function ChartHoursBy({ date, timeframe }: { date: Date; timeframe: StatsTimeframe }) {
-	const stats = useStats({ date, timeframe });
+function usePageState() {
+	const [date, setDate] = useState(new Date());
+	const [timeframe, setTimeframe] = useState<StatsTimeframe>("week");
 
-	return (
-		<section className="flex flex-col rounded-xl border p-4">
-			<h2 className="text-lg font-bold border-b pb-3">hours by </h2>
+	const formattedDate =
+		timeframe === "week"
+			? isSameWeek(date, new Date())
+				? "this week"
+				: isSameWeek(date, subWeeks(new Date(), 1))
+				? "last week"
+				: format(
+						date,
+						`'week' w${
+							isSameYear(endOfWeek(date, { weekStartsOn: 1 }), new Date())
+								? ""
+								: ", yyyy"
+						}`
+				  )
+			: timeframe === "month"
+			? format(date, "MMMM yyyy")
+			: timeframe === "year"
+			? format(date, "yyyy")
+			: "";
 
-			<div className="h-[180px] flex items-center justify-center">
-				{stats.isLoading ? (
-					<p>loading stats...</p>
-				) : stats.isError ? (
-					<p>error loading stats</p>
-				) : !stats.data || !stats.data.stats?.length ? (
-					<p>no data</p>
-				) : (
-					<></>
-				)}
-			</div>
-		</section>
-	);
+	function toggleTimeFrame() {
+		if (timeframe === "week") {
+			setTimeframe("month");
+		} else if (timeframe === "month") {
+			setTimeframe("year");
+		} else if (timeframe === "year") {
+			setTimeframe("week");
+		}
+	}
+
+	function scrollTimeframe(direction: "left" | "right") {
+		if (timeframe === "week") {
+			if (direction === "left") {
+				setDate((d) => subWeeks(d, 1));
+			} else {
+				setDate((d) => addWeeks(d, 1));
+			}
+		} else if (timeframe === "month") {
+			if (direction === "left") {
+				setDate((d) => subMonths(d, 1));
+			} else {
+				setDate((d) => addMonths(d, 1));
+			}
+		} else if (timeframe === "year") {
+			if (direction === "left") {
+				setDate((d) => subYears(d, 1));
+			} else {
+				setDate((d) => addYears(d, 1));
+			}
+		}
+	}
+
+	return {
+		date,
+		timeframe,
+		formattedDate,
+		toggleTimeFrame,
+		scrollTimeframe,
+	};
 }

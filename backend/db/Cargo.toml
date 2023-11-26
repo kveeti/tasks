@@ -13,4 +13,5 @@ anyhow = { workspace = true }
 tracing = { workspace = true }
 sqlx = { workspace = true }
 config = { path = "../config" }
+common = { path = "../common" }
 ulid = "1"

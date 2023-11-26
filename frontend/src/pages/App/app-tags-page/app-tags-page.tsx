@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 
+import { PageLayout } from "@/components/page-layout";
 import { WithEnterExitAnimation } from "@/components/with-initial-animation";
 import { type ApiTag, useTags } from "@/utils/api/tags";
 
-import { WithAnimation } from "../../../components/with-animation";
 import { AddTag } from "./add-tag";
 import { BaseTag } from "./base-tag";
 import { TagMenu } from "./tag-menu";
@@ -12,55 +12,51 @@ export function AppTagsPage() {
 	const tags = useTags();
 
 	return (
-		<WithAnimation>
-			<div className="flex h-full w-full flex-col">
-				<div className="flex items-center justify-between gap-4 p-4 border-b">
-					<h1 className="text-xl font-bold">tags</h1>
-				</div>
+		<PageLayout>
+			<PageLayout.Title>tags</PageLayout.Title>
 
-				<div className="flex relative h-full flex-col overflow-auto bg-black">
-					{tags.isLoading ? (
-						<p className="p-8 text-center border-b">loading tags...</p>
-					) : tags.isError ? (
-						<p className="p-8 text-center border-b">error loading tags</p>
-					) : (
-						<AnimatePresence initial={false} mode="popLayout">
-							<ul
-								key="tags"
-								className="border-b divide-y"
-								aria-hidden={!tags.data?.length}
+			<div className="flex relative h-full flex-col overflow-auto bg-card-item">
+				{tags.isLoading ? (
+					<p className="p-8 text-center border-b">loading tags...</p>
+				) : tags.isError ? (
+					<p className="p-8 text-center border-b">error loading tags</p>
+				) : (
+					<AnimatePresence initial={false} mode="popLayout">
+						<ul
+							key="tags"
+							className="border-b divide-y"
+							aria-hidden={!tags.data?.length}
+						>
+							<AnimatePresence initial={false}>
+								{tags.data?.map((tag) => (
+									<li key={tag.id}>
+										<WithEnterExitAnimation>
+											<Tag tag={tag} />
+										</WithEnterExitAnimation>
+									</li>
+								))}
+							</AnimatePresence>
+						</ul>
+
+						{!tags.data?.length && (
+							<motion.p
+								key="no-tags"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1, transition: { delay: 0.5 } }}
+								exit={{ opacity: 0, transition: { duration: 0.2 } }}
+								className="absolute p-8 border-b w-full text-center"
 							>
-								<AnimatePresence initial={false}>
-									{tags.data?.map((tag) => (
-										<li key={tag.id}>
-											<WithEnterExitAnimation>
-												<Tag tag={tag} />
-											</WithEnterExitAnimation>
-										</li>
-									))}
-								</AnimatePresence>
-							</ul>
-
-							{!tags.data?.length && (
-								<motion.p
-									key="no-tags"
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1, transition: { delay: 0.5 } }}
-									exit={{ opacity: 0, transition: { duration: 0.2 } }}
-									className="absolute p-8 border-b w-full text-center"
-								>
-									no tags
-								</motion.p>
-							)}
-						</AnimatePresence>
-					)}
-				</div>
-
-				<div className="border-t p-4">
-					<AddTag />
-				</div>
+								no tags
+							</motion.p>
+						)}
+					</AnimatePresence>
+				)}
 			</div>
-		</WithAnimation>
+
+			<PageLayout.Footer>
+				<AddTag />
+			</PageLayout.Footer>
+		</PageLayout>
 	);
 }
 

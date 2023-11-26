@@ -51,9 +51,7 @@ export function AddTask() {
 	return (
 		<Dialog {...dialog.props}>
 			<DialogTrigger asChild>
-				<Button className="w-full" variant="secondary">
-					add task
-				</Button>
+				<Button className="w-full">add task</Button>
 			</DialogTrigger>
 
 			<DialogContent>
@@ -117,9 +115,9 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 									<PopoverTrigger asChild>
 										<FormControl>
 											<Button
-												variant={"outline"}
+												variant="input"
 												className={cn(
-													"pl-3 flex justify-between font-normal",
+													"pl-3 h-12 bg-card-item flex justify-between font-normal",
 													!field.value && "text-muted-foreground"
 												)}
 											>

@@ -43,3 +43,24 @@ pub async fn add_notif_sub_endpoint(
 
     return Ok(StatusCode::CREATED);
 }
+
+#[derive(serde::Deserialize)]
+pub struct DeleteNotifSubBody {
+    pub endpoint: String,
+}
+
+pub async fn delete_notif_sub_endpoint(
+    UserId(user_id): UserId,
+    State(state): RequestState,
+    Json(body): Json<DeleteNotifSubBody>,
+) -> Result<impl IntoResponse, ApiError> {
+    let deleted = db::notification_subs::delete(&state.db2, &user_id, &body.endpoint)
+        .await
+        .context("error deleting notification sub")?;
+
+    if !deleted {
+        return Err(ApiError::NotFound("notification sub not found".to_owned()));
+    }
+
+    return Ok(StatusCode::NO_CONTENT);
+}

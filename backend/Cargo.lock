@@ -530,6 +530,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "common",
  "config",
  "serde",
  "serde_json",

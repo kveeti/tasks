@@ -61,8 +61,11 @@ pub async fn start_api() -> () {
             .to_owned();
     }
 
-    let v1_notif_subs_routes =
-        Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
+    let v1_notif_subs_routes = Router::new().route(
+        "/",
+        post(endpoints::notif_subs::add_notif_sub_endpoint)
+            .delete(endpoints::notif_subs::delete_notif_sub_endpoint),
+    );
 
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
@@ -90,7 +93,15 @@ pub async fn start_api() -> () {
                 .post(endpoints::tasks::start_task),
         );
 
-    let v1_stats_routes = Router::new().route("/", get(endpoints::stats::get_stats_endpoint));
+    let v1_stats_routes = Router::new()
+        .route(
+            "/hours-by",
+            get(endpoints::stats::get_hours_by_stats_endpoint),
+        )
+        .route(
+            "/tag-distribution",
+            get(endpoints::stats::get_tag_distribution_stats_endpoint),
+        );
 
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)

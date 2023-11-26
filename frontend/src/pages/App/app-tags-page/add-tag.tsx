@@ -42,9 +42,7 @@ export function AddTag() {
 	return (
 		<Dialog {...dialog.props}>
 			<DialogTrigger asChild>
-				<Button className="w-full" variant="secondary">
-					add tag
-				</Button>
+				<Button className="w-full">add tag</Button>
 			</DialogTrigger>
 
 			<DialogContent>
@@ -70,7 +68,7 @@ function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 				<FormField
 					control={form.control}
 					name="label"
@@ -125,7 +123,7 @@ function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
 
-					<Button type="submit" disabled={mutation.isLoading}>
+					<Button type="submit" disabled={mutation.isPending}>
 						add
 					</Button>
 				</div>
