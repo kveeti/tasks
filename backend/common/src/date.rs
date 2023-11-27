@@ -68,6 +68,6 @@ pub fn end_of_day(date: DateTime<Utc>) -> DateTime<Utc> {
         .expect("Failed to set nanosecond to 999_999_999");
 }
 
-pub fn difference_in_seconds(start: DateTime<Utc>, end: DateTime<Utc>) -> i32 {
-    return (end - start).num_seconds() as i32;
+pub fn difference_in_seconds(start: &DateTime<Utc>, end: &DateTime<Utc>) -> i32 {
+    return (*end - *start).num_seconds() as i32;
 }

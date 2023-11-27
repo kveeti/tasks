@@ -87,7 +87,7 @@ fn fill_in_missing_days(
 pub struct TagDistributionStat {
     pub tag_label: String,
     pub tag_color: String,
-    pub hours: f64,
+    pub seconds: f64,
     pub percentage: f64,
 }
 
@@ -119,11 +119,11 @@ pub async fn get_tag_distribution_stats_endpoint(
         .await
         .context("error getting seconds by day")?;
 
-    let total_hours = stats
+    let total_seconds = stats
         .iter()
         .map(|s| {
-            if let Some(hours) = s.hours {
-                return hours.floor();
+            if let Some(seconds) = s.seconds {
+                return seconds.floor();
             } else {
                 return 0.0;
             }
@@ -133,8 +133,8 @@ pub async fn get_tag_distribution_stats_endpoint(
     let stats = stats
         .iter()
         .map(|s| {
-            let percentage = if total_hours > 0.0 {
-                (s.hours.unwrap_or(0.0) / total_hours) * 100.0
+            let percentage = if total_seconds > 0.0 {
+                (s.seconds.unwrap_or(0.0) / total_seconds) * 100.0
             } else {
                 0.0
             };
@@ -142,7 +142,7 @@ pub async fn get_tag_distribution_stats_endpoint(
             return TagDistributionStat {
                 tag_label: s.tag_label.clone(),
                 tag_color: s.tag_color.clone(),
-                hours: s.hours.unwrap_or(0.0).floor(),
+                seconds: s.seconds.unwrap_or(0.0).floor(),
                 percentage: percentage.floor(),
             };
         })
@@ -152,7 +152,7 @@ pub async fn get_tag_distribution_stats_endpoint(
         "timeframe": timeframe,
         "start": start,
         "end": end,
-        "total_hours": total_hours,
+        "total_seconds": total_seconds,
         "stats": stats,
     })));
 }

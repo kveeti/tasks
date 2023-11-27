@@ -7,7 +7,7 @@ export type ApiTask = {
 	user_id: string;
 	tag_label: string;
 	is_manual: boolean;
-	seconds: number | null;
+	seconds: number;
 	start_at: string;
 	end_at: string;
 };

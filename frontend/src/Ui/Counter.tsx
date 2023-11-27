@@ -3,7 +3,7 @@ import { AnimatePresence, MotionValue, motion, useSpring, useTransform } from "f
 import { useEffect } from "react";
 
 const fontSize = 88;
-const height = fontSize;
+const height = fontSize + 28;
 
 function getParts(seconds: number) {
 	return {
@@ -32,7 +32,11 @@ export function Counter(props: { seconds: number }) {
 				</time>
 			</span>
 
-			<div aria-hidden style={{ fontSize }} className="flex overflow-hidden leading-none">
+			<div
+				aria-hidden
+				style={{ fontSize, lineHeight: "6.7rem" }}
+				className="flex overflow-hidden mx-4"
+			>
 				<AnimatePresence>
 					{parts.minutes >= 100 && (
 						<motion.div

@@ -39,11 +39,11 @@ export function useTagDistributionStats({
 				timeframe: StatsTimeframe;
 				start: string;
 				end: string;
-				total_hours: number;
+				total_seconds: number;
 				stats: {
 					tag_label: string;
 					tag_color: string;
-					hours: number;
+					seconds: number;
 					percentage: number;
 				}[];
 			}>({

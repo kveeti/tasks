@@ -1,3 +1,4 @@
+import { secondsToHours } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Cell, Pie, PieChart } from "recharts";
 
@@ -40,7 +41,7 @@ export function ChartTagDistribution({
 									outerRadius={85}
 									labelLine={false}
 									label={Label}
-									dataKey="hours"
+									dataKey="seconds"
 								>
 									{stats.data.stats.map((entry, index) => (
 										<Cell
@@ -61,7 +62,7 @@ export function ChartTagDistribution({
 
 								<div className="flex gap-8">
 									<span className="whitespace-nowrap">
-										{stats.data?.total_hours} h
+										{Math.floor(secondsToHours(stats.data.total_seconds))} h
 									</span>
 								</div>
 							</div>
@@ -83,7 +84,9 @@ export function ChartTagDistribution({
 
 										<div className="flex gap-8">
 											<span>{d.percentage}%</span>
-											<span className="whitespace-nowrap">{d.hours} h</span>
+											<span className="whitespace-nowrap">
+												{Math.floor(secondsToHours(d.seconds))} h
+											</span>
 										</div>
 									</li>
 								))}

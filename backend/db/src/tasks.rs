@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
-use crate::{create_id, Db};
+use crate::Db;
 use anyhow::Context;
 use chrono::{DateTime, Utc};
-use common::date::difference_in_seconds;
 
 #[derive(Debug, serde::Serialize)]
 pub struct Task {
@@ -11,22 +10,37 @@ pub struct Task {
     pub user_id: String,
     pub tag_label: String,
     pub is_manual: bool,
-    pub seconds: Option<i32>,
+    pub seconds: i32,
     pub start_at: DateTime<Utc>,
     pub end_at: DateTime<Utc>,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, sqlx::FromRow)]
+#[derive(Debug, serde::Serialize)]
 pub struct TaskWithTag {
     pub id: String,
     pub user_id: String,
     pub tag_label: String,
     pub is_manual: bool,
-    pub seconds: Option<i32>,
+    pub seconds: i32,
     pub start_at: DateTime<Utc>,
     pub end_at: DateTime<Utc>,
 
     pub tag_color: String,
+}
+
+impl TaskWithTag {
+    pub fn from_task(task: &Task, tag_color: &str) -> Self {
+        return TaskWithTag {
+            id: task.id.to_owned(),
+            user_id: task.user_id.to_owned(),
+            tag_label: task.tag_label.to_owned(),
+            is_manual: task.is_manual,
+            seconds: task.seconds,
+            start_at: task.start_at.to_owned(),
+            end_at: task.end_at.to_owned(),
+            tag_color: tag_color.to_owned(),
+        };
+    }
 }
 
 pub async fn owns_task(db: &Db, user_id: &str, task_id: &str) -> Result<bool, anyhow::Error> {
@@ -52,7 +66,7 @@ pub async fn owns_task(db: &Db, user_id: &str, task_id: &str) -> Result<bool, an
 
 const TASKS_PER_PAGE: i64 = 30;
 
-pub async fn get_tasks(
+pub async fn get_many(
     db: &Db,
     user_id: &str,
     last_id: Option<&str>,
@@ -98,10 +112,7 @@ pub async fn get_tasks(
     return Ok(tasks_with_tags);
 }
 
-pub async fn get_ongoing_task(
-    db: &Db,
-    user_id: &str,
-) -> Result<Option<TaskWithTag>, anyhow::Error> {
+pub async fn get_ongoing(db: &Db, user_id: &str) -> Result<Option<TaskWithTag>, anyhow::Error> {
     let ongoing_task = sqlx::query_as!(
         TaskWithTag,
         r#"
@@ -109,7 +120,6 @@ pub async fn get_ongoing_task(
             FROM tasks
             INNER JOIN tags ON tasks.tag_label = tags.label
             WHERE tasks.user_id = $1
-            AND tasks.seconds IS NULL
             AND tasks.start_at < $2
             AND tasks.end_at > $3
         "#,
@@ -124,23 +134,7 @@ pub async fn get_ongoing_task(
     return Ok(ongoing_task);
 }
 
-pub async fn add_manual_task(
-    db: &Db,
-    user_id: &str,
-    tag_label: &str,
-    start_at: &DateTime<Utc>,
-    end_at: &DateTime<Utc>,
-) -> Result<Task, anyhow::Error> {
-    let task = Task {
-        id: create_id(),
-        user_id: user_id.to_owned(),
-        tag_label: tag_label.to_owned(),
-        is_manual: true,
-        seconds: Some(difference_in_seconds(*start_at, *end_at)),
-        start_at: start_at.to_owned(),
-        end_at: end_at.to_owned(),
-    };
-
+pub async fn insert(db: &Db, task: &Task) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             INSERT INTO tasks (id, user_id, tag_label, is_manual, start_at, end_at, seconds)
@@ -156,65 +150,35 @@ pub async fn add_manual_task(
     )
     .execute(db)
     .await
-    .context("error inserting manual task")?;
-
-    return Ok(task);
-}
-
-pub async fn start_task(
-    db: &Db,
-    user_id: &str,
-    tag_label: &str,
-    end_at: &DateTime<Utc>,
-) -> Result<Task, anyhow::Error> {
-    let task = Task {
-        id: create_id(),
-        user_id: user_id.to_owned(),
-        tag_label: tag_label.to_owned(),
-        is_manual: false,
-        seconds: None,
-        start_at: Utc::now(),
-        end_at: end_at.to_owned(),
-    };
-
-    sqlx::query!(
-        r#"
-            INSERT INTO tasks (id, user_id, tag_label, is_manual, start_at, end_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
-        "#,
-        task.id,
-        task.user_id,
-        task.tag_label,
-        task.is_manual,
-        task.start_at,
-        task.end_at,
-    )
-    .execute(db)
-    .await
     .context("error inserting task")?;
-
-    return Ok(task);
-}
-
-pub async fn stop_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
-    sqlx::query!(
-        r#"
-            UPDATE tasks
-            SET end_at = NOW(), seconds = EXTRACT(EPOCH FROM NOW() - start_at)
-            WHERE id = $1
-            AND user_id = $2
-        "#,
-        task_id,
-        user_id,
-    )
-    .execute(db)
-    .await
-    .context("error stopping task")?;
 
     return Ok(());
 }
 
-pub async fn delete_task(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
+pub async fn update(db: &Db, task: &Task) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE tasks
+            SET tag_label = $1, is_manual = $2, start_at = $3, end_at = $4, seconds = $5
+            WHERE id = $6
+            AND user_id = $7
+        "#,
+        task.tag_label,
+        task.is_manual,
+        task.start_at,
+        task.end_at,
+        task.seconds,
+        task.id,
+        task.user_id,
+    )
+    .execute(db)
+    .await
+    .context("error updating task")?;
+
+    return Ok(());
+}
+
+pub async fn delete(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             DELETE FROM tasks
@@ -319,7 +283,7 @@ pub async fn get_hours_by_stats(
 pub struct TagDistributionStat {
     pub tag_label: String,
     pub tag_color: String,
-    pub hours: Option<f64>,
+    pub seconds: Option<f64>,
 }
 
 pub async fn get_tag_distribution_stats(
@@ -334,14 +298,14 @@ pub async fn get_tag_distribution_stats(
             SELECT 
                 tag_label,
                 tags.color as tag_color, 
-                CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
+                CAST(SUM(seconds) AS float) AS seconds
             FROM tasks
             INNER JOIN tags ON tasks.tag_label = tags.label
             WHERE tasks.user_id = $1
             AND tasks.start_at >= $2
             AND tasks.start_at <= $3
             GROUP BY tag_label, tag_color
-            ORDER BY hours DESC
+            ORDER BY seconds DESC
         "#,
         user_id,
         start,

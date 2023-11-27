@@ -25,7 +25,7 @@ CREATE TABLE "tasks" (
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "tag_label" VARCHAR(255) NOT NULL,
     "is_manual" BOOLEAN NOT NULL,
-    "seconds" INTEGER,
+    "seconds" INTEGER NOT NULL,
     "start_at" TIMESTAMP WITH TIME ZONE NOT NULL,
     "end_at" TIMESTAMP WITH TIME ZONE NOT NULL,
     FOREIGN KEY ("user_id", "tag_label") REFERENCES "tags"("user_id", "label") ON DELETE CASCADE

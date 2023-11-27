@@ -20,10 +20,10 @@ function TimeControlsInner() {
 
 	function addTime(seconds: number) {
 		const newTime = form.getValues("seconds") + seconds;
-		const max = hoursToSeconds(2.5);
+		const max = hoursToSeconds(2);
 
 		if (newTime > max) {
-			toast.warning("cant add more than 2.5 hours");
+			toast.warning("cant add more than 2 hours");
 			form.setValue("seconds", max);
 			return;
 		}

@@ -1,15 +1,16 @@
-import { lazy } from "react";
 import { registerSW } from "virtual:pwa-register";
 
+import { AuthenticatedApp } from "./pages/AuthenticatedApp";
+import { UnauthenticatedApp } from "./pages/UnauthenticatedApp";
 import { useAuth } from "./utils/api/auth";
 
-const AuthenticatedApp = lazy(() =>
-	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))
-);
+// const AuthenticatedApp = lazy(() =>
+// 	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))
+// );
 
-const UnauthenticatedApp = lazy(() =>
-	import("./pages/UnauthenticatedApp").then((m) => ({ default: m.UnauthenticatedApp }))
-);
+// const UnauthenticatedApp = lazy(() =>
+// 	import("./pages/UnauthenticatedApp").then((m) => ({ default: m.UnauthenticatedApp }))
+// );
 
 export function Entrypoint() {
 	const auth = useAuth();
