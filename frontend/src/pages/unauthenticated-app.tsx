@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { LoginPage } from "./Auth/LoginPage";
-import { CallbackPage } from "./Auth/callback-page";
+import { CallbackPage } from "./auth/callback-page";
+import { LoginPage } from "./auth/login-page";
 
 export function UnauthenticatedApp() {
 	return (

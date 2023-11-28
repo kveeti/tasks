@@ -3,13 +3,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useNotifications } from "@/utils/use-notifications";
 
-import { AppIndexPage } from "./App/app-index-page/app-index-page";
-import { AppLayout } from "./App/app-layout/app-layout";
-import { AppNumbersPage } from "./App/app-numbers-page/app-numbers-page";
-import { AppSettingsPage } from "./App/app-settings-page/app-settings-page";
-import { AppTagsPage } from "./App/app-tags-page/app-tags-page";
-import { AppTasksPage } from "./App/app-tasks-page/app-tasks-page";
-import { TimerContext } from "./App/timer-context";
+import { AppIndexPage } from "./app/app-index-page/app-index-page";
+import { AppLayout } from "./app/app-layout/app-layout";
+import { AppNumbersPage } from "./app/app-numbers-page/app-numbers-page";
+import { AppSettingsPage } from "./app/app-settings-page/app-settings-page";
+import { AppTagsPage } from "./app/app-tags-page/app-tags-page";
+import { AppTasksPage } from "./app/app-tasks-page/app-tasks-page";
+import { TimerContext } from "./app/timer-context";
 
 export function AuthenticatedApp() {
 	useNotifications();

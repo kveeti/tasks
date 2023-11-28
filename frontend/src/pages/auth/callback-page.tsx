@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
-import { CheckmarkGreen } from "@/Ui/Status";
+import { Checkmark } from "@/Ui/Status";
 import { Spinner } from "@/components/spinner";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/utils/api/apiRequest";
@@ -65,9 +65,10 @@ export function CallbackPage() {
 
 			navigate("/auth/login");
 		})();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	betterLazy(() => import("../AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp })));
+	betterLazy(() => import("../authenticated-app").then((m) => ({ default: m.AuthenticatedApp })));
 
 	return (
 		<div className="flex flex-col items-center gap-10">
@@ -81,7 +82,7 @@ export function CallbackPage() {
 						<div className="flex flex-col gap-6 justify-center items-center w-full">
 							{page === "logged-in" ? (
 								<>
-									<CheckmarkGreen />
+									<Checkmark />
 
 									<p>logged in</p>
 								</>

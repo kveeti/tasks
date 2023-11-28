@@ -1,4 +1,4 @@
-import { Counter } from "@/Ui/Counter";
+import { Counter } from "@/components/counter";
 import { PageLayout } from "@/components/page-layout";
 
 import { useTimerContext } from "../timer-context";

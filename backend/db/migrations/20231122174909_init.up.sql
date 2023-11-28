@@ -15,20 +15,17 @@ CREATE TABLE "tags" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
     "label" VARCHAR(255) NOT NULL,
-    "color" VARCHAR(7) NOT NULL,
-    "deleted_at" TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT "unique_label_per_user" UNIQUE ("user_id", "label")
+    "color" VARCHAR(7) NOT NULL
 );
 
 CREATE TABLE "tasks" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-    "tag_label" VARCHAR(255) NOT NULL,
+    "tag_id" VARCHAR(26) NOT NULL REFERENCES "tags"("id") ON DELETE CASCADE,
     "is_manual" BOOLEAN NOT NULL,
     "seconds" INTEGER NOT NULL,
     "start_at" TIMESTAMP WITH TIME ZONE NOT NULL,
-    "end_at" TIMESTAMP WITH TIME ZONE NOT NULL,
-    FOREIGN KEY ("user_id", "tag_label") REFERENCES "tags"("user_id", "label") ON DELETE CASCADE
+    "end_at" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE "notification_subs" (

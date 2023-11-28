@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, RequestState},
 };
 use anyhow::Context;
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     response::IntoResponse,
     Json,
 };
@@ -36,45 +34,30 @@ pub async fn add_tag(
 ) -> Result<impl IntoResponse, ApiError> {
     let existing_tag = db::tags::get_by_label(&ctx.db2, &user_id, &body.label)
         .await
-        .context("error fetching existing tag")?;
+        .context("error fetching tag")?;
 
-    let (tag, status_code) = match existing_tag {
-        Some(tag) => {
-            let tag = db::tags::upsert(&ctx.db2, &user_id, &tag.id, &tag.label, &body.color, &None)
-                .await
-                .context("error upserting tag")?;
+    if existing_tag.is_some() {
+        return Err(ApiError::BadRequest(format!(
+            "you already have a tag labeled '{}'",
+            body.label
+        )));
+    }
 
-            (tag, StatusCode::OK)
-        }
-        None => {
-            let tag = db::tags::insert(&ctx.db2, &user_id, &body.label, &body.color)
-                .await
-                .context("error creating tag")?;
+    let tag = db::tags::insert(&ctx.db2, &user_id, &body.label, &body.color)
+        .await
+        .context("error creating tag")?;
 
-            (tag, StatusCode::CREATED)
-        }
-    };
-
-    return Ok((status_code, Json(tag)));
+    return Ok((StatusCode::CREATED, Json(tag)).into_response());
 }
 
 pub async fn delete_tag(
     UserId(user_id): UserId,
     State(ctx): RequestState,
     Path(tag_id): Path<String>,
-    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let permanent = query.get("permanent").map(|v| v == "true").unwrap_or(false);
-
-    if permanent {
-        db::tags::delete_permanent(&ctx.db2, &user_id, &tag_id)
-            .await
-            .context("error deleting tag permanently")?;
-    } else {
-        db::tags::delete_soft(&ctx.db2, &user_id, &tag_id)
-            .await
-            .context("error deleting tag")?;
-    }
+    db::tags::delete(&ctx.db2, &user_id, &tag_id)
+        .await
+        .context("error deleting tag")?;
 
     return Ok(StatusCode::NO_CONTENT);
 }

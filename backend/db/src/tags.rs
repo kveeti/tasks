@@ -1,7 +1,5 @@
-use anyhow::Context;
-use chrono::{DateTime, Utc};
-
 use crate::{create_id, Db};
+use anyhow::Context;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Tag {
@@ -9,7 +7,6 @@ pub struct Tag {
     pub user_id: String,
     pub label: String,
     pub color: String,
-    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
@@ -19,7 +16,6 @@ pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>
             SELECT * FROM tags
             WHERE user_id = $1
             AND id = $2
-            AND deleted_at IS NULL
         "#,
         user_id,
         tag_id
@@ -59,7 +55,6 @@ pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> 
         r#"
             SELECT * FROM tags
             WHERE user_id = $1
-            AND deleted_at IS NULL
             ORDER BY id DESC
         "#,
         user_id
@@ -82,7 +77,6 @@ pub async fn insert(
         user_id: user_id.to_owned(),
         label: label.to_owned(),
         color: color.to_owned(),
-        deleted_at: None,
     };
 
     sqlx::query!(
@@ -102,25 +96,7 @@ pub async fn insert(
     return Ok(tag);
 }
 
-pub async fn delete_soft(db: &Db, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
-    sqlx::query!(
-        r#"
-            UPDATE tags
-            SET deleted_at = NOW()
-            WHERE user_id = $1
-            AND id = $2
-        "#,
-        user_id,
-        tag_id
-    )
-    .execute(db)
-    .await
-    .context("error deleting tag")?;
-
-    return Ok(());
-}
-
-pub async fn delete_permanent(db: &Db, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
+pub async fn delete(db: &Db, user_id: &str, tag_id: &str) -> Result<(), anyhow::Error> {
     sqlx::query!(
         r#"
             DELETE FROM tags
@@ -161,42 +137,6 @@ pub async fn update(
     .fetch_optional(db)
     .await
     .context("error updating tag")?;
-
-    return Ok(tag);
-}
-
-pub async fn upsert(
-    db: &Db,
-    user_id: &str,
-    tag_id: &str,
-    label: &str,
-    color: &str,
-    deleted_at: &Option<DateTime<Utc>>,
-) -> Result<Tag, anyhow::Error> {
-    let tag = Tag {
-        id: tag_id.to_owned(),
-        user_id: user_id.to_owned(),
-        label: label.to_owned(),
-        color: color.to_owned(),
-        deleted_at: deleted_at.to_owned(),
-    };
-
-    sqlx::query!(
-        r#"
-            INSERT INTO tags (id, user_id, label, color, deleted_at)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (user_id, label)
-            DO UPDATE SET label = $3, color = $4, deleted_at = $5
-        "#,
-        tag.id,
-        tag.user_id,
-        tag.label,
-        tag.color,
-        tag.deleted_at,
-    )
-    .execute(db)
-    .await
-    .context("error upserting tag")?;
 
     return Ok(tag);
 }

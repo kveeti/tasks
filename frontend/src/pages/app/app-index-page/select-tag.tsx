@@ -37,14 +37,14 @@ export function SelectTag() {
 						}}
 						defaultValue={form.getValues("tagId") ?? undefined}
 					>
-						<SelectTrigger id="tag-select" className="w-max">
+						<SelectTrigger id="tag-select" className="min-w-[110px] w-full">
 							<SelectValue placeholder="select a tag" />
 						</SelectTrigger>
 
 						<SelectContent>
 							{tags.data?.map((tag) => (
 								<SelectItem key={tag.id} value={tag.id}>
-									<div className="space-x-2 flex items-center">
+									<div className="space-x-3 flex items-center">
 										<BaseTag tag={tag} />
 									</div>
 								</SelectItem>

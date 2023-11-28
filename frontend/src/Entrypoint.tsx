@@ -1,7 +1,7 @@
 import { registerSW } from "virtual:pwa-register";
 
-import { AuthenticatedApp } from "./pages/AuthenticatedApp";
-import { UnauthenticatedApp } from "./pages/UnauthenticatedApp";
+import { AuthenticatedApp } from "./pages/authenticated-app";
+import { UnauthenticatedApp } from "./pages/unauthenticated-app";
 import { useAuth } from "./utils/api/auth";
 
 export function Entrypoint() {

@@ -124,7 +124,7 @@ function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 						<Button variant="ghost">cancel</Button>
 					</DialogClose>
 
-					<SpinnerButton type="submit" spin={!mutation.isPending}>
+					<SpinnerButton type="submit" spin={mutation.isPending}>
 						add
 					</SpinnerButton>
 				</div>
