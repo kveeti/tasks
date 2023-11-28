@@ -13,7 +13,7 @@ export function Nav() {
 	const location = useLocation();
 
 	return (
-		<div className="flex w-full max-w-max rounded-full border bg-card p-2 gap-1">
+		<nav className="flex w-full max-w-max rounded-full border bg-card p-2 gap-1 text-sm">
 			<NavLink to="/app" indicator={location.pathname === "/app" && <ActiveIndicator />}>
 				home
 			</NavLink>
@@ -30,13 +30,14 @@ export function Nav() {
 				tags
 			</NavLink>
 			<MoreMenu />
-		</div>
+		</nav>
 	);
 }
 
 function ActiveIndicator() {
 	return (
 		<motion.div
+			aria-hidden
 			layoutId="active-indicator"
 			className="absolute inset-0 w-full rounded-full bg-primary border border-gray-600"
 			transition={{

@@ -38,7 +38,6 @@ export function StartTask() {
 		function onPress(e: KeyboardEvent) {
 			if (e.key === "l") {
 				const firstTag = tags.data?.[0];
-				console.log("firstTag", firstTag);
 
 				if (!firstTag) {
 					return;

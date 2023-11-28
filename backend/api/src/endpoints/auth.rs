@@ -1,5 +1,5 @@
 use crate::{
-    auth::user_id::UserId,
+    auth::user_id::{Auth, UserId},
     types::{ApiError, RequestState},
 };
 use anyhow::Context;
@@ -11,7 +11,6 @@ use axum::{
 };
 use chrono::{Duration, Utc};
 use config::CONFIG;
-use db::create_id;
 use hyper::{header, HeaderMap, StatusCode};
 use std::collections::HashMap;
 
@@ -22,7 +21,7 @@ pub async fn auth_init_endpoint() -> Result<impl IntoResponse, ApiError> {
         .path_and_query(format!(
             "/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope=email&prompt=select_account",
             CONFIG.google_client_id,
-            format!("{}/api/auth/google-callback", CONFIG.front_url),
+            format!("{}/auth/callback", CONFIG.front_url),
         ))
         .build().context("error building auth url")?;
 
@@ -39,7 +38,7 @@ struct OAuthUserInfoResponseBody {
     pub email: String,
 }
 
-pub async fn auth_callback_endpoint(
+pub async fn auth_verify_endpoint(
     State(state): RequestState,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
@@ -106,32 +105,35 @@ pub async fn auth_callback_endpoint(
         .await
         .context("error getting existing user")?;
 
-    let user_id = match existing_user {
-        Some(user) => user.id,
+    let user = match existing_user {
+        Some(user) => user,
         None => {
             let user = db::users::create(&state.db2, &oauth_me_response_body.email)
                 .await
                 .context("error creating user")?;
 
-            user.id
+            user
         }
     };
 
-    let expires_at = Utc::now() + Duration::days(7);
-    let session_id = create_id();
+    let expires_at = Utc::now() + Duration::days(30);
+
+    let session_id = db::sessions::insert(&state.db2, &user.id, &expires_at)
+        .await
+        .context("error creating session")?;
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-            create_token(&user_id, &session_id),
+            create_token(&user.id, &session_id),
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
         .context("error creating cookie header")?,
     )]);
 
-    return Ok((StatusCode::OK, headers));
+    return Ok((StatusCode::OK, headers, Json(user)));
 }
 
 pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, ApiError> {
@@ -154,7 +156,7 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
 
     let expires_at = Utc::now() + Duration::days(30);
 
-    let session_id = db::sessions::create(&state.db2, &user_id, &expires_at)
+    let session_id = db::sessions::insert(&state.db2, &user_id, &expires_at)
         .await
         .context("error creating session")?;
 
@@ -190,4 +192,22 @@ pub async fn auth_me_endpoint(
         .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
 
     return Ok((StatusCode::OK, Json(user)));
+}
+
+pub async fn auth_logout_endpoint(
+    Auth(auth): Auth,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    db::sessions::delete(&state.db2, &auth.session_id, &auth.user_id)
+        .await
+        .context("error deleting session")?;
+
+    let headers: HeaderMap = HeaderMap::from_iter(vec![(
+        header::SET_COOKIE,
+        "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax; HttpOnly"
+            .parse()
+            .context("error parsing cookie header")?,
+    )]);
+
+    return Ok((StatusCode::OK, headers));
 }

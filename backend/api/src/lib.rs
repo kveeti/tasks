@@ -50,10 +50,11 @@ pub async fn start_api() -> () {
     let mut v1_auth_routes = Router::new()
         .route("/google-init", get(endpoints::auth::auth_init_endpoint))
         .route(
-            "/google-callback",
-            get(endpoints::auth::auth_callback_endpoint),
+            "/google-verify",
+            post(endpoints::auth::auth_verify_endpoint),
         )
-        .route("/me", get(endpoints::auth::auth_me_endpoint));
+        .route("/me", get(endpoints::auth::auth_me_endpoint))
+        .route("/logout", get(endpoints::auth::auth_logout_endpoint));
 
     if CONFIG.env == Env::NotProd {
         v1_auth_routes = v1_auth_routes

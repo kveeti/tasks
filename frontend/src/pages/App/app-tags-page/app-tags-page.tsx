@@ -15,7 +15,7 @@ export function AppTagsPage() {
 		<PageLayout>
 			<PageLayout.Title>tags</PageLayout.Title>
 
-			<div className="flex relative h-full flex-col overflow-auto bg-card-item">
+			<main className="flex relative h-full flex-col overflow-auto bg-card-item">
 				{tags.isLoading ? (
 					<p className="p-8 text-center border-b">loading tags...</p>
 				) : tags.isError ? (
@@ -51,7 +51,7 @@ export function AppTagsPage() {
 						)}
 					</AnimatePresence>
 				)}
-			</div>
+			</main>
 
 			<PageLayout.Footer>
 				<AddTag />

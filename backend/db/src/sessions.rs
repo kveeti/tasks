@@ -30,7 +30,7 @@ pub async fn get_one(
     return Ok(session);
 }
 
-pub async fn create(
+pub async fn insert(
     db: &Db,
     user_id: &str,
     expires_at: &DateTime<Utc>,

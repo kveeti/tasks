@@ -1,9 +1,6 @@
 import { motion } from "framer-motion";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { useTags } from "@/utils/api/tags";
-import { useOnGoingTask } from "@/utils/api/tasks";
 import { useNotifications } from "@/utils/use-notifications";
 
 import { AppIndexPage } from "./App/app-index-page/app-index-page";
@@ -17,21 +14,14 @@ import { TimerContext } from "./App/timer-context";
 export function AuthenticatedApp() {
 	useNotifications();
 
-	const onGoingTask = useOnGoingTask();
-	const tags = useTags();
-
-	if (onGoingTask.isLoading || tags.isLoading) {
-		return <FullscreenLoading />;
-	}
-
 	return (
-		<TimerContext>
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				exit={{ opacity: 0 }}
-				transition={{ duration: 0.5, ease: "easeInOut" }}
-			>
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.7, ease: "easeInOut" }}
+			className="flex h-full w-full items-center justify-center"
+		>
+			<TimerContext>
 				<Routes>
 					<Route path="/app" element={<AppLayout />}>
 						<Route index element={<AppIndexPage />} />
@@ -42,7 +32,7 @@ export function AuthenticatedApp() {
 					</Route>
 					<Route path="*" element={<Navigate to="/app" />} />
 				</Routes>
-			</motion.div>
-		</TimerContext>
+			</TimerContext>
+		</motion.div>
 	);
 }

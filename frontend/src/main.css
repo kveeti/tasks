@@ -35,19 +35,10 @@
 	* {
 		@apply border-border;
 	}
-	body {
-		@apply bg-black text-gray-50;
-		user-select: none;
-		cursor: default;
-
-		-webkit-font-smoothing: antialiased;
-		-webkit-tap-highlight-color: transparent;
-		text-rendering: optimizeLegibility;
-	}
 }
 
 @layer components {
-    .focus {
-        @apply outline-none outline-2 transition-[outline,_color,_background,_border] duration-150 focus-visible:outline focus-visible:outline-gray-500
-    }
+	.focus {
+		@apply outline-none outline-2 transition-[outline,_color,_background,_border] duration-150 focus-visible:outline focus-visible:outline-gray-500;
+	}
 }

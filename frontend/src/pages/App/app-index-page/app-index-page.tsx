@@ -11,7 +11,7 @@ export function AppIndexPage() {
 
 	return (
 		<PageLayout>
-			<div className="flex h-full w-full flex-col items-center justify-center p-8">
+			<main className="flex h-full w-full flex-col items-center justify-center p-8">
 				<span className="rounded-3xl border border-gray-800 bg-gray-950/50 font-bold text-gray-50">
 					<Counter seconds={onGoingSeconds ? onGoingSeconds : form.watch("seconds")} />
 				</span>
@@ -21,7 +21,7 @@ export function AppIndexPage() {
 				<SelectTag />
 
 				<TaskControls />
-			</div>
+			</main>
 		</PageLayout>
 	);
 }

@@ -48,11 +48,11 @@ export function CheckmarkGreen() {
 			initial={{ scale: 0.5, opacity: 0 }}
 			animate={{ scale: 1, opacity: 1 }}
 			transition={{ duration: 0.2, ease: "easeInOut" }}
-			className="relative flex h-8 w-8 items-center justify-center rounded-full bg-green-600 shadow"
+			className="relative flex h-16 w-16 items-center justify-center rounded-full bg-green-600 shadow"
 		>
 			<div className="relative flex items-center justify-center">
 				<svg
-					className="h-5 w-5 text-white"
+					className="h-10 w-10 text-white"
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"

@@ -27,11 +27,11 @@ export function AppNumbersPage() {
 		<PageLayout>
 			<PageLayout.Title>stats</PageLayout.Title>
 
-			<div className="flex gap-4 h-full relative flex-col overflow-auto bg-card p-4">
+			<main className="flex gap-4 h-full relative flex-col overflow-auto bg-card p-4">
 				<ChartHoursBy date={date} timeframe={timeframe} />
 
 				<ChartTagDistribution date={date} timeframe={timeframe} />
-			</div>
+			</main>
 
 			<PageLayout.Footer className="flex gap-4">
 				<Button size="icon" onClick={() => scrollTimeframe("left")}>

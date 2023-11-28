@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ExecWhenOnScreen } from "@/components/exec-when-on-screen";
 import { PageLayout } from "@/components/page-layout";
 import { type ApiTaskWithTag, useInfiniteTasks } from "@/utils/api/tasks";
+import { formatMonth } from "@/utils/format";
 
 import { AddTask } from "./add-task";
 import { BaseTask } from "./base-task";
@@ -19,7 +20,7 @@ export function AppTasksPage() {
 		<PageLayout>
 			<PageLayout.Title>tasks</PageLayout.Title>
 
-			<div className="flex h-full relative flex-col overflow-auto bg-card-item">
+			<main className="flex h-full relative flex-col overflow-auto bg-card-item">
 				{query.isLoading ? null : query.isError ? (
 					<p>error</p>
 				) : (
@@ -28,10 +29,7 @@ export function AppTasksPage() {
 							{monthEntries.map(([monthKey, tasks]) => (
 								<li key={monthKey}>
 									<h2 className="px-4 py-3 text-sm font-bold border-b sticky top-0 bg-card shadow-lg">
-										{new Date(monthKey).toLocaleString(undefined, {
-											month: "long",
-											year: "numeric",
-										})}
+										{formatMonth(new Date(monthKey))}
 									</h2>
 
 									<ul className="divide-y">
@@ -58,7 +56,7 @@ export function AppTasksPage() {
 				)}
 
 				<ExecWhenOnScreen func={query.fetchNextPage} />
-			</div>
+			</main>
 
 			<PageLayout.Footer>
 				<AddTask />
@@ -69,7 +67,7 @@ export function AppTasksPage() {
 
 function Task({ task }: { task: ApiTaskWithTag }) {
 	return (
-		<li className="px-4 py-3 flex justify-between gap-4">
+		<li className="px-4 py-3 flex justify-between items-center gap-4">
 			<div className="flex gap-4 items-center">
 				<BaseTask task={task} />
 			</div>

@@ -8,12 +8,14 @@ import { apiRequest } from "@/utils/api/apiRequest";
 import { errorToast } from "@/utils/errorToast";
 import { urlBase64ToUint8Array } from "@/utils/urlBase64ToUint8Array";
 
+import { Logout } from "./logout";
+
 export function AppSettingsPage() {
 	return (
 		<PageLayout>
 			<PageLayout.Title>settings</PageLayout.Title>
 
-			<div className="flex divide-y relative h-full flex-col overflow-auto p-4">
+			<main className="flex divide-y relative h-full flex-col overflow-auto p-4">
 				<section className="flex flex-col border rounded-xl bg-card-item p-4 space-y-3">
 					<h2 className="text-lg font-bold">notifications</h2>
 
@@ -30,11 +32,11 @@ export function AppSettingsPage() {
 						<Switch id="notifications" />
 					</div>
 				</section>
-			</div>
+			</main>
 
 			<PageLayout.Footer className="flex gap-4 justify-between">
 				<Button variant="destructive">delete account</Button>
-				<Button>log out</Button>
+				<Logout />
 			</PageLayout.Footer>
 		</PageLayout>
 	);

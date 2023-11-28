@@ -18,7 +18,7 @@ export function SpinnerButton({
 				spin && "opacity-50"
 			)}
 		>
-			<Spinner className={cn("absolute h-[1.2rem]", !spin && "opacity-0")} />
+			<Spinner className={cn("absolute scale-50", !spin && "opacity-0")} />
 
 			<span className={cn(spin && "opacity-0")}>{children}</span>
 		</Button>
