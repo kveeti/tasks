@@ -70,9 +70,11 @@ export function Digit(props: { place: number; value: number }) {
 
 	return (
 		<div style={{ height }} className="relative w-[1ch] tabular-nums">
-			{[...Array(10).keys()].map((i) => (
-				<Number key={i} mv={animatedValue} number={i} />
-			))}
+			{Array(10)
+				.fill(0)
+				.map((_, i) => (
+					<Number key={i} mv={animatedValue} number={i} />
+				))}
 		</div>
 	);
 }
