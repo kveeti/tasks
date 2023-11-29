@@ -5,7 +5,6 @@ import { Toaster } from "sonner";
 
 import { Entrypoint } from "./Entrypoint";
 import { ApiProvider } from "./api";
-import { FullscreenLoading } from "./components/fullscreen-loading";
 import "./main.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -19,9 +18,3 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 		</ApiProvider>
 	</React.StrictMode>
 );
-
-function Sus() {
-	console.log("Sus");
-
-	return <FullscreenLoading />;
-}

@@ -1,4 +1,4 @@
-use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike};
 
 pub fn start_of_week<Tz>(date: DateTime<Tz>) -> DateTime<Tz>
 where
