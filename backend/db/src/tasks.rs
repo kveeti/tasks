@@ -247,31 +247,31 @@ pub async fn get_hours_by_stats(
     db: &Db,
     user_id: &str,
     precision: &StatsPrecision,
-    start: &DateTime<Utc>,
-    end: &DateTime<Utc>,
+    start: &NaiveDateTime,
+    end: &NaiveDateTime,
     tz: &chrono_tz::Tz,
 ) -> Result<Vec<HoursByStat>, anyhow::Error> {
     let seconds_by_day = sqlx::query!(
         r#"
             SELECT
-                date_trunc($1, start_at AT TIME ZONE $2) AS date,
+                date_trunc($1, start_at AT TIME ZONE $5) AS date,
                 CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
             FROM
                 tasks
             WHERE
-                user_id = $3
-                AND start_at >= $4
-                AND start_at <= $5
+                user_id = $2
+                AND start_at AT TIME ZONE $5 >= $3
+                AND start_at AT TIME ZONE $5 <= $4
             GROUP BY
                 date
             ORDER BY
                 date ASC;
         "#,
         precision.as_ref(),
-        tz.name(),
         user_id,
         start,
         end,
+        tz.name(),
     )
     .fetch_all(db)
     .await
@@ -293,33 +293,43 @@ pub async fn get_hours_by_stats(
 pub struct TagDistributionStat {
     pub tag_label: String,
     pub tag_color: String,
-    pub seconds: Option<f64>,
+    pub seconds: Option<i64>,
 }
 
 pub async fn get_tag_distribution_stats(
     db: &Db,
     user_id: &str,
-    start: &DateTime<Utc>,
-    end: &DateTime<Utc>,
+    start: &NaiveDateTime,
+    end: &NaiveDateTime,
+    tz: &chrono_tz::Tz,
 ) -> Result<Vec<TagDistributionStat>, anyhow::Error> {
     let tag_distribution = sqlx::query_as!(
         TagDistributionStat,
         r#"
-            SELECT 
-                tags.label as tag_label,
-                tags.color as tag_color, 
-                CAST(SUM(seconds) AS float) AS seconds
-            FROM tasks
-            INNER JOIN tags ON tasks.tag_id = tags.id
-            WHERE tasks.user_id = $1
-            AND tasks.start_at >= $2
-            AND tasks.start_at <= $3
-            GROUP BY tag_label, tag_color
-            ORDER BY seconds DESC
+            SELECT
+                tags.label AS tag_label,
+                tags.color AS tag_color,
+                SUM(seconds) AS seconds
+            FROM
+                tasks
+            INNER JOIN
+                tags
+            ON
+                tasks.tag_id = tags.id
+            WHERE
+                tasks.user_id = $1
+                AND tasks.start_at AT TIME ZONE $4 >= $2
+                AND tasks.start_at AT TIME ZONE $4 <= $3
+            GROUP BY
+                tag_label,
+                tag_color
+            ORDER BY
+                seconds DESC;
         "#,
         user_id,
         start,
         end,
+        tz.name()
     )
     .fetch_all(db)
     .await

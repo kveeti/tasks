@@ -1,6 +1,8 @@
+import { format } from "date-fns";
+
 import type { ApiTaskWithTag } from "@/utils/api/tasks";
-import { formatDate, formatTime } from "@/utils/format";
 import { humanizer } from "@/utils/humanizer";
+import { formatDate, formatTime } from "@/utils/time";
 
 export function BaseTask({ task }: { task: ApiTaskWithTag }) {
 	const start = new Date(task.start_at);
@@ -20,7 +22,12 @@ export function BaseTask({ task }: { task: ApiTaskWithTag }) {
 
 			<div>
 				<p>{task.tag_label}</p>
-				<p className="text-gray-300 text-sm">{formatDate(start)}</p>
+				<time
+					className="text-gray-300 text-sm"
+					dateTime={format(start, "yyyy-MM-dd'T'HH:mm")}
+				>
+					{formatDate(start)}
+				</time>
 				<p className="text-gray-300 text-sm">
 					<span>{formatTime(start)}</span>
 					<span> - </span>

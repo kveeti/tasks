@@ -47,9 +47,16 @@ pub async fn get_hours_by_stats_endpoint(
             .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
     })?;
 
-    let stats = get_hours_by_stats(&state.db2, &user_id, &precision, &start, &end, &tz)
-        .await
-        .context("error getting stats")?;
+    let stats = get_hours_by_stats(
+        &state.db2,
+        &user_id,
+        &precision,
+        &start.naive_utc(),
+        &end.naive_utc(),
+        &tz,
+    )
+    .await
+    .context("error getting stats")?;
 
     return Ok(Json(json!({
         "precision": precision,
@@ -96,7 +103,7 @@ fn fill_in_missing_days(
 pub struct TagDistributionStat {
     pub tag_label: String,
     pub tag_color: String,
-    pub seconds: f64,
+    pub seconds: i64,
     pub percentage: f64,
 }
 
@@ -123,26 +130,38 @@ pub async fn get_tag_distribution_stats_endpoint(
         StatsPrecision::Month => (start_of_year(date), end_of_year(date)),
     };
 
-    let stats = get_tag_distribution_stats(&state.db2, &user_id, &start, &end)
-        .await
-        .context("error getting seconds by day")?;
+    let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
+        tz_str
+            .parse::<Tz>()
+            .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
+    })?;
+
+    let stats = get_tag_distribution_stats(
+        &state.db2,
+        &user_id,
+        &start.naive_utc(),
+        &end.naive_utc(),
+        &tz,
+    )
+    .await
+    .context("error getting seconds by day")?;
 
     let total_seconds = stats
         .iter()
         .map(|s| {
             if let Some(seconds) = s.seconds {
-                return seconds.floor();
+                return seconds;
             } else {
-                return 0.0;
+                return 0;
             }
         })
-        .sum::<f64>();
+        .sum::<i64>();
 
     let stats = stats
         .iter()
         .map(|s| {
-            let percentage = if total_seconds > 0.0 {
-                (s.seconds.unwrap_or(0.0) / total_seconds) * 100.0
+            let percentage = if total_seconds > 0 {
+                (s.seconds.unwrap_or(0) / total_seconds) as f64 * 100.0
             } else {
                 0.0
             };
@@ -150,8 +169,8 @@ pub async fn get_tag_distribution_stats_endpoint(
             return TagDistributionStat {
                 tag_label: s.tag_label.clone(),
                 tag_color: s.tag_color.clone(),
-                seconds: s.seconds.unwrap_or(0.0).floor(),
-                percentage: percentage.floor(),
+                seconds: s.seconds.unwrap_or(0),
+                percentage: percentage.round(),
             };
         })
         .collect::<Vec<TagDistributionStat>>();

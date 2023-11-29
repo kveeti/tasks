@@ -28,3 +28,7 @@ export function formatMonth(date: Date) {
 		year: "numeric",
 	}).format(date);
 }
+
+export function getTz() {
+	return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}

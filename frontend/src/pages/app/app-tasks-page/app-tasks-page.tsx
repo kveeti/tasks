@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ExecWhenOnScreen } from "@/components/exec-when-on-screen";
 import { PageLayout } from "@/components/page-layout";
 import { type ApiTaskWithTag, useInfiniteTasks } from "@/utils/api/tasks";
-import { formatMonth } from "@/utils/format";
+import { formatMonth } from "@/utils/time";
 
 import { AddTask } from "./add-task";
 import { BaseTask } from "./base-task";

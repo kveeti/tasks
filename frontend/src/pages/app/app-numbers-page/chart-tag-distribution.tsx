@@ -1,8 +1,8 @@
-import { secondsToHours } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Cell, Pie, PieChart } from "recharts";
 
 import { type StatsPrecision, useTagDistributionStats } from "@/utils/api/stats";
+import { secondsToHours } from "@/utils/number";
 
 export function ChartTagDistribution({
 	date,
@@ -62,7 +62,7 @@ export function ChartTagDistribution({
 
 								<div className="flex gap-8">
 									<span className="whitespace-nowrap">
-										{Math.floor(secondsToHours(stats.data.total_seconds))} h
+										{secondsToHours(stats.data.total_seconds)} h
 									</span>
 								</div>
 							</div>
@@ -85,7 +85,7 @@ export function ChartTagDistribution({
 										<div className="flex gap-8">
 											<span>{d.percentage}%</span>
 											<span className="whitespace-nowrap">
-												{Math.floor(secondsToHours(d.seconds))} h
+												{secondsToHours(d.seconds)} h
 											</span>
 										</div>
 									</li>
