@@ -1,6 +1,6 @@
 use crate::Db;
 use anyhow::Context;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use std::str::FromStr;
 
 #[derive(Debug, serde::Serialize)]
@@ -202,39 +202,36 @@ pub async fn delete(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow:
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum StatsTimeframe {
+pub enum StatsPrecision {
     Day,
     Week,
     Month,
-    Year,
 }
 
-impl FromStr for StatsTimeframe {
+impl FromStr for StatsPrecision {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "day" => Ok(StatsTimeframe::Day),
-            "week" => Ok(StatsTimeframe::Week),
-            "month" => Ok(StatsTimeframe::Month),
-            "year" => Ok(StatsTimeframe::Year),
-            _ => Err(anyhow::anyhow!("invalid timeframe")),
+            "day" => Ok(StatsPrecision::Day),
+            "week" => Ok(StatsPrecision::Week),
+            "month" => Ok(StatsPrecision::Month),
+            _ => Err(anyhow::anyhow!("invalid precision")),
         }
     }
 }
 
-impl AsRef<str> for StatsTimeframe {
+impl AsRef<str> for StatsPrecision {
     fn as_ref(&self) -> &str {
         match self {
-            StatsTimeframe::Day => "day",
-            StatsTimeframe::Week => "week",
-            StatsTimeframe::Month => "month",
-            StatsTimeframe::Year => "year",
+            StatsPrecision::Day => "day",
+            StatsPrecision::Week => "week",
+            StatsPrecision::Month => "month",
         }
     }
 }
 
-impl ToString for StatsTimeframe {
+impl ToString for StatsPrecision {
     fn to_string(&self) -> String {
         self.as_ref().to_string()
     }
@@ -242,28 +239,36 @@ impl ToString for StatsTimeframe {
 
 #[derive(serde::Serialize, Clone)]
 pub struct HoursByStat {
-    pub date: Option<DateTime<Utc>>,
+    pub date: Option<NaiveDateTime>,
     pub hours: Option<f64>,
 }
 
 pub async fn get_hours_by_stats(
     db: &Db,
     user_id: &str,
-    timeframe: &StatsTimeframe,
+    precision: &StatsPrecision,
     start: &DateTime<Utc>,
     end: &DateTime<Utc>,
+    tz: &chrono_tz::Tz,
 ) -> Result<Vec<HoursByStat>, anyhow::Error> {
     let seconds_by_day = sqlx::query!(
         r#"
-            SELECT date_trunc($1, start_at) AS date, CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
-            FROM tasks
-            WHERE user_id = $2
-            AND start_at >= $3
-            AND start_at <= $4
-            GROUP BY date
-            ORDER BY date ASC
+            SELECT
+                date_trunc($1, start_at AT TIME ZONE $2) AS date,
+                CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
+            FROM
+                tasks
+            WHERE
+                user_id = $3
+                AND start_at >= $4
+                AND start_at <= $5
+            GROUP BY
+                date
+            ORDER BY
+                date ASC;
         "#,
-        timeframe.as_ref(),
+        precision.as_ref(),
+        tz.name(),
         user_id,
         start,
         end,

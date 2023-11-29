@@ -2,16 +2,16 @@ import { secondsToHours } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Cell, Pie, PieChart } from "recharts";
 
-import { type StatsTimeframe, useTagDistributionStats } from "@/utils/api/stats";
+import { type StatsPrecision, useTagDistributionStats } from "@/utils/api/stats";
 
 export function ChartTagDistribution({
 	date,
-	timeframe,
+	precision,
 }: {
 	date: Date;
-	timeframe: StatsTimeframe;
+	precision: StatsPrecision;
 }) {
-	const stats = useTagDistributionStats({ date, timeframe });
+	const stats = useTagDistributionStats({ date, precision });
 	const [ref, bounds] = useMeasure();
 
 	return (

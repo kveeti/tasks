@@ -12,6 +12,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 chrono = { workspace = true }
+chrono-tz = { workspace = true }
 reqwest = { workspace = true }
 futures-util = { workspace = true }
 config = { path = "../config" }

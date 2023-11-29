@@ -2,13 +2,13 @@ CREATE TABLE "users" (
     "id" VARCHAR(26) PRIMARY KEY,
     "email" VARCHAR(255) UNIQUE NOT NULL,
     "preferences" BIGINT NOT NULL,
-    "joined_at" TIMESTAMP WITH TIME ZONE NOT NULL
+    "joined_at" TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE "sessions" (
     "id" VARCHAR(26) PRIMARY KEY,
     "user_id" VARCHAR(26) NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-    "expires_at" TIMESTAMP WITH TIME ZONE NOT NULL
+    "expires_at" TIMESTAMPTZ NOT NULL
 );
  
 CREATE TABLE "tags" (
@@ -24,8 +24,8 @@ CREATE TABLE "tasks" (
     "tag_id" VARCHAR(26) NOT NULL REFERENCES "tags"("id") ON DELETE CASCADE,
     "is_manual" BOOLEAN NOT NULL,
     "seconds" INTEGER NOT NULL,
-    "start_at" TIMESTAMP WITH TIME ZONE NOT NULL,
-    "end_at" TIMESTAMP WITH TIME ZONE NOT NULL
+    "start_at" TIMESTAMPTZ NOT NULL,
+    "end_at" TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE "notification_subs" (
@@ -42,5 +42,5 @@ CREATE TABLE "notifications" (
     "task_id" VARCHAR(26) NOT NULL REFERENCES "tasks"("id") ON DELETE CASCADE,
     "title" VARCHAR(255) NOT NULL,
     "message" VARCHAR(255) NOT NULL,
-    "send_at" TIMESTAMP WITH TIME ZONE NOT NULL
+    "send_at" TIMESTAMPTZ NOT NULL
 );

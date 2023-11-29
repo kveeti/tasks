@@ -2,16 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiRequest } from "./apiRequest";
 
-export type StatsTimeframe = "day" | "week" | "month" | "year";
+export type StatsPrecision = "day" | "week" | "month";
 
-export function useHoursByStats({ date, timeframe }: { date: Date; timeframe: StatsTimeframe }) {
+export function useHoursByStats({ date, precision }: { date: Date; precision: StatsPrecision }) {
 	return useQuery({
-		queryKey: ["stats-hours-by", date, timeframe],
+		queryKey: ["stats-hours-by", date, precision],
 		queryFn: ({ signal }) =>
 			apiRequest<{
-				timeframe: StatsTimeframe;
+				precision: StatsPrecision;
 				start: string;
 				end: string;
+				tz: string;
 				stats: {
 					date: string;
 					hours: number;
@@ -19,7 +20,11 @@ export function useHoursByStats({ date, timeframe }: { date: Date; timeframe: St
 			}>({
 				method: "GET",
 				path: "/stats/hours-by",
-				query: new URLSearchParams({ date: date.toISOString(), timeframe }),
+				query: new URLSearchParams({
+					date: date.toISOString(),
+					precision,
+					tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+				}),
 				signal,
 			}),
 	});
@@ -27,16 +32,16 @@ export function useHoursByStats({ date, timeframe }: { date: Date; timeframe: St
 
 export function useTagDistributionStats({
 	date,
-	timeframe,
+	precision,
 }: {
 	date: Date;
-	timeframe: StatsTimeframe;
+	precision: StatsPrecision;
 }) {
 	return useQuery({
-		queryKey: ["stats-tag-distribution", date, timeframe] as const,
+		queryKey: ["stats-tag-distribution", date, precision] as const,
 		queryFn: ({ queryKey, signal }) =>
 			apiRequest<{
-				timeframe: StatsTimeframe;
+				precision: StatsPrecision;
 				start: string;
 				end: string;
 				total_seconds: number;
@@ -51,7 +56,7 @@ export function useTagDistributionStats({
 				path: "/stats/tag-distribution",
 				query: new URLSearchParams({
 					date: queryKey[1].toISOString(),
-					timeframe: queryKey[2],
+					precision: queryKey[2],
 				}),
 				signal,
 			}),

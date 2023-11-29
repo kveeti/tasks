@@ -2,10 +2,10 @@ import { format } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { type StatsTimeframe, useHoursByStats } from "@/utils/api/stats";
+import { useHoursByStats, type StatsPrecision } from "@/utils/api/stats";
 
-export function ChartHoursBy({ date, timeframe }: { date: Date; timeframe: StatsTimeframe }) {
-	const stats = useHoursByStats({ date, timeframe });
+export function ChartHoursBy({ date, precision }: { date: Date; precision: StatsPrecision }) {
+	const stats = useHoursByStats({ date, precision });
 	const [ref, bounds] = useMeasure();
 
 	return (

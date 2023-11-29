@@ -1,46 +1,44 @@
 import {
 	addMonths,
 	addWeeks,
-	addYears,
 	endOfWeek,
 	format,
 	isSameWeek,
 	isSameYear,
 	subMonths,
 	subWeeks,
-	subYears,
 } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { type StatsTimeframe } from "@/utils/api/stats";
+import { type StatsPrecision } from "@/utils/api/stats";
 
 import { ChartHoursBy } from "./chart-hours-by";
 import { ChartTagDistribution } from "./chart-tag-distribution";
 
 export function AppNumbersPage() {
-	const { date, timeframe, formattedDate, toggleTimeFrame, scrollTimeframe } = usePageState();
+	const { date, precision, formattedDate, toggleTimeFrame, scrollPrecision } = usePageState();
 
 	return (
 		<PageLayout>
 			<PageLayout.Title>stats</PageLayout.Title>
 
 			<main className="flex gap-4 h-full relative flex-col overflow-auto bg-card p-4">
-				<ChartHoursBy date={date} timeframe={timeframe} />
+				<ChartHoursBy date={date} precision={precision} />
 
-				<ChartTagDistribution date={date} timeframe={timeframe} />
+				<ChartTagDistribution date={date} precision={precision} />
 			</main>
 
 			<PageLayout.Footer className="flex gap-4">
-				<Button size="icon" onClick={() => scrollTimeframe("left")}>
+				<Button size="icon" onClick={() => scrollPrecision("left")}>
 					<ChevronLeftIcon className="w-5 h-5" />
 				</Button>
 				<Button size="icon" className="grow" onClick={toggleTimeFrame}>
 					{formattedDate}
 				</Button>
-				<Button size="icon" onClick={() => scrollTimeframe("right")}>
+				<Button size="icon" onClick={() => scrollPrecision("right")}>
 					<ChevronRightIcon className="w-5 h-5" />
 				</Button>
 			</PageLayout.Footer>
@@ -50,10 +48,10 @@ export function AppNumbersPage() {
 
 function usePageState() {
 	const [date, setDate] = useState(new Date());
-	const [timeframe, setTimeframe] = useState<StatsTimeframe>("week");
+	const [precision, setPrecision] = useState<StatsPrecision>("day");
 
 	const formattedDate =
-		timeframe === "week"
+		precision === "day"
 			? isSameWeek(date, new Date())
 				? "this week"
 				: isSameWeek(date, subWeeks(new Date(), 1))
@@ -66,49 +64,49 @@ function usePageState() {
 								: ", yyyy"
 						}`
 				  )
-			: timeframe === "month"
+			: precision === "week"
 			? format(date, "MMMM yyyy")
-			: timeframe === "year"
+			: precision === "month"
 			? format(date, "yyyy")
 			: "";
 
 	function toggleTimeFrame() {
-		if (timeframe === "week") {
-			setTimeframe("month");
-		} else if (timeframe === "month") {
-			setTimeframe("year");
-		} else if (timeframe === "year") {
-			setTimeframe("week");
+		if (precision === "day") {
+			setPrecision("week");
+		} else if (precision === "week") {
+			setPrecision("month");
+		} else if (precision === "month") {
+			setPrecision("day");
 		}
 	}
 
-	function scrollTimeframe(direction: "left" | "right") {
-		if (timeframe === "week") {
+	function scrollPrecision(direction: "left" | "right") {
+		if (precision === "day") {
 			if (direction === "left") {
 				setDate((d) => subWeeks(d, 1));
 			} else {
 				setDate((d) => addWeeks(d, 1));
 			}
-		} else if (timeframe === "month") {
+		} else if (precision === "week") {
+			if (direction === "left") {
+				setDate((d) => subWeeks(d, 1));
+			} else {
+				setDate((d) => addWeeks(d, 1));
+			}
+		} else if (precision === "month") {
 			if (direction === "left") {
 				setDate((d) => subMonths(d, 1));
 			} else {
 				setDate((d) => addMonths(d, 1));
-			}
-		} else if (timeframe === "year") {
-			if (direction === "left") {
-				setDate((d) => subYears(d, 1));
-			} else {
-				setDate((d) => addYears(d, 1));
 			}
 		}
 	}
 
 	return {
 		date,
-		timeframe,
+		precision,
 		formattedDate,
 		toggleTimeFrame,
-		scrollTimeframe,
+		scrollPrecision,
 	};
 }
