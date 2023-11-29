@@ -15,13 +15,12 @@ export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTa
 
 		const diff = differenceInSeconds(new Date(onGoingTask.end_at), new Date());
 
-		setOnGoingSeconds(diff);
-
-		if (diff === 0) {
-			queryClient.setQueryData(["on-going-task"], () => null);
-			queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
-			queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+		if (diff === 0 && onGoingSeconds === 0) {
+			queryClient.resetQueries({ queryKey: ["on-going-task"] });
+			queryClient.invalidateQueries({ queryKey: ["infinite-tasks"], refetchType: "all" });
 		}
+
+		setOnGoingSeconds(diff);
 	}
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
