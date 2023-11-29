@@ -4,11 +4,10 @@ import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
-import { Checkmark } from "@/Ui/Status";
+import { CheckmarkGreen } from "@/Ui/Status";
 import { Spinner } from "@/components/spinner";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/utils/api/apiRequest";
-import { betterLazy } from "@/utils/lazyWithPrefetch";
 import { useSetTimeout } from "@/utils/useSetInterval";
 
 export function CallbackPage() {
@@ -25,7 +24,7 @@ export function CallbackPage() {
 					path: "/auth/google-verify",
 					query: new URLSearchParams({ code }),
 				}),
-				new Promise((resolve) => setTimeout(resolve, 800)),
+				new Promise((resolve) => setTimeout(resolve, 1000)),
 			]);
 
 			if (res.status === "rejected") {
@@ -43,7 +42,7 @@ export function CallbackPage() {
 		() => {
 			setPage("welcome");
 		},
-		mutation.isSuccess ? 1500 : null
+		mutation.isSuccess ? 1600 : null
 	);
 
 	useSetTimeout(
@@ -52,7 +51,14 @@ export function CallbackPage() {
 				queryClient.setQueryData(["auth"], mutation.data);
 			}
 		},
-		page === "welcome" ? 3000 : null
+		page === "welcome" ? 2000 : null
+	);
+
+	useSetTimeout(
+		() => {
+			navigate("/app");
+		},
+		mutation.isError ? 1000 : null
 	);
 
 	useEffect(() => {
@@ -68,8 +74,6 @@ export function CallbackPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	betterLazy(() => import("../authenticated-app").then((m) => ({ default: m.AuthenticatedApp })));
-
 	return (
 		<div className="flex flex-col items-center gap-10">
 			<div className="bg-card border rounded-2xl min-w-[200px] w-full h-full justify-center">
@@ -82,7 +86,7 @@ export function CallbackPage() {
 						<div className="flex flex-col gap-6 justify-center items-center w-full">
 							{page === "logged-in" ? (
 								<>
-									<Checkmark />
+									<CheckmarkGreen />
 
 									<p>logged in</p>
 								</>
@@ -153,7 +157,7 @@ function Resizeable({ children }: { children: ReactNode }) {
 
 function ignoreCircularReferences() {
 	const seen = new WeakSet();
-	return (key: any, value: any) => {
+	return (key: string, value: unknown) => {
 		if (key.startsWith("_")) return; // Don't compare React's internal props.
 		if (typeof value === "object" && value !== null) {
 			if (seen.has(value)) return;
