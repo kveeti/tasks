@@ -17,18 +17,6 @@ export type ApiTaskWithTag = ApiTask & {
 	tag_color: string;
 };
 
-export function useTasks() {
-	return useQuery<ApiTaskWithTag[]>({
-		queryKey: ["tasks"],
-		queryFn: ({ signal }) =>
-			apiRequest({
-				signal,
-				method: "GET",
-				path: "/tasks",
-			}),
-	});
-}
-
 const MAX_TASKS_PER_PAGE = 30;
 export function useInfiniteTasks() {
 	return useInfiniteQuery({
@@ -76,7 +64,10 @@ export function useAddManualTask() {
 				body: variables,
 			}),
 		onSuccess: async () => {
-			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }
@@ -94,8 +85,11 @@ export function useStartTask() {
 		onSuccess: async (newTask) => {
 			queryClient.setQueryData<ApiTaskWithTag | undefined>(["on-going-task"], () => newTask);
 
-			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
-			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"], refetchType: "all" });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }
@@ -113,8 +107,11 @@ export function useStopOnGoingTask() {
 		onSuccess: async () => {
 			queryClient.setQueryData(["on-going-task"], () => null);
 
-			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
-			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"], refetchType: "all" });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }
@@ -136,8 +133,11 @@ export function useDeleteTask() {
 				queryClient.setQueryData<ApiTaskWithTag | undefined>(["on-going-task"], undefined);
 			}
 
-			void queryClient.invalidateQueries({ queryKey: ["on-going-task"] });
-			void queryClient.invalidateQueries({ queryKey: ["infinite-tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"], refetchType: "all" });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }

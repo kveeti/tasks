@@ -43,8 +43,12 @@ export function useEditTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries({ queryKey: ["tags"] });
-			void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+			void queryClient.invalidateQueries({ queryKey: ["tags"], refetchType: "all" });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"], refetchType: "all" });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }
@@ -66,7 +70,7 @@ export function useAddTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries({ queryKey: ["tags"] });
+			void queryClient.invalidateQueries({ queryKey: ["tags"], refetchType: "all" });
 		},
 	});
 }
@@ -87,7 +91,12 @@ export function useDeleteTag() {
 				}
 			});
 
-			void queryClient.invalidateQueries({ queryKey: ["tags"] });
+			void queryClient.invalidateQueries({ queryKey: ["tags"], refetchType: "all" });
+			void queryClient.invalidateQueries({ queryKey: ["on-going-task"], refetchType: "all" });
+			void queryClient.invalidateQueries({
+				queryKey: ["infinite-tasks"],
+				refetchType: "all",
+			});
 		},
 	});
 }
