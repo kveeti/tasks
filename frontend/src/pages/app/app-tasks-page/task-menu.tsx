@@ -8,7 +8,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { ApiTaskWithTag } from "@/utils/api/tasks";
-import { useDialog } from "@/utils/use-dialog";
+import { useDialog } from "@/utils/hooks/use-dialog";
 
 import { DeleteTask } from "./delete-task";
 

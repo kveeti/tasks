@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { useNotifications } from "@/utils/use-notifications";
+import { useNotifications } from "@/utils/hooks/use-notifications";
 
 import { AppIndexPage } from "./app/app-index-page/app-index-page";
 import { AppLayout } from "./app/app-layout/app-layout";
@@ -27,4 +27,15 @@ export function AuthenticatedApp() {
 			</Routes>
 		</TimerContext>
 	);
+}
+
+if ("serviceWorker" in navigator) {
+	(async () => {
+		console.debug("registering service worker...");
+		await navigator.serviceWorker.register("/sw.js");
+		console.debug("service worker registered");
+
+		await navigator.serviceWorker.ready;
+		console.debug("service worker ready");
+	})();
 }

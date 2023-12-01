@@ -8,7 +8,7 @@ import { CheckmarkGreen } from "@/Ui/Status";
 import { Spinner } from "@/components/spinner";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/utils/api/apiRequest";
-import { useSetTimeout } from "@/utils/useSetInterval";
+import { useSetTimeout } from "@/utils/hooks/useSetInterval";
 
 export function CallbackPage() {
 	const [searchParams] = useSearchParams();

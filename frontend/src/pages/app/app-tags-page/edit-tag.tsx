@@ -30,8 +30,8 @@ import {
 } from "@/components/ui/select";
 import { type ApiTag, useEditTag } from "@/utils/api/tags";
 import { errorToast } from "@/utils/errorToast";
+import { useDialog } from "@/utils/hooks/use-dialog";
 import { tagColors, tagColors2 } from "@/utils/tag-colors";
-import { useDialog } from "@/utils/use-dialog";
 
 export function EditTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void }) {
 	const dialog = useDialog();

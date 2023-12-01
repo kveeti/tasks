@@ -31,11 +31,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useTags } from "@/utils/api/tags";
 import { useAddManualTask } from "@/utils/api/tasks";
-import { cn } from "@/utils/classNames";
 import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/use-dialog";
+import { useDialog } from "@/utils/hooks/use-dialog";
 
 export function AddTask() {
 	const dialog = useDialog();

@@ -11,7 +11,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { type ApiTaskWithTag, useDeleteTask } from "@/utils/api/tasks";
 import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/use-dialog";
+import { useDialog } from "@/utils/hooks/use-dialog";
 
 import { BaseTask } from "./base-task";
 

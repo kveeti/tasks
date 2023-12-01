@@ -7,7 +7,7 @@ export type ApiError = {
 type Props = {
 	path: string;
 	method: string;
-	body?: any;
+	body?: unknown;
 	query?: URLSearchParams;
 	signal?: AbortSignal;
 };
@@ -19,7 +19,7 @@ export async function apiRequest<TReturnValue>(props: Props) {
 			signal: props.signal,
 			method: props.method,
 			credentials: "include",
-			...(props.body && {
+			...(!!props.body && {
 				body: JSON.stringify(props.body),
 				headers: { "Content-Type": "application/json" },
 			}),

@@ -11,7 +11,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { type ApiTag, useDeleteTag } from "@/utils/api/tags";
 import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/use-dialog";
+import { useDialog } from "@/utils/hooks/use-dialog";
 
 import { BaseTag } from "./base-tag";
 

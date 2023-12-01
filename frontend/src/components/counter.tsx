@@ -1,5 +1,5 @@
 // from: Sam Selikoff's counter example
-import { AnimatePresence, MotionValue, motion, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, type MotionValue, motion, useSpring, useTransform } from "framer-motion";
 import { useEffect } from "react";
 
 const fontSize = 88;

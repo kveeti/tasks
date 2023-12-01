@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { registerSW } from "virtual:pwa-register";
 
 import { AuthenticatedApp } from "./pages/authenticated-app";
 import { UnauthenticatedApp } from "./pages/unauthenticated-app";
@@ -39,12 +38,4 @@ export function Entrypoint() {
 			)}
 		</AnimatePresence>
 	);
-}
-
-if ("serviceWorker" in navigator) {
-	console.debug("registering service worker");
-
-	registerSW();
-} else {
-	console.warn("no service worker support");
 }

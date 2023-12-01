@@ -3,7 +3,7 @@ import { differenceInSeconds } from "date-fns";
 import { useEffect, useState } from "react";
 
 import { type ApiTaskWithTag } from "@/utils/api/tasks";
-import { useSetInterval } from "@/utils/useSetInterval";
+import { useSetInterval } from "@/utils/hooks/useSetInterval";
 
 export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTag }) {
 	const [onGoingSeconds, setOnGoingSeconds] = useState(0);

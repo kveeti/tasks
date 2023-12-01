@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageLayout } from "@/components/page-layout";
@@ -6,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { errorToast } from "@/utils/errorToast";
+import { useLocalStorage } from "@/utils/hooks/use-local-storage";
+import { notificationsEnabledLocalStorageKey } from "@/utils/hooks/use-notifications";
 import { urlBase64ToUint8Array } from "@/utils/urlBase64ToUint8Array";
 
 import { Logout } from "./logout";
@@ -43,21 +44,25 @@ export function AppSettingsPage() {
 }
 
 function NotificationSwitch() {
-	const [enabled, setEnabled] = useState(localStorage.getItem("notifs-enabled") === "1");
+	const [notificationEnabled, setNotificationsEnabled] = useLocalStorage(
+		notificationsEnabledLocalStorageKey,
+		"0"
+	);
+	const isNotificationsEnabled = notificationEnabled === "1";
 
 	return (
 		<>
 			<label htmlFor="notifications">enabled on this device</label>
 			<Switch
 				id="notifications"
-				checked={enabled}
+				checked={isNotificationsEnabled}
 				onCheckedChange={(value) => {
 					if (value) {
 						const toastId = toast.loading("enabling notifications...");
 
 						return enableNotifications()
 							.then(() => {
-								setEnabled(true);
+								setNotificationsEnabled("1");
 								toast.success("notifications enabled", { id: toastId });
 							})
 							.catch(errorToast("error enabling notifications", { id: toastId }));
@@ -66,7 +71,7 @@ function NotificationSwitch() {
 					const toastId = toast.loading("disabling notifications...");
 					disableNotifications()
 						.then(() => {
-							setEnabled(false);
+							setNotificationsEnabled("0");
 							toast.success("notifications disabled", { id: toastId });
 						})
 						.catch(errorToast("error disabling notifications", { id: toastId }));
@@ -130,19 +135,17 @@ async function disableNotifications() {
 }
 
 async function createNotifSubscription(reg: ServiceWorkerRegistration) {
-	const result = await window.Notification.requestPermission();
-
+	const result = await window.Notification.requestPermission().catch(() => "denied");
 	if (result !== "granted") {
 		return { error: "permission denied" };
 	}
 
 	const subscription = await reg.pushManager.subscribe({
 		userVisibleOnly: true,
-		applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_APP_VAPID_PUB_KEY),
+		applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_APP_VAPID_PUBLIC_KEY),
 	});
 
-	const subJson = subscription.toJSON();
-
+	const subJson = subscription?.toJSON();
 	if (!subJson.keys?.auth || !subJson.keys?.p256dh || !subJson.endpoint) {
 		return { error: "invalid subscription" };
 	}
