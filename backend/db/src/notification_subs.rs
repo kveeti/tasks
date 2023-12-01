@@ -30,7 +30,7 @@ pub async fn upsert(
         r#"
             INSERT INTO notification_subs (id, user_id, endpoint, p256dh, auth)
             VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (user_id, endpoint) DO UPDATE
+            ON CONFLICT (endpoint) DO UPDATE
             SET p256dh = $4, auth = $5
         "#,
         notification_sub.id,
