@@ -26,11 +26,11 @@ self.addEventListener("push", (event) => {
 
 	console.debug("sw - notificationClick JSON", { json });
 
-	const title = eventData?.title;
-	const body = eventData?.message;
+	const title = json?.title;
+	const body = json?.message;
 
 	if (!title || !body) {
-		console.debug("no title or body in parsed eventData", { json });
+		console.debug("no title or message in parsed json", { json });
 		return;
 	}
 
