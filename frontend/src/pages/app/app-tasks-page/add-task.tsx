@@ -1,5 +1,5 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { addHours, format } from "date-fns";
+import { addSeconds, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type Output, date, number, object, string, ulid } from "valibot";
@@ -69,7 +69,7 @@ export function AddTask() {
 const addTaskFormSchema = object({
 	startDate: date(),
 	startTime: string(),
-	duration: number(),
+	hours: number(),
 	tagId: string([ulid("required")]),
 });
 
@@ -82,20 +82,22 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 		defaultValues: {
 			startDate: new Date(),
 			startTime: "00:00",
-			duration: 0,
+			hours: 0,
 			tagId: "",
 		},
 	});
 
 	function onSubmit(values: Output<typeof addTaskFormSchema>) {
+		const seconds = Math.round(values.hours * 3600);
 		const start = new Date(`${format(values.startDate, "yyyy-MM-dd")}T${values.startTime}`);
+		const end = addSeconds(start, seconds);
 
 		mutation
 			.mutateAsync(
 				{
 					tag_id: values.tagId,
 					started_at: start.toISOString(),
-					expires_at: addHours(start, values.duration).toISOString(),
+					expires_at: end.toISOString(),
 				},
 				{ onSuccess }
 			)
@@ -164,7 +166,7 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 
 				<FormField
 					control={form.control}
-					name="duration"
+					name="hours"
 					render={({ field }) => (
 						<FormItem className="flex flex-col">
 							<FormLabel required>duration (h)</FormLabel>
