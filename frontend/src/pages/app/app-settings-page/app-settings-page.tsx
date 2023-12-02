@@ -26,12 +26,12 @@ export function AppSettingsPage() {
 						<NotificationSwitch />
 					</div>
 
-					<div className="border-t"></div>
+					{/* <div className="border-t"></div>
 
 					<div className="flex items-center justify-between gap-2 text-sm font-medium">
 						<label htmlFor="notifications">task ending</label>
 						<Switch id="notifications" />
-					</div>
+					</div> */}
 				</section>
 			</main>
 

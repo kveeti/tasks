@@ -91,9 +91,9 @@ function MoreMenu() {
 					<Link to="/app/settings">settings</Link>
 				</DropdownMenuItem>
 
-				<DropdownMenuItem asChild>
+				{/* <DropdownMenuItem asChild>
 					<Link to="/app/me">me</Link>
-				</DropdownMenuItem>
+				</DropdownMenuItem> */}
 				<DropdownMenuItem asChild>
 					<Link to="/app/tasks">tasks</Link>
 				</DropdownMenuItem>
