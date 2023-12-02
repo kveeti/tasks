@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-DB_CONTAINER_NAME="tasks-dev-db"
+DB_CONTAINER_NAME="tasks_dev_db"
 
 function check_if_container_exists() {
     if docker ps -a | grep -q $DB_CONTAINER_NAME; then
@@ -31,8 +31,7 @@ function wait_for_db() {
 function initialize_db() {
     echo "Initializing database..."
     
-    PGPASSWORD=postgres psql -h localhost -U postgres -f ./sql/00-create-user-database-schema.sql
-    PGPASSWORD=tasks_user psql -h localhost -U tasks_user -d tasks_not_prod -f ./sql/01-create-tables.sql
+    cat ./sql/postgresql/01-create-tables.sql | docker exec $DB_CONTAINER_NAME psql -U postgres -d tasks_not_prod
 
     echo "Database initialized!"
 }
@@ -61,6 +60,8 @@ function main() {
         purge_db
         start_db_container
         wait_for_db
+        initialize_db
+    elif [[ $1 == "init" ]]; then
         initialize_db
     else
         echo "Invalid argument!"

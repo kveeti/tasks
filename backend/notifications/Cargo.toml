@@ -1,7 +1,7 @@
 [package]
 name = "notifications"
-version = "0.0.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
 tracing = { workspace = true }
@@ -11,10 +11,9 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
-sea-orm = { workspace = true }
 chrono = { workspace = true }
+once_cell = { workspace = true }
+futures = { workspace = true }
 config = { path = "../config" }
-data = { path = "../data" }
-entity = { path = "../entity" }
-web-push =  { version = "0.9.5" }
-futures = { version = "0.3.28" }
+db = { path = "../db" }
+web-push =  { version = "0.10.0" }

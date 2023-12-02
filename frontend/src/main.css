@@ -2,12 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-	@apply bg-black text-gray-50;
-	user-select: none;
-	cursor: default;
+@layer base {
+	:root {
+		--card: 0, 0%, 9%;
+		--card-item: 0 0% 6%;
+		--card-foreground: 0 0% 98%;
 
-	-webkit-font-smoothing: antialiased;
-	-webkit-tap-highlight-color: transparent;
-	text-rendering: optimizeLegibility;
+		--popover: 0 0% 5%;
+		--popover-foreground: 0 0% 98%;
+
+		--primary: 0 0% 25%;
+		--primary-foreground: 0 0% 98%;
+
+		--muted: 0 0% 14.9%;
+		--muted-foreground: 0 0% 63.9%;
+
+		--accent: 0 0% 14.9%;
+		--accent-foreground: 0 0% 98%;
+
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
+
+		--border: 0 0% 16%;
+		--input: 0 0% 14.9%;
+		--ring: 0 0% 83.1%;
+
+		--radius: 0.8rem;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+}
+
+@layer components {
+	.focus {
+		@apply outline-none outline-2 transition-[outline,_color,_background,_border] duration-150 focus-visible:outline focus-visible:outline-gray-500;
+	}
 }

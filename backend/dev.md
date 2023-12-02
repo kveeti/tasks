@@ -1,5 +1,11 @@
-Start api:
+install watcher:
 
 ```bash
-cargo watch -q -x 'run -p api'
+cargo install cargo-watch
+```
+
+start backend:
+
+```bash
+cargo watch -q -x 'run -p backend'
 ```

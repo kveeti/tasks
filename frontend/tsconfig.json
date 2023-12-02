@@ -6,14 +6,7 @@
 		},
 
 		"target": "ESNext",
-		"lib": [
-			"DOM",
-			"DOM.Iterable",
-			"ESNext",
-			"WebWorker",
-			"WebWorker.ImportScripts",
-			"Webworker.Iterable"
-		],
+		"lib": ["DOM", "ESNext", "WebWorker"],
 		"module": "ESNext",
 		"skipLibCheck": true,
 

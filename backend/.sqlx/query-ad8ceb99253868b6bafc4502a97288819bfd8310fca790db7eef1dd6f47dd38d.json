@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                ORDER BY tasks.id DESC\n                LIMIT $2;\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "tag_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "is_manual",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "seconds",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "start_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "end_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "tag_label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "tag_color",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ad8ceb99253868b6bafc4502a97288819bfd8310fca790db7eef1dd6f47dd38d"
+}

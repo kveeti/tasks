@@ -1,15 +1,11 @@
 use crate::{
     auth::user_id::UserId,
-    types::{ApiError, RequestContext},
+    types::{ApiError, RequestState},
 };
 use anyhow::Context;
 use axum::{extract::State, response::IntoResponse, Json};
 
-use data::create_id;
-use entity::notif_subs;
 use hyper::StatusCode;
-
-use sea_orm::{sea_query::OnConflict, EntityTrait};
 
 #[derive(serde::Deserialize)]
 pub struct AddNotifSubEndpointBody {
@@ -20,25 +16,51 @@ pub struct AddNotifSubEndpointBody {
 
 pub async fn add_notif_sub_endpoint(
     UserId(user_id): UserId,
-    State(state): RequestContext,
+    State(state): RequestState,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    notif_subs::Entity::insert(notif_subs::ActiveModel {
-        id: sea_orm::ActiveValue::Set(create_id()),
-        user_id: sea_orm::ActiveValue::Set(user_id),
-        auth: sea_orm::ActiveValue::Set(body.auth),
-        endpoint: sea_orm::ActiveValue::Set(body.endpoint),
-        p256dh: sea_orm::ActiveValue::Set(body.p256dh),
-        created_at: sea_orm::ActiveValue::Set(chrono::Utc::now().into()),
-    })
-    .on_conflict(
-        OnConflict::column(notif_subs::Column::Endpoint)
-            .update_column(notif_subs::Column::Auth)
-            .to_owned(),
+    let notification_sub = db::notification_subs::upsert(
+        &state.db2,
+        &user_id,
+        &body.endpoint,
+        &body.p256dh,
+        &body.auth,
     )
-    .exec(&state.db)
     .await
-    .context("Failed to upsert notif sub")?;
+    .context("error inserting notification sub")?;
+
+    tracing::info!("sending test notification to {}", user_id);
+
+    notifications::send_notification(
+        &notification_sub,
+        "Notifications enabled successfully!",
+        "This is a test notification to make sure everything is working",
+    )
+    .await
+    .context("error sending notification")?;
+
+    tracing::info!("sent notification to {}", user_id);
 
     return Ok(StatusCode::CREATED);
+}
+
+#[derive(serde::Deserialize)]
+pub struct DeleteNotifSubBody {
+    pub endpoint: String,
+}
+
+pub async fn delete_notif_sub_endpoint(
+    UserId(user_id): UserId,
+    State(state): RequestState,
+    Json(body): Json<DeleteNotifSubBody>,
+) -> Result<impl IntoResponse, ApiError> {
+    let deleted = db::notification_subs::delete(&state.db2, &user_id, &body.endpoint)
+        .await
+        .context("error deleting notification sub")?;
+
+    if !deleted {
+        return Err(ApiError::NotFound("notification sub not found".to_owned()));
+    }
+
+    return Ok(StatusCode::NO_CONTENT);
 }

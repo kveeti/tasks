@@ -1,7 +1,7 @@
 [package]
 name = "api"
-version = "0.0.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
 tracing = { workspace = true }
@@ -11,14 +11,17 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
-sea-orm = { workspace = true }
 chrono = { workspace = true }
+chrono-tz = { workspace = true }
 reqwest = { workspace = true }
-data = { path = "../data" }
-entity = { path = "../entity" }
+futures-util = { workspace = true }
 config = { path = "../config" }
 auth = { path = "../auth" }
-axum = { version = "0.6.18", features = [ "headers" ]}
+db = { path = "../db" }
+common = { path = "../common" }
+notifications = { path = "../notifications" }
+axum = { version = "0.6.18", features = [ "headers", "ws" ] }
 hyper = "0.14.25"
 tower = "0.4.13"
 tower-http = { version = "0.3", features = [ "trace", "cors" ] }
+axum-prometheus = { version = "0.4.0" }

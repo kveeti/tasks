@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE tags\n            SET deleted_at = NOW()\n            WHERE user_id = $1\n            AND id = $2\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "37fa27bfa017ecd40e8f030acee346414f6b60e84dc5b143bd700ed0adc41c69"
+}

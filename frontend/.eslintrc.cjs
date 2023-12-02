@@ -7,9 +7,11 @@ module.exports = {
 	],
 	parser: "@typescript-eslint/parser",
 	parserOptions: { ecmaVersion: "latest", sourceType: "module" },
-	plugins: ["react-refresh"],
 	rules: {
-		"react-refresh/only-export-components": "warn",
 		"no-mixed-spaces-and-tabs": "off",
+		"@typescript-eslint/consistent-type-imports": [
+			"error",
+			{ fixStyle: "inline-type-imports", disallowTypeAnnotations: false },
+		],
 	},
 };

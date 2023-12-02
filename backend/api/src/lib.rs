@@ -1,14 +1,19 @@
 use axum::routing::delete;
-use axum::{body::Body, response::Response, routing::get, routing::post, Router};
+use axum::{
+    body::Body,
+    response::Response,
+    routing::{get, post},
+    Router,
+};
 use config::{Env, CONFIG};
-use data::{create_id, get_db};
 use hyper::http::HeaderValue;
 use hyper::{header, Method, Request};
 use std::{net::SocketAddr, time::Duration};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
-use types::RequestContextStruct;
+use types::RequestStateStruct;
+
 mod auth;
 mod endpoints;
 pub mod types;
@@ -39,17 +44,17 @@ pub async fn start_api() -> () {
         )
         .allow_credentials(true);
 
-    let db = get_db().await;
-    let state = RequestContextStruct::new(db);
+    let db2 = db::get_db().await;
+    let state = RequestStateStruct::new(db2);
 
-    let mut v1_auth_routes = Router::new().merge(
-        Router::new()
-            .route("/google-init", get(endpoints::auth::auth_init_endpoint))
-            .route(
-                "/google-verify-code",
-                get(endpoints::auth::auth_verify_code_endpoint),
-            ),
-    );
+    let mut v1_auth_routes = Router::new()
+        .route("/google-init", get(endpoints::auth::auth_init_endpoint))
+        .route(
+            "/google-verify",
+            post(endpoints::auth::auth_verify_endpoint),
+        )
+        .route("/me", get(endpoints::auth::auth_me_endpoint))
+        .route("/logout", get(endpoints::auth::auth_logout_endpoint));
 
     if CONFIG.env == Env::NotProd {
         v1_auth_routes = v1_auth_routes
@@ -57,26 +62,56 @@ pub async fn start_api() -> () {
             .to_owned();
     }
 
-    let v1_notif_subs_routes =
-        Router::new().route("/", post(endpoints::notif_subs::add_notif_sub_endpoint));
-
-    let v1_notifs_routes = Router::new().route(
+    let v1_notif_subs_routes = Router::new().route(
         "/",
-        post(endpoints::notifs::add_notif_endpoint)
-            .delete(endpoints::notifs::delete_notif_endpoint),
+        post(endpoints::notif_subs::add_notif_sub_endpoint)
+            .delete(endpoints::notif_subs::delete_notif_sub_endpoint),
     );
-
-    let v1_sync_routes = Router::new().route("/", post(endpoints::sync::sync_endpoint));
 
     let v1_users_routes =
         Router::new().route("/me", delete(endpoints::users::users_me_delete_endpoint));
 
+    let v1_tags_routes = Router::new()
+        .route(
+            "/",
+            get(endpoints::tags::get_tags).post(endpoints::tags::add_tag),
+        )
+        .route(
+            "/:tag_id",
+            delete(endpoints::tags::delete_tag).patch(endpoints::tags::update_tag),
+        );
+
+    let v1_tasks_routes = Router::new()
+        .route(
+            "/",
+            get(endpoints::tasks::get_tasks).post(endpoints::tasks::add_manual_task),
+        )
+        .route("/:task_id", delete(endpoints::tasks::delete_task))
+        .route(
+            "/on-going",
+            get(endpoints::tasks::get_ongoing_task)
+                .delete(endpoints::tasks::stop_ongoing_task)
+                .post(endpoints::tasks::start_task),
+        );
+
+    let v1_stats_routes = Router::new()
+        .route(
+            "/hours-by",
+            get(endpoints::stats::get_hours_by_stats_endpoint),
+        )
+        .route(
+            "/tag-distribution",
+            get(endpoints::stats::get_tag_distribution_stats_endpoint),
+        );
+
     let v1_routes = Router::new()
         .nest("/auth", v1_auth_routes)
         .nest("/notif-subs", v1_notif_subs_routes)
-        .nest("/sync", v1_sync_routes)
         .nest("/users", v1_users_routes)
-        .nest("/notifs", v1_notifs_routes);
+        .nest("/tags", v1_tags_routes)
+        .nest("/tasks", v1_tasks_routes)
+        .nest("/stats", v1_stats_routes)
+        .route("/ws", get(endpoints::ws::ws_handler));
 
     let api_routes = Router::new().nest("/v1", v1_routes);
 
@@ -88,7 +123,7 @@ pub async fn start_api() -> () {
                 .make_span_with(|request: &Request<Body>| {
                     info_span!(
                         "request",
-                        id = %create_id(),
+                        id = %db::create_id(),
                         method = %request.method(),
                         uri = %request.uri(),
                     )
@@ -105,10 +140,10 @@ pub async fn start_api() -> () {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], CONFIG.port));
 
-    tracing::info!("App started in {}, listening at {}", CONFIG.env, addr);
+    tracing::info!("app started in {}, listening at {}", CONFIG.env, addr);
 
     axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
 }

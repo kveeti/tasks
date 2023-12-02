@@ -1,22 +1,41 @@
-import { lazy } from "react";
-import { registerSW } from "virtual:pwa-register";
+import { AnimatePresence, motion } from "framer-motion";
 
-import { useUser } from "./auth";
-
-const AuthenticatedApp = lazy(() =>
-	import("./pages/AuthenticatedApp").then((m) => ({ default: m.AuthenticatedApp }))
-);
-
-const UnauthenticatedApp = lazy(() =>
-	import("./pages/UnauthenticatedApp").then((m) => ({ default: m.UnauthenticatedApp }))
-);
+import { AuthenticatedApp } from "./pages/authenticated-app";
+import { UnauthenticatedApp } from "./pages/unauthenticated-app";
+import { useAuth } from "./utils/api/auth";
 
 export function Entrypoint() {
-	const user = useUser();
+	const auth = useAuth();
 
-	return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
-}
+	if (auth.isLoading) {
+		return null;
+	}
 
-if ("serviceWorker" in navigator) {
-	registerSW();
+	return (
+		<AnimatePresence mode="wait">
+			{auth.data ? (
+				<motion.div
+					key="app"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.7, ease: "easeInOut" }}
+					className="flex h-full w-full items-center justify-center"
+				>
+					<AuthenticatedApp />
+				</motion.div>
+			) : (
+				<motion.div
+					key="auth"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0, transition: { duration: 0.5 } }}
+					transition={{ duration: 0.7, ease: "easeInOut" }}
+					className="flex h-full w-full items-center justify-center"
+				>
+					<UnauthenticatedApp />
+				</motion.div>
+			)}
+		</AnimatePresence>
+	);
 }

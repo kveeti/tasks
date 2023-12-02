@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                date_trunc($1, start_at AT TIME ZONE $5) AS date,\n                CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours\n            FROM\n                tasks\n            WHERE\n                user_id = $2\n                AND start_at AT TIME ZONE $5 >= $3\n                AND start_at AT TIME ZONE $5 <= $4\n            GROUP BY\n                date\n            ORDER BY\n                date ASC;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "hours",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamp",
+        "Timestamp",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "2679a80327e964986f4c723d215bbbecdfe0b1fa9b9f6a0e5f5ececdab244b81"
+}
