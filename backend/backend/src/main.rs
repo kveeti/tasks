@@ -7,7 +7,9 @@ use tracing_subscriber::{
 #[tokio::main]
 pub async fn main() {
     tracing_subscriber::registry()
-        .with(EnvFilter::from("api=trace,db=trace,auth=debug".to_string()))
+        .with(EnvFilter::from(
+            "api=debug,notifications=debug,auth=debug".to_string(),
+        ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
