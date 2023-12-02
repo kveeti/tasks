@@ -31,7 +31,13 @@ export function ChartHoursBy({ date, precision }: { date: Date; precision: Stats
 						<XAxis
 							dataKey="date"
 							tickFormatter={(value: (typeof stats.data.stats)[number]["date"]) =>
-								format(new Date(value), "EEE").toLocaleLowerCase()
+								precision === "day"
+									? format(new Date(value), "EEE").toLocaleLowerCase()
+									: precision === "week"
+									  ? format(new Date(value), "'w' w")
+									  : precision === "month"
+									    ? format(new Date(value), "MMM").toLocaleLowerCase()
+									    : ""
 							}
 							fontSize={12}
 							tickLine={false}

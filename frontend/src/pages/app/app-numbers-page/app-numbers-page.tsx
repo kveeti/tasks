@@ -1,12 +1,14 @@
 import {
-	addMonths,
-	addWeeks,
-	endOfWeek,
-	format,
-	isSameWeek,
-	isSameYear,
-	subMonths,
-	subWeeks,
+    addMonths,
+    addWeeks,
+    addYears,
+    endOfWeek,
+    format,
+    isSameWeek,
+    isSameYear,
+    subMonths,
+    subWeeks,
+    subYears,
 } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
@@ -55,20 +57,20 @@ function usePageState() {
 			? isSameWeek(date, new Date())
 				? "this week"
 				: isSameWeek(date, subWeeks(new Date(), 1))
-				? "last week"
-				: format(
-						date,
-						`'week' w${
-							isSameYear(endOfWeek(date, { weekStartsOn: 1 }), new Date())
-								? ""
-								: ", yyyy"
-						}`
-				  )
+				  ? "last week"
+				  : format(
+							date,
+							`'week' w${
+								isSameYear(endOfWeek(date, { weekStartsOn: 1 }), new Date())
+									? ""
+									: ", yyyy"
+							}`
+				    )
 			: precision === "week"
-			? format(date, "MMMM yyyy")
-			: precision === "month"
-			? format(date, "yyyy")
-			: "";
+			  ? format(date, "MMMM yyyy")
+			  : precision === "month"
+			    ? format(date, "yyyy")
+			    : "";
 
 	function toggleTimeFrame() {
 		if (precision === "day") {
@@ -89,15 +91,15 @@ function usePageState() {
 			}
 		} else if (precision === "week") {
 			if (direction === "left") {
-				setDate((d) => subWeeks(d, 1));
-			} else {
-				setDate((d) => addWeeks(d, 1));
-			}
-		} else if (precision === "month") {
-			if (direction === "left") {
 				setDate((d) => subMonths(d, 1));
 			} else {
 				setDate((d) => addMonths(d, 1));
+			}
+		} else if (precision === "month") {
+			if (direction === "left") {
+				setDate((d) => subYears(d, 1));
+			} else {
+				setDate((d) => addYears(d, 1));
 			}
 		}
 	}

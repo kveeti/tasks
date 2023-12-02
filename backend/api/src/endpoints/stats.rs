@@ -36,9 +36,19 @@ pub async fn get_hours_by_stats_endpoint(
         .map_err(|_| ApiError::BadRequest("invalid precision".to_string()))?;
 
     let (start, end) = match precision {
-        StatsPrecision::Day => (start_of_week(date), end_of_week(date)),
-        StatsPrecision::Week => (start_of_month(date), end_of_month(date)),
-        StatsPrecision::Month => (start_of_year(date), end_of_year(date)),
+        StatsPrecision::Day => (
+            start_of_week(&date).context("error getting start of week")?,
+            end_of_week(&date).context("error getting end of week")?,
+        ),
+        StatsPrecision::Week => (
+            start_of_week(&start_of_month(&date).context("error getting start of month")?)
+                .context("error getting start of week")?,
+            end_of_month(&date).context("error getting end of week")?,
+        ),
+        StatsPrecision::Month => (
+            start_of_year(&date).context("error getting start of year")?,
+            end_of_year(&date).context("error getting end of year")?,
+        ),
     };
 
     let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
@@ -63,7 +73,7 @@ pub async fn get_hours_by_stats_endpoint(
         "start": start,
         "end": end,
         "tz": tz,
-        "stats": fill_in_missing_days(&precision, &start, &end, &stats),
+        "stats": fill_in_missing_days(&precision, &start, &end, &stats).context("error filling in missing days")?,
     })));
 }
 
@@ -72,10 +82,14 @@ fn fill_in_missing_days(
     start: &DateTime<Utc>,
     end: &DateTime<Utc>,
     stats: &Vec<HoursByStat>,
-) -> Vec<HoursByStat> {
+) -> anyhow::Result<Vec<HoursByStat>> {
     let mut new_stats: Vec<HoursByStat> = Vec::new();
-    let mut date = start_of_day(start.clone()).naive_utc();
-    let end = end_of_day(end.clone()).naive_utc();
+    let mut date = start_of_day(&start)
+        .context("error getting start of day")?
+        .naive_utc();
+    let end = end_of_day(&end)
+        .context("error getting end of day")?
+        .naive_utc();
 
     while date <= end {
         if let Some(stat) = stats.iter().find(|s| s.date == Some(date)) {
@@ -96,7 +110,7 @@ fn fill_in_missing_days(
         date = new_date;
     }
 
-    return new_stats;
+    return Ok(new_stats);
 }
 
 #[derive(serde::Serialize)]
@@ -125,9 +139,18 @@ pub async fn get_tag_distribution_stats_endpoint(
         .map_err(|_| ApiError::BadRequest("invalid precision".to_string()))?;
 
     let (start, end) = match precision {
-        StatsPrecision::Day => (start_of_week(date), end_of_week(date)),
-        StatsPrecision::Week => (start_of_month(date), end_of_month(date)),
-        StatsPrecision::Month => (start_of_year(date), end_of_year(date)),
+        StatsPrecision::Day => (
+            start_of_week(&date).context("error getting start of week")?,
+            end_of_week(&date).context("error getting end of week")?,
+        ),
+        StatsPrecision::Week => (
+            start_of_month(&date).context("error getting start of month")?,
+            end_of_month(&date).context("error getting end of month")?,
+        ),
+        StatsPrecision::Month => (
+            start_of_year(&date).context("error getting start of year")?,
+            end_of_year(&date).context("error getting end of year")?,
+        ),
     };
 
     let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
