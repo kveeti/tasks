@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
@@ -124,7 +124,7 @@ function Resizeable({ children }: { children: ReactNode }) {
 				<motion.div
 					key={JSON.stringify(children, ignoreCircularReferences())}
 					initial={{
-						x: 10,
+						x: 15,
 						opacity: 0,
 					}}
 					animate={{
@@ -132,16 +132,16 @@ function Resizeable({ children }: { children: ReactNode }) {
 						opacity: 1,
 						transition: {
 							opacity: { duration: 0.2 },
-							x: { duration: 0.15 },
-							delay: 0.15,
+							x: { duration: 0.3 },
+							delay: 0.3,
 						},
 					}}
 					exit={{
-						x: -10,
+						x: -15,
 						opacity: 0,
 						transition: {
 							opacity: { duration: 0.2 },
-							x: { duration: 0.15 },
+							x: { duration: 0.3 },
 						},
 					}}
 					className={cn(height ? "absolute" : "relative", "w-full")}
