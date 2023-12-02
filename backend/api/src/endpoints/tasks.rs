@@ -98,14 +98,15 @@ pub async fn start_task(
         .await
         .context("error inserting task")?;
 
-    let task_with_tag = TaskWithTag::from_task(&task, &TagColor(tag.color), &TagLabel(tag.label));
+    let task_with_tag =
+        TaskWithTag::from_task(&task, &TagColor(tag.color), &TagLabel(tag.label.to_owned()));
 
     db::notifications::insert(
         &state.db2,
         &user_id,
         &task.id,
-        "test notif title",
-        "test notif message",
+        "Task finished",
+        &format!("Your task '{}' has finished", &tag.label),
         &task.end_at,
     )
     .await
