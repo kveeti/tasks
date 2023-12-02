@@ -11,8 +11,8 @@ use axum::{
 use chrono::{DateTime, Duration, Utc};
 use chrono_tz::Tz;
 use common::date::{
-    end_of_day, end_of_month, end_of_week, end_of_year, start_of_day, start_of_month,
-    start_of_week, start_of_year,
+    end_of_day, end_of_month, end_of_week, end_of_year, next_month_naive, start_of_day,
+    start_of_month, start_of_week, start_of_year,
 };
 use db::tasks::{get_hours_by_stats, get_tag_distribution_stats, HoursByStat, StatsPrecision};
 use serde_json::json;
@@ -104,7 +104,7 @@ fn fill_in_missing_days(
         let new_date = match precision {
             StatsPrecision::Day => date + Duration::days(1),
             StatsPrecision::Week => date + Duration::weeks(1),
-            StatsPrecision::Month => date + Duration::days(30),
+            StatsPrecision::Month => next_month_naive(&date).context("error getting next month")?,
         };
 
         date = new_date;

@@ -1,5 +1,5 @@
 use anyhow::Context;
-use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike};
+use chrono::{DateTime, Datelike, Duration, NaiveDateTime, TimeZone, Timelike};
 
 pub fn start_of_week<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
 where
@@ -7,6 +7,11 @@ where
 {
     let days_from_start = date.weekday().num_days_from_monday() as i64;
     return start_of_day(&(date.clone() - Duration::days(days_from_start)));
+}
+
+pub fn start_of_week_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    let days_from_start = date.weekday().num_days_from_monday() as i64;
+    return Ok(date.clone() - Duration::days(days_from_start));
 }
 
 pub fn end_of_week<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
@@ -17,6 +22,11 @@ where
     return end_of_day(&(date.clone() + Duration::days(days_from_end)));
 }
 
+pub fn end_of_week_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    let days_from_end = 6 - date.weekday().num_days_from_monday() as i64;
+    return Ok(date.clone() + Duration::days(days_from_end));
+}
+
 pub fn start_of_month<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
 where
     Tz: TimeZone,
@@ -24,11 +34,20 @@ where
     return start_of_day(&date.with_day(1).expect("error setting day to 1"));
 }
 
+pub fn start_of_month_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    return Ok(date.with_day(1).expect("error setting day to 1"));
+}
+
 pub fn end_of_month<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
 where
     Tz: TimeZone,
 {
     let next_month = next_month(date).context("error getting next month")?;
+    return Ok(next_month - Duration::days(1));
+}
+
+pub fn end_of_month_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    let next_month = next_month_naive(date).context("error getting next month")?;
     return Ok(next_month - Duration::days(1));
 }
 
@@ -45,6 +64,16 @@ where
         .context("error setting month to next month");
 }
 
+pub fn next_month_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    if date.month() == 12 {
+        return next_year_naive(date).context("error getting next year");
+    }
+
+    return Ok(date
+        .with_month(date.month() + 1)
+        .expect("error setting month to next month"));
+}
+
 pub fn next_year<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
 where
     Tz: TimeZone,
@@ -53,6 +82,13 @@ where
         .context("error getting start of year")?
         .with_year(date.year() + 1)
         .context("error setting year to next year");
+}
+
+pub fn next_year_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    return Ok(start_of_year_naive(date)
+        .context("error getting start of year")?
+        .with_year(date.year() + 1)
+        .expect("error setting year to next year"));
 }
 
 pub fn start_of_year<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
@@ -66,6 +102,14 @@ where
             .with_month0(0)
             .expect("error setting month to 0"),
     );
+}
+
+pub fn start_of_year_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    return Ok(date
+        .with_day(1)
+        .expect("error setting day to 1")
+        .with_month0(0)
+        .expect("error setting month to 0"));
 }
 
 pub fn end_of_year<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>
@@ -82,6 +126,16 @@ where
             .context("error setting day to 31")?,
     )
     .context("error getting end of day");
+}
+
+pub fn end_of_year_naive(date: &NaiveDateTime) -> anyhow::Result<NaiveDateTime> {
+    return Ok(date
+        .with_day(1)
+        .expect("error setting day to 1")
+        .with_month0(11)
+        .expect("error setting month to 11")
+        .with_day(31)
+        .expect("error setting day to 31"));
 }
 
 pub fn start_of_day<Tz>(date: &DateTime<Tz>) -> anyhow::Result<DateTime<Tz>>

@@ -20,11 +20,11 @@ export function ChartTagDistribution({
 
 			<div className="flex flex-col items-center justify-center">
 				{stats.isLoading ? (
-					<p>loading data...</p>
+					<p className="h-[180px] w-full">loading data...</p>
 				) : stats.isError ? (
-					<p>error loading data</p>
+					<p className="h-[180px] w-full">error loading data</p>
 				) : !stats.data || !stats.data.stats?.length ? (
-					<p>no data</p>
+					<p className="h-[180px] w-full">no data</p>
 				) : (
 					<>
 						<div ref={ref} className="h-[180px] w-full">
