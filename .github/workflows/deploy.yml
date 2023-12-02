@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - ws
+  workflow_dispatch:
+
+env:
+  DOCKERHUB_USERNAME: veetik
+  DOCKER_IMAGE: veetik/tasks-backend
+  FRONT_API_URL: https://tasks-api.veetik.com/api/v1
+  FRONT_VAPID_PUBLIC_KEY: BMvRTtdBaxw8nWOkVbBOH_mC7sPHTkgVbbtrYqEek05-iupcxgkLUksERHvFsBIE5xytDaNzxeuLHTLu8FC-O-k
+  FRONT_DIR: ./frontend
+  BACK_DIR: ./backend
+
+jobs:
+  deploy_frontend:
+    name: Deploy frontend
+    environment: prod
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+
+      - name: Install
+        run: bun install
+
+      - name: Build
+        run: bun run build
+        env:
+          VITE_APP_API_URL: ${{ env.FRONT_API_URL }}
+          VITE_APP_VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Deploy frontend
+        run: bun run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy_backend:
+    name: Deploy backend
+    environment: prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.BACK_DIR }}
+          platforms: linux/amd64
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
