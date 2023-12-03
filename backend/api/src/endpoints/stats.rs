@@ -118,7 +118,7 @@ pub struct TagDistributionStat {
     pub tag_label: String,
     pub tag_color: String,
     pub seconds: i64,
-    pub percentage: f64,
+    pub percentage: i64,
 }
 
 pub async fn get_tag_distribution_stats_endpoint(
@@ -184,7 +184,8 @@ pub async fn get_tag_distribution_stats_endpoint(
         .iter()
         .map(|s| {
             let percentage = if total_seconds > 0 {
-                (s.seconds.unwrap_or(0) / total_seconds) as f64 * 100.0
+                let seconds = s.seconds.unwrap_or(0);
+                (seconds as f64 / total_seconds as f64) * 100.0
             } else {
                 0.0
             };
@@ -193,7 +194,7 @@ pub async fn get_tag_distribution_stats_endpoint(
                 tag_label: s.tag_label.clone(),
                 tag_color: s.tag_color.clone(),
                 seconds: s.seconds.unwrap_or(0),
-                percentage: percentage.round(),
+                percentage: percentage.round() as i64,
             };
         })
         .collect::<Vec<TagDistributionStat>>();

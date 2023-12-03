@@ -55,7 +55,7 @@ export function ChartTagDistribution({
 						</div>
 
 						<div className="flex w-full flex-col text-sm">
-							<div className="flex gap-4 font-semibold">
+							<div className="flex gap-4 font-semibold border-b pb-2 mb-2">
 								<div className="flex w-full items-center gap-2">
 									<span className="w-full">total</span>
 								</div>
@@ -67,14 +67,13 @@ export function ChartTagDistribution({
 								</div>
 							</div>
 
-							<div className="border-t w-full my-2" aria-hidden></div>
-
-							<ul className="space-y-2">
+							<ul className="grid grid-cols-4 gap-1">
 								{stats.data?.stats.map((d, i) => (
-									<li key={i} className="flex gap-2">
-										<div className="flex w-full h-full items-center gap-2">
+									<li key={i} className="grid col-span-4 grid-cols-[subgrid]">
+										<div className="col-span-2 flex w-full h-full items-center gap-2">
 											<div className="items-center flex">
 												<div
+													aria-hidden
 													className="h-[0.6rem] w-[0.6rem] rounded-[50%]"
 													style={{ backgroundColor: d.tag_color }}
 												/>
@@ -82,12 +81,10 @@ export function ChartTagDistribution({
 											<span className="w-full truncate">{d.tag_label}</span>
 										</div>
 
-										<div className="flex gap-8">
-											<span>{d.percentage}%</span>
-											<span className="whitespace-nowrap">
-												{secondsToHours(d.seconds)} h
-											</span>
-										</div>
+										<span className="text-end">{d.percentage}%</span>
+										<span className="text-end whitespace-nowrap">
+											{secondsToHours(d.seconds)} h
+										</span>
 									</li>
 								))}
 							</ul>
