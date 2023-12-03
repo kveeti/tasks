@@ -30,7 +30,7 @@ import {
 import { useAddTag } from "@/utils/api/tags";
 import { errorToast } from "@/utils/errorToast";
 import { useDialog } from "@/utils/hooks/use-dialog";
-import { tagColors, tagColors2 } from "@/utils/tag-colors";
+import { getTagColorName, tagColors } from "@/utils/tag-colors";
 
 const newTagFormSchema = object({
 	label: string([minLength(1, "required")]),
@@ -99,7 +99,7 @@ function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 								</FormControl>
 
 								<SelectContent>
-									{tagColors2.map(([name, color]) => (
+									{tagColors.map((color) => (
 										<SelectItem key={color} value={color}>
 											<div className="space-x-2 flex items-center">
 												<div
@@ -107,7 +107,7 @@ function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 													className={`w-3 h-3 rounded-full`}
 													style={{ backgroundColor: color }}
 												/>
-												<p>{name}</p>
+												<p>{getTagColorName(color)}</p>
 											</div>
 										</SelectItem>
 									))}

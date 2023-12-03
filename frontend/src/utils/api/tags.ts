@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TagColors } from "../tag-colors";
+import type { TagColor } from "../tag-colors";
 import { apiRequest } from "./apiRequest";
 
 export type ApiTag = {
 	id: string;
 	label: string;
-	color: TagColors;
+	color: TagColor;
 };
 
 export function useTags() {
@@ -23,7 +23,7 @@ export function useTags() {
 export function useEditTag() {
 	const queryClient = useQueryClient();
 
-	return useMutation<ApiTag, unknown, { tagId: string; label: string; color: TagColors }>({
+	return useMutation<ApiTag, unknown, { tagId: string; label: string; color: TagColor }>({
 		mutationFn: (variables) =>
 			apiRequest({
 				method: "PATCH",
@@ -56,7 +56,7 @@ export function useEditTag() {
 export function useAddTag() {
 	const queryClient = useQueryClient();
 
-	return useMutation<ApiTag, unknown, { label: string; color: TagColors }>({
+	return useMutation<ApiTag, unknown, { label: string; color: TagColor }>({
 		mutationFn: (variables) =>
 			apiRequest({
 				method: "POST",

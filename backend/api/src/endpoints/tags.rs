@@ -27,11 +27,20 @@ pub struct AddTagBody {
     pub color: String,
 }
 
+static VALID_TAG_COLORS: [&str; 5] = ["#d13c4b", "#1287A8", "#33a02c", "#f28e2c", "#bc80bd"];
+
 pub async fn add_tag(
     UserId(user_id): UserId,
     State(ctx): RequestState,
     Json(body): Json<AddTagBody>,
 ) -> Result<impl IntoResponse, ApiError> {
+    if !VALID_TAG_COLORS.contains(&body.color.as_str()) {
+        return Err(ApiError::BadRequest(format!(
+            "invalid tag color '{}'",
+            body.color
+        )));
+    }
+
     let existing_tag = db::tags::get_by_label(&ctx.db2, &user_id, &body.label)
         .await
         .context("error fetching tag")?;

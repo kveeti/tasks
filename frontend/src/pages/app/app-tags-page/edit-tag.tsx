@@ -31,7 +31,7 @@ import {
 import { type ApiTag, useEditTag } from "@/utils/api/tags";
 import { errorToast } from "@/utils/errorToast";
 import { useDialog } from "@/utils/hooks/use-dialog";
-import { tagColors, tagColors2 } from "@/utils/tag-colors";
+import { getTagColorName, tagColors } from "@/utils/tag-colors";
 
 export function EditTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void }) {
 	const dialog = useDialog();
@@ -118,7 +118,7 @@ function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void })
 								</FormControl>
 
 								<SelectContent>
-									{tagColors2.map(([name, color]) => (
+									{tagColors.map((color) => (
 										<SelectItem key={color} value={color}>
 											<div className="space-x-2 flex items-center">
 												<div
@@ -126,7 +126,7 @@ function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void })
 													className={`w-3 h-3 rounded-full`}
 													style={{ backgroundColor: color }}
 												/>
-												<p>{name}</p>
+												<p>{getTagColorName(color)}</p>
 											</div>
 										</SelectItem>
 									))}
