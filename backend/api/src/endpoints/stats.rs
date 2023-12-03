@@ -68,12 +68,16 @@ pub async fn get_hours_by_stats_endpoint(
     .await
     .context("error getting stats")?;
 
+    let (most_hours, stats) = fill_in_missing_days(&precision, &start, &end, &stats)
+        .context("error filling in missing days")?;
+
     return Ok(Json(json!({
         "precision": precision,
         "start": start,
         "end": end,
         "tz": tz,
-        "stats": fill_in_missing_days(&precision, &start, &end, &stats).context("error filling in missing days")?,
+        "most_hours": most_hours,
+        "stats": stats,
     })));
 }
 
@@ -82,8 +86,7 @@ fn fill_in_missing_days(
     start: &DateTime<Utc>,
     end: &DateTime<Utc>,
     stats: &Vec<HoursByStat>,
-) -> anyhow::Result<Vec<HoursByStat>> {
-    let mut new_stats: Vec<HoursByStat> = Vec::new();
+) -> anyhow::Result<(f64, Vec<HoursByStat>)> {
     let mut date = start_of_day(&start)
         .context("error getting start of day")?
         .naive_utc();
@@ -91,8 +94,16 @@ fn fill_in_missing_days(
         .context("error getting end of day")?
         .naive_utc();
 
+    let mut new_stats: Vec<HoursByStat> = Vec::new();
+    let mut most_hours = 0.0;
+
     while date <= end {
         if let Some(stat) = stats.iter().find(|s| s.date == Some(date)) {
+            let hours = stat.hours.unwrap_or(0.0);
+            if most_hours < hours {
+                most_hours = hours;
+            }
+
             new_stats.push(stat.clone());
         } else {
             new_stats.push(HoursByStat {
@@ -110,7 +121,7 @@ fn fill_in_missing_days(
         date = new_date;
     }
 
-    return Ok(new_stats);
+    return Ok((most_hours, new_stats));
 }
 
 #[derive(serde::Serialize)]

@@ -21,7 +21,20 @@ export function ChartHoursBy({ date, precision }: { date: Date; precision: Stats
 			) : (
 				<div ref={ref} className="min-h-[180px] flex items-center justify-center">
 					<BarChart
-						margin={{ bottom: -10, left: -25, right: 0, top: 20 }}
+						margin={{
+							bottom: -10,
+							left:
+								stats.data.most_hours > 1000
+									? -10
+									: stats.data.most_hours > 100
+									  ? -20
+									  : stats.data.most_hours > 10
+									    ? -25
+									    : -33,
+
+							right: 0,
+							top: 20,
+						}}
 						data={stats.data.stats}
 						width={bounds.width}
 						height={bounds.height}
