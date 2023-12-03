@@ -9,7 +9,7 @@ self.addEventListener("activate", function (event) {
 });
 
 self.addEventListener("push", (event) => {
-	console.debug("sw - notificationclick", { event });
+	console.debug("sw - push", { event });
 
 	let eventData = event.data?.text();
 	let json;
@@ -17,20 +17,20 @@ self.addEventListener("push", (event) => {
 	try {
 		json = JSON.parse(eventData);
 	} catch (e) {
-		console.error("sw - notificationClick - error parsing eventData", {
+		console.error("sw - push - error parsing eventData", {
 			error: e,
 			textEventData: eventData,
 		});
 		return;
 	}
 
-	console.debug("sw - notificationClick JSON", { json });
+	console.debug("sw - push - JSON", { json });
 
 	const title = json?.title;
 	const body = json?.message;
 
 	if (!title || !body) {
-		console.debug("no title or message in parsed json", { json });
+		console.debug("sw - push - no title or message in parsed json", { json });
 		return;
 	}
 
