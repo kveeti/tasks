@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
@@ -22,7 +22,7 @@ export function CallbackPage() {
 				apiRequest({
 					method: "POST",
 					path: "/auth/google-verify",
-					query: new URLSearchParams({ code }),
+					query: { code },
 				}),
 				new Promise((resolve) => setTimeout(resolve, 1000)),
 			]);

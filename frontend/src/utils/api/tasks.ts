@@ -25,7 +25,7 @@ export function useInfiniteTasks() {
 			apiRequest<Array<ApiTaskWithTag>>({
 				method: "GET",
 				path: "/tasks",
-				query: new URLSearchParams({ last_id: pageParam }),
+				query: { last_id: pageParam },
 				signal,
 			}),
 		initialPageParam: "",

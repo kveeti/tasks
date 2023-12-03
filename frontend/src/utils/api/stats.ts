@@ -19,11 +19,11 @@ export function useHoursByStats({ date, precision }: { date: Date; precision: St
 			}>({
 				method: "GET",
 				path: "/stats/hours-by",
-				query: new URLSearchParams({
+				query: {
 					date: date.toISOString(),
 					precision,
 					tz: getTz(),
-				}),
+				},
 				signal,
 			}),
 	});
@@ -53,11 +53,11 @@ export function useTagDistributionStats({
 			}>({
 				method: "GET",
 				path: "/stats/tag-distribution",
-				query: new URLSearchParams({
+				query: {
 					date: queryKey[1].toISOString(),
 					precision: queryKey[2],
 					tz: getTz(),
-				}),
+				},
 				signal,
 			}),
 	});

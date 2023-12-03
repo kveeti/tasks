@@ -8,13 +8,13 @@ type Props = {
 	path: string;
 	method: string;
 	body?: unknown;
-	query?: URLSearchParams;
+	query?: Record<string, string> ;
 	signal?: AbortSignal;
 };
 
 export async function apiRequest<TReturnValue>(props: Props) {
 	return fetch(
-		`${import.meta.env.VITE_APP_API_URL}${props.path}${props.query ? `?${props.query}` : ""}`,
+		`${import.meta.env.VITE_APP_API_URL}${props.path}${props.query ? `?${new URLSearchParams(props.query)}` : ""}`,
 		{
 			signal: props.signal,
 			method: props.method,
