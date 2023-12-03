@@ -106,6 +106,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "config",
+ "cookie",
  "hex",
  "jsonwebtoken",
  "once_cell",
@@ -407,6 +408,16 @@ name = "const-oid"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "520fbf3c07483f94e3e3ca9d0cfd913d7718ef2483d2cfd91c0d9e91474ab913"
+
+[[package]]
+name = "cookie"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3cd91cf61412820176e137621345ee43b3f4423e589e7ae4e50d601d93e35ef8"
+dependencies = [
+ "time 0.3.17",
+ "version_check",
+]
 
 [[package]]
 name = "core-foundation"

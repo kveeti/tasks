@@ -1,5 +1,5 @@
 use anyhow::Context;
-use auth::token::verify_token;
+use auth::{cookie::create_cookie, token::verify_token};
 use axum::{
     async_trait,
     extract::{FromRef, FromRequestParts},
@@ -73,13 +73,11 @@ where
         if from_cookie {
             parts.headers.insert(
                 header::SET_COOKIE,
-                format!(
-                    "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-                    token_string,
-                    new_expiry.format("%a, %d %b %Y %T GMT")
-                )
-                .parse()
-                .context("error creating new cookie")?,
+                create_cookie(&token_string, &new_expiry)
+                    .context("error creating new cookie")?
+                    .to_string()
+                    .parse()
+                    .context("error parsing cookie")?,
             );
         }
 
@@ -152,13 +150,11 @@ where
         if from_cookie {
             parts.headers.insert(
                 header::SET_COOKIE,
-                format!(
-                    "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-                    token_string,
-                    new_expiry.format("%a, %d %b %Y %T GMT")
-                )
-                .parse()
-                .context("error creating new cookie")?,
+                create_cookie(&token_string, &new_expiry)
+                    .context("error creating new cookie")?
+                    .to_string()
+                    .parse()
+                    .context("error parsing cookie")?,
             );
         }
 
