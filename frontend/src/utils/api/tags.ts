@@ -10,7 +10,7 @@ export type ApiTag = {
 };
 
 export function useTags() {
-	return useQuery<ApiTag[]>({
+	return useQuery<Array<ApiTag>>({
 		queryKey: ["tags"],
 		queryFn: ({ signal }) =>
 			apiRequest({
@@ -31,7 +31,7 @@ export function useEditTag() {
 				body: variables,
 			}),
 		onSuccess: async (result) => {
-			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
+			queryClient.setQueryData<Array<ApiTag> | undefined>(["tags"], (oldTags) => {
 				if (oldTags) {
 					return oldTags.map((tag) => {
 						if (tag.id === result.id) {
@@ -64,7 +64,7 @@ export function useAddTag() {
 				body: variables,
 			}),
 		onSuccess: async (result) => {
-			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
+			queryClient.setQueryData<Array<ApiTag> | undefined>(["tags"], (oldTags) => {
 				if (oldTags) {
 					return [result, ...oldTags];
 				}
@@ -85,7 +85,7 @@ export function useDeleteTag() {
 				path: `/tags/${variables.tagId}`,
 			}),
 		onSuccess: async (_, variables) => {
-			queryClient.setQueryData<ApiTag[] | undefined>(["tags"], (oldTags) => {
+			queryClient.setQueryData<Array<ApiTag> | undefined>(["tags"], (oldTags) => {
 				if (oldTags) {
 					return oldTags.filter((tag) => tag.id !== variables.tagId);
 				}

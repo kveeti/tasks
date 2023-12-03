@@ -13,5 +13,6 @@ module.exports = {
 			"error",
 			{ fixStyle: "inline-type-imports", disallowTypeAnnotations: false },
 		],
+		"@typescript-eslint/array-type": ["error", { default: "generic", readonly: "generic" }],
 	},
 };

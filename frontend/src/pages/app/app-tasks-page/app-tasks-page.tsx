@@ -33,7 +33,7 @@ export function AppTasksPage() {
 	);
 }
 
-function Tasks(props: { pages: ApiTaskWithTag[][] }) {
+function Tasks(props: { pages: Array<Array<ApiTaskWithTag>> }) {
 	const months = groupTasksByMonth(props.pages);
 	const monthEntries = Object.entries(months);
 
@@ -82,8 +82,8 @@ function Task(props: { task: ApiTaskWithTag }) {
 	);
 }
 
-function groupTasksByMonth(pages: ApiTaskWithTag[][]) {
-	const tasksByMonth: Record<string, ApiTaskWithTag[]> = {};
+function groupTasksByMonth(pages: Array<Array<ApiTaskWithTag>>) {
+	const tasksByMonth: Record<string, Array<ApiTaskWithTag>> = {};
 
 	for (const page of pages) {
 		for (const task of page) {

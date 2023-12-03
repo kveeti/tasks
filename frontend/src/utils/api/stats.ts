@@ -14,10 +14,8 @@ export function useHoursByStats({ date, precision }: { date: Date; precision: St
 				start: string;
 				end: string;
 				tz: string;
-				stats: {
-					date: string;
-					hours: number;
-				}[];
+				most_hours: number;
+				stats: Array<{ date: string; hours: number }>;
 			}>({
 				method: "GET",
 				path: "/stats/hours-by",
@@ -46,12 +44,12 @@ export function useTagDistributionStats({
 				start: string;
 				end: string;
 				total_seconds: number;
-				stats: {
+				stats: Array<{
 					tag_label: string;
 					tag_color: string;
 					seconds: number;
 					percentage: number;
-				}[];
+				}>;
 			}>({
 				method: "GET",
 				path: "/stats/tag-distribution",

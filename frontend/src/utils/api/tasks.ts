@@ -22,7 +22,7 @@ export function useInfiniteTasks() {
 	return useInfiniteQuery({
 		queryKey: ["infinite-tasks"],
 		queryFn: async ({ pageParam = "", signal }) =>
-			apiRequest<ApiTaskWithTag[]>({
+			apiRequest<Array<ApiTaskWithTag>>({
 				method: "GET",
 				path: "/tasks",
 				query: new URLSearchParams({ last_id: pageParam }),
