@@ -1,9 +1,15 @@
+use std::collections::HashMap;
+
 use crate::{
     auth::user_id::UserId,
     types::{ApiError, RequestState},
 };
 use anyhow::Context;
-use axum::{extract::State, response::IntoResponse, Json};
+use axum::{
+    extract::{Query, State},
+    response::IntoResponse,
+    Json,
+};
 
 use hyper::StatusCode;
 
@@ -15,6 +21,7 @@ pub struct AddNotifSubEndpointBody {
 }
 
 pub async fn add_notif_sub_endpoint(
+    Query(query): Query<HashMap<String, String>>,
     UserId(user_id): UserId,
     State(state): RequestState,
     Json(body): Json<AddNotifSubEndpointBody>,
@@ -29,13 +36,15 @@ pub async fn add_notif_sub_endpoint(
     .await
     .context("error inserting notification sub")?;
 
-    notifications::send_notification(
-        &notification_sub,
-        "Test notification",
-        "If you see this, notifications are working! 🥳",
-    )
-    .await
-    .context("error sending notification")?;
+    if query.get("send_test_notification").is_some() {
+        notifications::send_notification(
+            &notification_sub,
+            "Test notification",
+            "If you see this, notifications are working! 🥳",
+        )
+        .await
+        .context("error sending notification")?
+    }
 
     return Ok(StatusCode::CREATED);
 }

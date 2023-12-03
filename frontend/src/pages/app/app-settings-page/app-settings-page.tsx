@@ -105,6 +105,7 @@ async function enableNotifications() {
 	await apiRequest<void>({
 		method: "POST",
 		path: "/notif-subs",
+		query: { send_test_notification: "1" },
 		body: {
 			endpoint: result.data.endpoint,
 			auth: result.data.auth,
