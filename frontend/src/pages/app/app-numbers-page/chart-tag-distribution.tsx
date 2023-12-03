@@ -11,87 +11,95 @@ export function ChartTagDistribution({
 	date: Date;
 	precision: StatsPrecision;
 }) {
-	const stats = useTagDistributionStats({ date, precision });
+	const statsQuery = useTagDistributionStats({ date, precision });
 	const [ref, bounds] = useMeasure();
 
 	return (
-		<section className="flex flex-col rounded-xl border p-4 pt-3 bg-card-item">
+		<section className="flex flex-col gap-2 rounded-xl border p-4 pt-3 bg-card-item">
 			<h2 className="text-lg font-bold border-b pb-2 mb-2">tag distribution</h2>
 
-			<div className="flex flex-col items-center justify-center">
-				{stats.isLoading ? (
-					<p className="h-[180px] w-full">loading data...</p>
-				) : stats.isError ? (
-					<p className="h-[180px] w-full">error loading data</p>
-				) : !stats.data || !stats.data.stats?.length ? (
-					<p className="h-[180px] w-full">no data</p>
-				) : (
-					<>
-						<div ref={ref} className="h-[180px] w-full">
-							<PieChart
-								margin={{ bottom: 0, left: 0, right: 0, top: 0 }}
-								data={stats.data.stats}
-								width={bounds.width}
-								height={bounds.height}
+			{statsQuery.isLoading ? (
+				<p className="h-[180px] w-full">loading data...</p>
+			) : statsQuery.isError ? (
+				<p className="h-[180px] w-full">error loading data</p>
+			) : !statsQuery.data || !statsQuery.data.stats?.length ? (
+				<p className="h-[180px] w-full">no data</p>
+			) : (
+				<>
+					<div ref={ref} className="h-[180px] w-full">
+						<PieChart
+							margin={{ bottom: 0, left: 0, right: 0, top: 0 }}
+							data={statsQuery.data.stats}
+							width={bounds.width}
+							height={bounds.height}
+						>
+							<Pie
+								isAnimationActive={false}
+								data={statsQuery.data.stats}
+								innerRadius={45}
+								outerRadius={85}
+								labelLine={false}
+								label={Label}
+								dataKey="seconds"
 							>
-								<Pie
-									isAnimationActive={false}
-									data={stats.data.stats}
-									innerRadius={45}
-									outerRadius={85}
-									labelLine={false}
-									label={Label}
-									dataKey="seconds"
-								>
-									{stats.data.stats.map((entry, index) => (
-										<Cell
-											key={`cell-${index}`}
-											fill={entry.tag_color}
-											stroke={entry.tag_color}
-										/>
-									))}
-								</Pie>
-							</PieChart>
-						</div>
+								{statsQuery.data.stats.map((entry, index) => (
+									<Cell
+										key={`cell-${index}`}
+										fill={entry.tag_color}
+										stroke={entry.tag_color}
+									/>
+								))}
+							</Pie>
+						</PieChart>
+					</div>
 
-						<div className="flex w-full flex-col text-sm">
-							<div className="flex gap-4 font-semibold border-b pb-2 mb-2">
-								<div className="flex w-full items-center gap-2">
-									<span className="w-full">total</span>
-								</div>
+					<table className="text-sm">
+						<thead className="font-semibold">
+							<tr>
+								<th className="text-start w-[60%] pb-2">tag</th>
 
-								<div className="flex gap-8">
-									<span className="whitespace-nowrap">
-										{secondsToHours(stats.data.total_seconds)} h
-									</span>
-								</div>
-							</div>
+								<th className="text-end pb-2">%</th>
 
-							<ul className="grid grid-cols-4 gap-1">
-								{stats.data?.stats.map((d, i) => (
-									<li key={i} className="grid col-span-4 grid-cols-[subgrid]">
-										<div className="col-span-2 flex w-full h-full items-center gap-2">
-											<div className="items-center flex">
-												<div
-													aria-hidden
-													className="h-[0.6rem] w-[0.6rem] rounded-[50%]"
-													style={{ backgroundColor: d.tag_color }}
-												/>
-											</div>
-											<span className="w-full truncate">{d.tag_label}</span>
+								<th className="text-end pb-2">hours</th>
+							</tr>
+						</thead>
+
+						<tbody className="divide-y border-t border-b">
+							{statsQuery.data.stats.map((d, i) => (
+								<tr key={i}>
+									<td className="text-start w-[60%] py-2 gap-2 flex items-center">
+										<div className="flex items-center justify-center">
+											<div
+												aria-hidden
+												className="h-2.5 w-2.5 rounded-full"
+												style={{ backgroundColor: d.tag_color }}
+											/>
 										</div>
 
-										<span className="text-end">{d.percentage}%</span>
-										<span className="text-end whitespace-nowrap">
-											{secondsToHours(d.seconds)} h
-										</span>
-									</li>
-								))}
-							</ul>
-						</div>
-					</>
-				)}
-			</div>
+										<p className="w-full truncate">{d.tag_label}</p>
+									</td>
+
+									<td className="text-end py-2">{d.percentage}%</td>
+
+									<td className="text-end py-2">{secondsToHours(d.seconds)} h</td>
+								</tr>
+							))}
+						</tbody>
+
+						<tfoot className="font-semibold">
+							<tr>
+								<th colSpan={2} className="text-start pt-2">
+									total
+								</th>
+
+								<td className="text-end whitespace-nowrap pt-2">
+									{secondsToHours(statsQuery.data.total_seconds)} h
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</>
+			)}
 		</section>
 	);
 }
