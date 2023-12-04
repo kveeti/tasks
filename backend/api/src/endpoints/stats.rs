@@ -1,5 +1,6 @@
 use crate::{
     auth::user_id::UserId,
+    date::start_of_day,
     types::{ApiError, RequestState},
 };
 use anyhow::Context;
@@ -8,12 +9,8 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, Months, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
-use common::date::{
-    end_of_day, end_of_month, end_of_week, end_of_year, next_month_naive, start_of_day,
-    start_of_month, start_of_week, start_of_year,
-};
 use db::tasks::{get_hours_by_stats, get_tag_distribution_stats, HoursByStat, StatsPrecision};
 use serde_json::json;
 use std::collections::HashMap;
@@ -23,11 +20,27 @@ pub async fn get_hours_by_stats_endpoint(
     State(state): RequestState,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let date = query
-        .get("date")
-        .ok_or(ApiError::BadRequest("no date".to_string()))?
+    let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
+        tz_str
+            .parse::<Tz>()
+            .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
+    })?;
+
+    // TODO: calls with_timezone even if tz is UTC
+    let start = query
+        .get("start")
+        .ok_or(ApiError::BadRequest("no start".to_string()))?
         .parse::<DateTime<Utc>>()
-        .map_err(|_| ApiError::BadRequest("invalid date".to_string()))?;
+        .map_err(|_| ApiError::BadRequest("invalid start".to_string()))?
+        .with_timezone(&tz);
+
+    // TODO: calls with_timezone even if tz is UTC
+    let end = query
+        .get("end")
+        .ok_or(ApiError::BadRequest("no end".to_string()))?
+        .parse::<DateTime<Utc>>()
+        .map_err(|_| ApiError::BadRequest("invalid end".to_string()))?
+        .with_timezone(&tz);
 
     let precision = query
         .get("precision")
@@ -35,87 +48,75 @@ pub async fn get_hours_by_stats_endpoint(
         .parse::<StatsPrecision>()
         .map_err(|_| ApiError::BadRequest("invalid precision".to_string()))?;
 
-    let (start, end) = match precision {
-        StatsPrecision::Day => (
-            start_of_week(&date).context("error getting start of week")?,
-            end_of_week(&date).context("error getting end of week")?,
-        ),
-        StatsPrecision::Week => (
-            start_of_week(&start_of_month(&date).context("error getting start of month")?)
-                .context("error getting start of week")?,
-            end_of_month(&date).context("error getting end of week")?,
-        ),
-        StatsPrecision::Month => (
-            start_of_year(&date).context("error getting start of year")?,
-            end_of_year(&date).context("error getting end of year")?,
-        ),
-    };
-
-    let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
-        tz_str
-            .parse::<Tz>()
-            .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
-    })?;
+    let start_naive = start.naive_local();
+    let end_naive = end.naive_local();
 
     let stats = get_hours_by_stats(
         &state.db2,
         &user_id,
         &precision,
-        &start.naive_utc(),
-        &end.naive_utc(),
+        &start_naive,
+        &end_naive,
         &tz,
     )
     .await
     .context("error getting stats")?;
 
-    let (most_hours, stats) = fill_in_missing_days(&precision, &start, &end, &stats)
-        .context("error filling in missing days")?;
+    let (most_hours, stats) =
+        fill_in_missing_days(&precision, &start_naive, &end_naive, &stats, &tz)
+            .context("error filling in missing days")?;
 
     return Ok(Json(json!({
         "precision": precision,
-        "start": start,
-        "end": end,
-        "tz": tz,
+        "start": start.to_rfc3339(),
+        "end": end.to_rfc3339(),
         "most_hours": most_hours,
         "stats": stats,
     })));
 }
 
+#[derive(serde::Serialize)]
+pub struct HoursByStatTz {
+    pub date: String,
+    pub hours: f64,
+}
+
 fn fill_in_missing_days(
     precision: &StatsPrecision,
-    start: &DateTime<Utc>,
-    end: &DateTime<Utc>,
+    start: &NaiveDateTime,
+    end: &NaiveDateTime,
     stats: &Vec<HoursByStat>,
-) -> anyhow::Result<(f64, Vec<HoursByStat>)> {
-    let mut date = start_of_day(&start)
-        .context("error getting start of day")?
-        .naive_utc();
-    let end = end_of_day(&end)
-        .context("error getting end of day")?
-        .naive_utc();
+    tz: &Tz,
+) -> anyhow::Result<(f64, Vec<HoursByStatTz>)> {
+    // turn start date to start of day
+    // because dates come as start of day
+    // from the database
+    let mut date = start_of_day(start).context("error getting start of day")?;
 
-    let mut new_stats: Vec<HoursByStat> = Vec::new();
+    let mut new_stats: Vec<HoursByStatTz> = Vec::new();
     let mut most_hours = 0.0;
 
-    while date <= end {
-        if let Some(stat) = stats.iter().find(|s| s.date == Some(date)) {
-            let hours = stat.hours.unwrap_or(0.0);
-            if most_hours < hours {
-                most_hours = hours;
-            }
+    while date <= *end {
+        let (stat_date, stat_hours) = match stats.iter().find(|s| s.date == Some(date)) {
+            Some(stat) => (stat.date.unwrap(), stat.hours.unwrap_or(0.0)),
+            None => (date, 0.0),
+        };
 
-            new_stats.push(stat.clone());
-        } else {
-            new_stats.push(HoursByStat {
-                date: Some(date),
-                hours: Some(0.0),
-            });
+        if most_hours < stat_hours {
+            most_hours = stat_hours;
         }
+
+        new_stats.push(HoursByStatTz {
+            date: tz.from_local_datetime(&stat_date).unwrap().to_rfc3339(),
+            hours: stat_hours,
+        });
 
         let new_date = match precision {
             StatsPrecision::Day => date + Duration::days(1),
             StatsPrecision::Week => date + Duration::weeks(1),
-            StatsPrecision::Month => next_month_naive(&date).context("error getting next month")?,
+            StatsPrecision::Month => date
+                .checked_add_months(Months::new(1))
+                .context("error getting next month")?,
         };
 
         date = new_date;
@@ -137,11 +138,27 @@ pub async fn get_tag_distribution_stats_endpoint(
     State(state): RequestState,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let date = query
-        .get("date")
-        .ok_or(ApiError::BadRequest("no date".to_string()))?
+    let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
+        tz_str
+            .parse::<Tz>()
+            .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
+    })?;
+
+    // TODO: calls with_timezone even if tz is UTC
+    let start = query
+        .get("start")
+        .ok_or(ApiError::BadRequest("no start".to_string()))?
         .parse::<DateTime<Utc>>()
-        .map_err(|_| ApiError::BadRequest("invalid date".to_string()))?;
+        .map_err(|_| ApiError::BadRequest("invalid start".to_string()))?
+        .with_timezone(&tz);
+
+    // TODO: calls with_timezone even if tz is UTC
+    let end = query
+        .get("end")
+        .ok_or(ApiError::BadRequest("no end".to_string()))?
+        .parse::<DateTime<Utc>>()
+        .map_err(|_| ApiError::BadRequest("invalid end".to_string()))?
+        .with_timezone(&tz);
 
     let precision = query
         .get("precision")
@@ -149,32 +166,11 @@ pub async fn get_tag_distribution_stats_endpoint(
         .parse::<StatsPrecision>()
         .map_err(|_| ApiError::BadRequest("invalid precision".to_string()))?;
 
-    let (start, end) = match precision {
-        StatsPrecision::Day => (
-            start_of_week(&date).context("error getting start of week")?,
-            end_of_week(&date).context("error getting end of week")?,
-        ),
-        StatsPrecision::Week => (
-            start_of_month(&date).context("error getting start of month")?,
-            end_of_month(&date).context("error getting end of month")?,
-        ),
-        StatsPrecision::Month => (
-            start_of_year(&date).context("error getting start of year")?,
-            end_of_year(&date).context("error getting end of year")?,
-        ),
-    };
-
-    let tz = query.get("tz").map_or(Ok(Tz::UTC), |tz_str| {
-        tz_str
-            .parse::<Tz>()
-            .map_err(|_| ApiError::BadRequest("invalid tz".to_string()))
-    })?;
-
     let stats = get_tag_distribution_stats(
         &state.db2,
         &user_id,
-        &start.naive_utc(),
-        &end.naive_utc(),
+        &start.naive_local(),
+        &end.naive_local(),
         &tz,
     )
     .await
@@ -194,11 +190,12 @@ pub async fn get_tag_distribution_stats_endpoint(
     let stats = stats
         .iter()
         .map(|s| {
-            let percentage = if total_seconds > 0 {
-                let seconds = s.seconds.unwrap_or(0);
-                (seconds as f64 / total_seconds as f64) * 100.0
-            } else {
-                0.0
+            let percentage = match total_seconds {
+                0 => 0.0,
+                _ => {
+                    let seconds = s.seconds.unwrap_or(0);
+                    (seconds as f64 / total_seconds as f64) * 100.0
+                }
             };
 
             return TagDistributionStat {
@@ -212,8 +209,8 @@ pub async fn get_tag_distribution_stats_endpoint(
 
     return Ok(Json(json!({
         "precision": precision,
-        "start": start,
-        "end": end,
+        "start": start.to_rfc3339(),
+        "end": end.to_rfc3339(),
         "total_seconds": total_seconds,
         "stats": stats,
     })));

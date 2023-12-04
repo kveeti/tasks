@@ -51,12 +51,12 @@ dependencies = [
  "axum-prometheus",
  "chrono",
  "chrono-tz",
- "common",
  "config",
  "db",
  "futures-util",
  "hyper",
  "notifications",
+ "now",
  "reqwest",
  "serde",
  "serde_json",
@@ -361,19 +361,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "common"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "chrono",
- "once_cell",
- "serde",
- "thiserror",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -601,7 +588,6 @@ dependencies = [
  "anyhow",
  "chrono",
  "chrono-tz",
- "common",
  "config",
  "serde",
  "serde_json",
@@ -1700,6 +1686,15 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "web-push",
+]
+
+[[package]]
+name = "now"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d89e9874397a1f0a52fc1f197a8effd9735223cb2390e9dcc83ac6cd02923d0"
+dependencies = [
+ "chrono",
 ]
 
 [[package]]

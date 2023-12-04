@@ -2,10 +2,20 @@ import { format } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { type StatsPrecision, useHoursByStats } from "@/utils/api/stats";
+import { useHoursByStats } from "@/utils/api/stats";
 
-export function ChartHoursBy({ date, precision }: { date: Date; precision: StatsPrecision }) {
-	const stats = useHoursByStats({ date, precision });
+export function ChartHoursBy({
+	start,
+	end,
+	precision,
+	timeframe,
+}: {
+	start: Date;
+	end: Date;
+	precision: "day" | "month";
+	timeframe: "week" | "month" | "year";
+}) {
+	const stats = useHoursByStats({ start, end, precision });
 	const [ref, bounds] = useMeasure();
 
 	return (
@@ -42,14 +52,11 @@ export function ChartHoursBy({ date, precision }: { date: Date; precision: Stats
 						<CartesianGrid strokeDasharray="2,4" stroke="#555" vertical={false} />
 						<XAxis
 							dataKey="date"
-							tickFormatter={(value: (typeof stats.data.stats)[number]["date"]) =>
-								(precision === "day"
-									? format(new Date(value), "EEE")
-									: precision === "week"
-									  ? format(new Date(value), "'w' w")
-									  : precision === "month"
-									    ? format(new Date(value), "LLLLL")
-									    : ""
+							tickFormatter={(date: (typeof stats.data.stats)[number]["date"]) =>
+								formatXTick(
+									new Date(date),
+									precision,
+									timeframe
 								).toLocaleLowerCase()
 							}
 							fontSize={12}
@@ -76,4 +83,16 @@ export function ChartHoursBy({ date, precision }: { date: Date; precision: Stats
 			)}
 		</section>
 	);
+}
+
+function formatXTick(date: Date, precision: "day" | "month", timeframe: "week" | "month" | "year") {
+	if (timeframe === "week") {
+		return format(date, "EEE");
+	} else if (timeframe === "month") {
+		return format(date, "d");
+	} else if (timeframe === "year") {
+		return format(date, "MMMMM");
+	}
+
+	throw new Error("invalid precision");
 }

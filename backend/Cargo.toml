@@ -32,6 +32,7 @@ hex = "0.4.3"
 sha2 = "0.10.8"
 futures = { version = "0.3.29" }
 futures-util = { version = "0.3.29" }
+now = "0.1"
 
 [profile.release]
 strip = "debuginfo"

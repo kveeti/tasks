@@ -15,6 +15,7 @@ use tracing::{info_span, Span};
 use types::RequestStateStruct;
 
 mod auth;
+pub mod date;
 mod endpoints;
 pub mod types;
 

@@ -5,13 +5,15 @@ import { type StatsPrecision, useTagDistributionStats } from "@/utils/api/stats"
 import { secondsToHours } from "@/utils/number";
 
 export function ChartTagDistribution({
-	date,
+	start,
+	end,
 	precision,
 }: {
-	date: Date;
+	start: Date;
+	end: Date;
 	precision: StatsPrecision;
 }) {
-	const statsQuery = useTagDistributionStats({ date, precision });
+	const statsQuery = useTagDistributionStats({ start, end, precision });
 	const [ref, bounds] = useMeasure();
 
 	return (

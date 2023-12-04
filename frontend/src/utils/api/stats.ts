@@ -3,12 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { getTz } from "../time";
 import { apiRequest } from "./apiRequest";
 
-export type StatsPrecision = "day" | "week" | "month";
+export type StatsPrecision = "day" | "month";
 
-export function useHoursByStats({ date, precision }: { date: Date; precision: StatsPrecision }) {
+export function useHoursByStats({
+	start,
+	end,
+	precision,
+}: {
+	start: Date;
+	end: Date;
+	precision: StatsPrecision;
+}) {
 	return useQuery({
-		queryKey: ["stats-hours-by", date, precision],
-		queryFn: ({ signal }) =>
+		queryKey: ["stats-hours-by", start, end, precision] as const,
+		queryFn: ({ signal, queryKey: [, start, end, precision] }) =>
 			apiRequest<{
 				precision: StatsPrecision;
 				start: string;
@@ -20,7 +28,8 @@ export function useHoursByStats({ date, precision }: { date: Date; precision: St
 				method: "GET",
 				path: "/stats/hours-by",
 				query: {
-					date: date.toISOString(),
+					start: start.toISOString(),
+					end: end.toISOString(),
 					precision,
 					tz: getTz(),
 				},
@@ -30,15 +39,17 @@ export function useHoursByStats({ date, precision }: { date: Date; precision: St
 }
 
 export function useTagDistributionStats({
-	date,
+	end,
+	start,
 	precision,
 }: {
-	date: Date;
+	start: Date;
+	end: Date;
 	precision: StatsPrecision;
 }) {
 	return useQuery({
-		queryKey: ["stats-tag-distribution", date, precision] as const,
-		queryFn: ({ queryKey, signal }) =>
+		queryKey: ["stats-tag-distribution", start, end, precision] as const,
+		queryFn: ({ signal, queryKey: [, start, end, precision] }) =>
 			apiRequest<{
 				precision: StatsPrecision;
 				start: string;
@@ -54,8 +65,9 @@ export function useTagDistributionStats({
 				method: "GET",
 				path: "/stats/tag-distribution",
 				query: {
-					date: queryKey[1].toISOString(),
-					precision: queryKey[2],
+					start: start.toISOString(),
+					end: end.toISOString(),
+					precision,
 					tz: getTz(),
 				},
 				signal,

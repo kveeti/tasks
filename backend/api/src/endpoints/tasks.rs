@@ -9,7 +9,6 @@ use axum::{
     Json,
 };
 use chrono::{DateTime, Duration, Utc};
-use common::date::difference_in_seconds;
 use db::{
     create_id,
     tasks::{TagColor, TagLabel, Task, TaskWithTag},
@@ -133,7 +132,9 @@ pub async fn stop_ongoing_task(
         user_id: user_id.to_owned(),
         tag_id: ongoing_task.tag_id.to_owned(),
         is_manual: ongoing_task.is_manual,
-        seconds: difference_in_seconds(&ongoing_task.start_at, &end_at),
+        seconds: end_at
+            .signed_duration_since(ongoing_task.start_at)
+            .num_seconds() as i32,
         start_at: ongoing_task.start_at,
         end_at,
     };
@@ -179,7 +180,10 @@ pub async fn add_manual_task(
         user_id: user_id.to_owned(),
         tag_id: tag.id.to_owned(),
         is_manual: true,
-        seconds: difference_in_seconds(&body.started_at, &body.expires_at),
+        seconds: body
+            .started_at
+            .signed_duration_since(body.expires_at)
+            .num_seconds() as i32,
         start_at: body.started_at,
         end_at: body.expires_at,
     };

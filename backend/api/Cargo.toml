@@ -15,10 +15,10 @@ chrono = { workspace = true }
 chrono-tz = { workspace = true }
 reqwest = { workspace = true }
 futures-util = { workspace = true }
+now = { workspace = true }
 config = { path = "../config" }
 auth = { path = "../auth" }
 db = { path = "../db" }
-common = { path = "../common" }
 notifications = { path = "../notifications" }
 axum = { version = "0.6.18", features = [ "headers", "ws" ] }
 hyper = "0.14.25"
