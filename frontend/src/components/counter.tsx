@@ -1,5 +1,12 @@
 // from: Sam Selikoff's counter example
-import { AnimatePresence, type MotionValue, motion, useSpring, useTransform } from "framer-motion";
+import {
+	AnimatePresence,
+	type MotionValue,
+	motion,
+	useMotionTemplate,
+	useSpring,
+	useTransform,
+} from "framer-motion";
 import { useEffect } from "react";
 
 const fontSize = 88;
@@ -93,8 +100,13 @@ function Number(props: { mv: MotionValue; number: number }) {
 		return memo;
 	});
 
+	const transform = useMotionTemplate`translate3d(0, ${y}px, 0)`;
+
 	return (
-		<motion.span style={{ y }} className="absolute inset-0 flex items-center justify-center">
+		<motion.span
+			style={{ transform }}
+			className="absolute inset-0 flex items-center justify-center"
+		>
 			{props.number}
 		</motion.span>
 	);
