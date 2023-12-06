@@ -77,3 +77,19 @@ pub async fn delete_by_ids(db: &Db, ids: &Vec<String>) -> Result<(), anyhow::Err
 
     return Ok(());
 }
+
+pub async fn delete_by_task_id(db: &Db, user_id: &str, task_id: &str) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            DELETE FROM notifications
+            WHERE user_id = $1 AND task_id = $2
+        "#,
+        user_id,
+        task_id
+    )
+    .execute(db)
+    .await
+    .context("error deleting notifications")?;
+
+    return Ok(());
+}

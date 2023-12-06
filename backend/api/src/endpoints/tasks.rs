@@ -143,6 +143,10 @@ pub async fn stop_ongoing_task(
         .await
         .context("error updating task")?;
 
+    db::notifications::delete_by_task_id(&state.db2, &user_id, &task.id)
+        .await
+        .context("error deleting notification")?;
+
     return Ok(StatusCode::OK.into_response());
 }
 
