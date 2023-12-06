@@ -181,8 +181,8 @@ pub async fn add_manual_task(
         tag_id: tag.id.to_owned(),
         is_manual: true,
         seconds: body
-            .started_at
-            .signed_duration_since(body.expires_at)
+            .expires_at
+            .signed_duration_since(body.started_at)
             .num_seconds() as i32,
         start_at: body.started_at,
         end_at: body.expires_at,
