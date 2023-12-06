@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                tags.label AS tag_label,\n                tags.color AS tag_color,\n                SUM(seconds) AS seconds\n            FROM\n                tasks\n            INNER JOIN\n                tags\n            ON\n                tasks.tag_id = tags.id\n            WHERE\n                tasks.user_id = $1\n                AND tasks.start_at AT TIME ZONE $4 >= $2\n                AND tasks.start_at AT TIME ZONE $4 <= $3\n            GROUP BY\n                tag_label,\n                tag_color\n            ORDER BY\n                seconds DESC;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tag_label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "tag_color",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "seconds",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp",
+        "Timestamp",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "86a7326bf78c07baa9b93258b222df789852da64fb840bd6fd247d15330dcb12"
+}

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                AND tasks.id < $2\n                ORDER BY tasks.id DESC\n                LIMIT 30;\n            ",
+  "query": "\n            SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label\n            FROM tasks\n            INNER JOIN tags ON tasks.tag_id = tags.id\n            WHERE tasks.user_id = $1\n            AND tasks.start_at < $2\n            AND tasks.end_at > $3\n        ",
   "describe": {
     "columns": [
       {
@@ -40,19 +40,20 @@
       },
       {
         "ordinal": 7,
-        "name": "tag_label",
+        "name": "tag_color",
         "type_info": "Varchar"
       },
       {
         "ordinal": 8,
-        "name": "tag_color",
+        "name": "tag_label",
         "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
         "Text",
-        "Text"
+        "Timestamptz",
+        "Timestamptz"
       ]
     },
     "nullable": [
@@ -60,12 +61,12 @@
       false,
       false,
       false,
-      true,
+      false,
       false,
       false,
       false,
       false
     ]
   },
-  "hash": "34acba054631d16c1718db9128bfafcdfbdc5192a3df599f3fe025456075cf31"
+  "hash": "0f3dbbd7841c77dcbc689d654c502772542b0a4f3f743d9e638806a250db70aa"
 }

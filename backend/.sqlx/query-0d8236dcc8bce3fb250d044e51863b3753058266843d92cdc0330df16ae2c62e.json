@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE tags\n            SET label = $3, color = $4\n            WHERE user_id = $1\n            AND id = $2\n            RETURNING *\n        ",
+  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            AND label = $2\n        ",
   "describe": {
     "columns": [
       {
@@ -27,9 +27,7 @@
     "parameters": {
       "Left": [
         "Text",
-        "Text",
-        "Varchar",
-        "Varchar"
+        "Text"
       ]
     },
     "nullable": [
@@ -39,5 +37,5 @@
       false
     ]
   },
-  "hash": "9bd512136785efdde5c31c64140363e293b8b749017abeb19ab36086c49e7490"
+  "hash": "0d8236dcc8bce3fb250d044e51863b3753058266843d92cdc0330df16ae2c62e"
 }

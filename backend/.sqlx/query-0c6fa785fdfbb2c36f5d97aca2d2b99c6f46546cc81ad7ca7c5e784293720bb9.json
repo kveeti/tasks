@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            AND deleted_at IS NULL\n            ORDER BY id DESC\n        ",
+  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            ORDER BY id DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -22,11 +22,6 @@
         "ordinal": 3,
         "name": "color",
         "type_info": "Varchar"
-      },
-      {
-        "ordinal": 4,
-        "name": "deleted_at",
-        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -38,9 +33,8 @@
       false,
       false,
       false,
-      false,
-      true
+      false
     ]
   },
-  "hash": "63773cab5f38981e3d00e111d297cfe79528056f014fbd2718c7725834545c6c"
+  "hash": "0c6fa785fdfbb2c36f5d97aca2d2b99c6f46546cc81ad7ca7c5e784293720bb9"
 }

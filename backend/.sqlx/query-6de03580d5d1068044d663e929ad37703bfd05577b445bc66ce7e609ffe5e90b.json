@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM notifications\n            WHERE user_id = $1 AND task_id = $2\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6de03580d5d1068044d663e929ad37703bfd05577b445bc66ce7e609ffe5e90b"
+}

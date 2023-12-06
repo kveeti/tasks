@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT tasks.*, tags.label AS tag_label, tags.color AS tag_color\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                ORDER BY tasks.id DESC\n                LIMIT $2;\n            ",
+  "query": "\n                SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                AND tasks.id < $2\n                ORDER BY tasks.start_at DESC\n                LIMIT $3;\n            ",
   "describe": {
     "columns": [
       {
@@ -40,17 +40,18 @@
       },
       {
         "ordinal": 7,
-        "name": "tag_label",
+        "name": "tag_color",
         "type_info": "Varchar"
       },
       {
         "ordinal": 8,
-        "name": "tag_color",
+        "name": "tag_label",
         "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
+        "Text",
         "Text",
         "Int8"
       ]
@@ -60,12 +61,12 @@
       false,
       false,
       false,
-      true,
+      false,
       false,
       false,
       false,
       false
     ]
   },
-  "hash": "ad8ceb99253868b6bafc4502a97288819bfd8310fca790db7eef1dd6f47dd38d"
+  "hash": "b4da9fea41999a6da5161b4eb2ef7f8e0e6fbe9fc475d8543326c43d3b54571a"
 }
