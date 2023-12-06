@@ -88,8 +88,8 @@ type State = {
 };
 const initialState = {
 	date: new Date(),
-	start: startOfWeek(new Date(), { weekStartsOn: 2 }),
-	end: endOfWeek(new Date(), { weekStartsOn: 2 }),
+	start: startOfWeek(new Date(), { weekStartsOn: 1 }),
+	end: endOfWeek(new Date(), { weekStartsOn: 1 }),
 	precision: "day",
 	timeframe: "week",
 } satisfies State;
@@ -126,8 +126,8 @@ function stateReducer(state: State, action: Action): State {
 				...state,
 				timeframe: "week",
 				precision: "day",
-				start: startOfWeek(state.date, { weekStartsOn: 2 }),
-				end: endOfWeek(state.date, { weekStartsOn: 2 }),
+				start: startOfWeek(state.date, { weekStartsOn: 1 }),
+				end: endOfWeek(state.date, { weekStartsOn: 1 }),
 			};
 		}
 	} else if (action.type === "SCROLL") {
