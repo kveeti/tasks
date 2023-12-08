@@ -5,10 +5,10 @@ cargo install cargo-watch
 cargo install sqlx-cli
 ```
 
-create database:
+psql:
 
 ```bash
-psql --host localhost --port 5432 --user postgres postgres
+psql --host localhost --port 5432 --user postgres tasks_dev
 ```
 
 start backend:
