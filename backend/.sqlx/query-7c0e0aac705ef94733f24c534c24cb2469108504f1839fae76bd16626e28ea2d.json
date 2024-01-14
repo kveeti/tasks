@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                tasks.tag_id,\n                tags.label as tag_label,\n                tags.color as tag_color,\n                date_trunc($1, start_at AT TIME ZONE $5) AS date,\n                CAST(SUM(tasks.seconds / 3600.0) as float) AS hours\n            FROM\n                tasks\n            JOIN\n                tags ON tasks.tag_id = tags.id\n            WHERE\n                tasks.user_id = $2\n                AND start_at AT TIME ZONE $5 >= $3\n                AND start_at AT TIME ZONE $5 <= $4\n            GROUP BY\n                date,\n                tasks.tag_id,\n                tag_label,\n                tag_color\n            ORDER BY\n                date ASC;\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tag_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "tag_label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "tag_color",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "hours",
+        "type_info": "Float8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamp",
+        "Timestamp",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "7c0e0aac705ef94733f24c534c24cb2469108504f1839fae76bd16626e28ea2d"
+}

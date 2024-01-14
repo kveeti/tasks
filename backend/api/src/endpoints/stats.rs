@@ -12,12 +12,11 @@ use axum::{
 use chrono::{DateTime, Duration, Months, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
 use db::tasks::{
-    get_hours_by_stats, get_tag_distribution_stats, HoursByStat, StatByDate, StatByTag,
-    StatsPrecision,
+    get_hours_by_stats, get_tag_distribution_stats, StatByDate, StatByTag, StatsPrecision,
 };
 use indexmap::IndexSet;
 use serde_json::json;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(serde::Serialize, Debug, Eq, Hash, PartialEq)]
 pub struct UniqueTag {
