@@ -1,7 +1,17 @@
 export function getMinutesAndSeconds(seconds: number) {
 	return {
-		minutes: String(Math.floor(seconds / 60)).padStart(2, "0"),
-		seconds: String(seconds % 60).padStart(2, "0"),
+		minutes: Math.floor(seconds / 60),
+		seconds: seconds % 60,
+	};
+}
+
+export function getHoursAndMinutes(number: number) {
+	const hours = Math.floor(number);
+	const minutes = Math.round((number - hours) * 60);
+
+	return {
+		hours,
+		minutes,
 	};
 }
 

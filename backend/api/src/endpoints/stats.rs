@@ -11,9 +11,20 @@ use axum::{
 };
 use chrono::{DateTime, Duration, Months, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Tz;
-use db::tasks::{get_hours_by_stats, get_tag_distribution_stats, HoursByStat, StatsPrecision};
+use db::tasks::{
+    get_hours_by_stats, get_tag_distribution_stats, HoursByStat, StatByDate, StatByTag,
+    StatsPrecision,
+};
+use indexmap::IndexSet;
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+
+#[derive(serde::Serialize, Debug, Eq, Hash, PartialEq)]
+pub struct UniqueTag {
+    pub id: String,
+    pub label: String,
+    pub color: String,
+}
 
 pub async fn get_hours_by_stats_endpoint(
     UserId(user_id): UserId,
@@ -62,9 +73,22 @@ pub async fn get_hours_by_stats_endpoint(
     .await
     .context("error getting stats")?;
 
-    let (most_hours, stats) =
+    let mut unique_tags = IndexSet::<UniqueTag>::new();
+    for stat_by_date in &stats {
+        for stat_by_tag in &stat_by_date.stats {
+            unique_tags.insert(UniqueTag {
+                id: stat_by_tag.tag_id.to_owned(),
+                label: stat_by_tag.tag_label.to_owned(),
+                color: stat_by_tag.tag_color.to_owned(),
+            });
+        }
+    }
+
+    let (most_hours, total_hours, stats) =
         fill_in_missing_days(&precision, &start_naive, &end_naive, &stats, &tz)
             .context("error filling in missing days")?;
+
+    let avg_hours = total_hours / stats.len() as f64;
 
     return Ok(Json(json!({
         "precision": precision,
@@ -72,22 +96,24 @@ pub async fn get_hours_by_stats_endpoint(
         "end": end.to_rfc3339(),
         "most_hours": most_hours,
         "stats": stats,
+        "avg_hours": avg_hours,
+        "tags": unique_tags
     })));
 }
 
 #[derive(serde::Serialize)]
 pub struct HoursByStatTz {
     pub date: String,
-    pub hours: f64,
+    pub stats: Vec<StatByTag>,
 }
 
 fn fill_in_missing_days(
     precision: &StatsPrecision,
     start: &NaiveDateTime,
     end: &NaiveDateTime,
-    stats: &Vec<HoursByStat>,
+    stats: &Vec<StatByDate>,
     tz: &Tz,
-) -> anyhow::Result<(f64, Vec<HoursByStatTz>)> {
+) -> anyhow::Result<(f64, f64, Vec<HoursByStatTz>)> {
     // turn start date to start of day
     // because dates come as start of day
     // from the database
@@ -95,23 +121,30 @@ fn fill_in_missing_days(
 
     let mut new_stats: Vec<HoursByStatTz> = Vec::new();
     let mut most_hours = 0.0;
+    let mut total_hours = 0.0;
 
     while date <= *end {
-        let (stat_date, stat_hours) = match stats.iter().find(|s| s.date == Some(date)) {
-            Some(stat) => (stat.date.unwrap(), stat.hours.unwrap_or(0.0)),
-            None => (date, 0.0),
+        let stat = match stats.iter().find(|s| s.date == date) {
+            Some(stat) => stat.to_owned(),
+            None => StatByDate {
+                date,
+                stats: vec![],
+            },
         };
 
-        if most_hours < stat_hours {
-            most_hours = stat_hours;
+        let total_hours_for_timeframe = stat.stats.iter().fold(0.0, |acc, stat| acc + stat.hours);
+        if most_hours < total_hours_for_timeframe {
+            most_hours = total_hours_for_timeframe;
         }
 
+        total_hours += total_hours_for_timeframe;
+
         new_stats.push(HoursByStatTz {
-            date: tz.from_local_datetime(&stat_date).unwrap().to_rfc3339(),
-            hours: stat_hours,
+            date: tz.from_local_datetime(&date).unwrap().to_rfc3339(),
+            stats: stat.stats,
         });
 
-        let new_date = match precision {
+        let next_date = match precision {
             StatsPrecision::Day => date + Duration::days(1),
             StatsPrecision::Week => date + Duration::weeks(1),
             StatsPrecision::Month => date
@@ -119,10 +152,10 @@ fn fill_in_missing_days(
                 .context("error getting next month")?,
         };
 
-        date = new_date;
+        date = next_date;
     }
 
-    return Ok((most_hours, new_stats));
+    return Ok((most_hours, total_hours, new_stats));
 }
 
 #[derive(serde::Serialize)]

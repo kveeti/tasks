@@ -241,6 +241,21 @@ impl ToString for StatsPrecision {
 pub struct HoursByStat {
     pub date: Option<NaiveDateTime>,
     pub hours: Option<f64>,
+    pub tag_label: String,
+}
+
+#[derive(serde::Serialize, Clone)]
+pub struct StatByDate {
+    pub date: NaiveDateTime,
+    pub stats: Vec<StatByTag>,
+}
+
+#[derive(serde::Serialize, Clone)]
+pub struct StatByTag {
+    pub tag_id: String,
+    pub tag_label: String,
+    pub tag_color: String,
+    pub hours: f64,
 }
 
 pub async fn get_hours_by_stats(
@@ -250,20 +265,28 @@ pub async fn get_hours_by_stats(
     start: &NaiveDateTime,
     end: &NaiveDateTime,
     tz: &chrono_tz::Tz,
-) -> Result<Vec<HoursByStat>, anyhow::Error> {
-    let seconds_by_day = sqlx::query!(
+) -> Result<Vec<StatByDate>, anyhow::Error> {
+    let data = sqlx::query!(
         r#"
             SELECT
+                tasks.tag_id,
+                tags.label as tag_label,
+                tags.color as tag_color,
                 date_trunc($1, start_at AT TIME ZONE $5) AS date,
-                CAST(SUM(seconds) AS float) / CAST(60 AS float) / CAST(60 AS float) AS hours
+                CAST(SUM(tasks.seconds / 3600.0) as float) AS hours
             FROM
                 tasks
+            JOIN
+                tags ON tasks.tag_id = tags.id
             WHERE
-                user_id = $2
+                tasks.user_id = $2
                 AND start_at AT TIME ZONE $5 >= $3
                 AND start_at AT TIME ZONE $5 <= $4
             GROUP BY
-                date
+                date,
+                tasks.tag_id,
+                tag_label,
+                tag_color
             ORDER BY
                 date ASC;
         "#,
@@ -277,16 +300,40 @@ pub async fn get_hours_by_stats(
     .await
     .context("error fetching tasks")?;
 
-    return Ok(seconds_by_day
-        .into_iter()
-        .map(|s| HoursByStat {
-            date: s.date,
-            hours: match s.hours {
-                Some(h) => Some(h.round()),
-                None => None,
+    let mut stats: Vec<StatByDate> = vec![];
+
+    // TODO: horrible looking
+    for stat in data {
+        match stat.date {
+            Some(stat_date) => match stat.hours {
+                Some(stat_hours) => {
+                    let existing = stats.iter().position(|s| s.date == stat_date);
+
+                    match existing {
+                        Some(pos) => stats[pos].stats.push(StatByTag {
+                            tag_id: stat.tag_id,
+                            tag_label: stat.tag_label,
+                            tag_color: stat.tag_color,
+                            hours: stat_hours,
+                        }),
+                        None => stats.push(StatByDate {
+                            date: stat_date,
+                            stats: vec![StatByTag {
+                                tag_id: stat.tag_id,
+                                tag_label: stat.tag_label,
+                                tag_color: stat.tag_color,
+                                hours: stat_hours,
+                            }],
+                        }),
+                    }
+                }
+                None => continue,
             },
-        })
-        .collect());
+            None => continue,
+        }
+    }
+
+    return Ok(stats);
 }
 
 #[derive(serde::Serialize, Debug)]

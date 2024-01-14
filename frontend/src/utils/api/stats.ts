@@ -23,7 +23,17 @@ export function useHoursByStats({
 				end: string;
 				tz: string;
 				most_hours: number;
-				stats: Array<{ date: string; hours: number }>;
+				avg_hours: number;
+				stats: Array<{
+					date: string;
+					stats: Array<{
+						tag_label: string;
+						tag_id: string;
+						tag_color: string;
+						hours: number;
+					}>;
+				}>;
+				tags: Array<{ id: string; label: string; color: string }>;
 			}>({
 				method: "GET",
 				path: "/stats/hours-by",
