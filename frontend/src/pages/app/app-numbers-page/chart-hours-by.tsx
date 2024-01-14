@@ -45,13 +45,11 @@ function Title({
 	const { hours: avg_hours, minutes: avg_minutes } = getHoursAndMinutes(avg_hours_api);
 
 	const avgTimeframeText =
-		timeframe === "week"
+		timeframe === "week" || timeframe === "month"
 			? "daily"
-			: timeframe === "month"
-			  ? "weekly"
-			  : timeframe === "year"
-			    ? "monthly"
-			    : null;
+			: timeframe === "year"
+			  ? "monthly"
+			  : null;
 
 	const minutesText = avg_minutes > 0 && Math.round(avg_minutes) + "m";
 	const hoursText = avg_hours > 0 && Math.round(avg_hours) + "h";
