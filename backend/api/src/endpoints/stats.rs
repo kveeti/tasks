@@ -83,7 +83,7 @@ pub async fn get_hours_by_stats_endpoint(
         }
     }
 
-    let (most_hours, total_hours, stats) =
+    let (most_hours, total_hours, stats_with_missing_days) =
         fill_in_missing_days(&precision, &start_naive, &end_naive, &stats, &tz)
             .context("error filling in missing days")?;
 
@@ -94,7 +94,7 @@ pub async fn get_hours_by_stats_endpoint(
         "start": start.to_rfc3339(),
         "end": end.to_rfc3339(),
         "most_hours": most_hours,
-        "stats": stats,
+        "stats": stats_with_missing_days,
         "avg_hours": avg_hours,
         "tags": unique_tags
     })));
