@@ -79,7 +79,6 @@ function Chart({
 	timeframe: "week" | "month" | "year";
 }) {
 	const [ref, bounds] = useMeasure();
-	const showAvgLine = data.avg_hours ?? 0 > 0.5;
 
 	const chartData = (data.stats ?? []).map((s) => {
 		const statsObj: Record<(typeof s.stats)[number]["tag_id"], Record<string, unknown>> = {};
@@ -152,23 +151,16 @@ function Chart({
 					/>
 				))}
 
-				{showAvgLine && (
-					<ReferenceLine
-						isFront
+				<ReferenceLine isFront stroke="#00b00c" strokeDasharray="3 4" y={data.avg_hours}>
+					<Label
+						value="avg"
 						stroke="#00b00c"
-						strokeDasharray="3 4"
-						y={data.avg_hours}
-					>
-						<Label
-							value="avg"
-							stroke="#00b00c"
-							fontWeight={100}
-							fontSize={13}
-							offset={3}
-							position="right"
-						/>
-					</ReferenceLine>
-				)}
+						fontWeight={100}
+						fontSize={13}
+						offset={3}
+						position="right"
+					/>
+				</ReferenceLine>
 			</BarChart>
 		</div>
 	);
