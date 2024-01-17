@@ -102,8 +102,6 @@ const actions = {
 type Action = ReturnType<(typeof actions)[keyof typeof actions]>;
 
 function stateReducer(state: State, action: Action): State {
-	console.log("stateReducer", state, action);
-
 	if (action.type === "ROTATE_TIMEFRAME") {
 		if (state.timeframe === "week") {
 			return {
@@ -134,52 +132,64 @@ function stateReducer(state: State, action: Action): State {
 		if (state.precision === "day") {
 			if (state.timeframe === "week") {
 				if (action.direction === "left") {
+					const newDate = subWeeks(state.date, 1);
+
 					return {
 						...state,
-						start: subWeeks(state.start, 1),
-						end: subWeeks(state.end, 1),
-						date: subWeeks(state.date, 1),
+						start: startOfWeek(newDate),
+						end: endOfWeek(newDate),
+						date: newDate,
 					};
 				}
 
+				const newDate = addWeeks(state.date, 1);
+
 				return {
 					...state,
-					start: addWeeks(state.start, 1),
-					end: addWeeks(state.end, 1),
-					date: addWeeks(state.date, 1),
+					start: startOfWeek(newDate),
+					end: endOfWeek(newDate),
+					date: newDate,
 				};
 			} else if (state.timeframe === "month") {
 				if (action.direction === "left") {
+					const newDate = subMonths(state.date, 1);
+
 					return {
 						...state,
-						start: subMonths(state.start, 1),
-						end: subMonths(state.end, 1),
-						date: subMonths(state.date, 1),
+						start: startOfMonth(newDate),
+						end: endOfMonth(newDate),
+						date: newDate,
 					};
 				}
 
+				const newDate = addMonths(state.date, 1);
+
 				return {
 					...state,
-					start: addMonths(state.start, 1),
-					end: addMonths(state.end, 1),
-					date: addMonths(state.date, 1),
+					start: startOfMonth(newDate),
+					end: endOfMonth(newDate),
+					date: newDate,
 				};
 			}
 		} else if (state.precision === "month") {
 			if (action.direction === "left") {
+				const newDate = subYears(state.date, 1);
+
 				return {
 					...state,
-					start: subYears(state.start, 1),
-					end: subYears(state.end, 1),
-					date: subYears(state.date, 1),
+					start: startOfYear(newDate),
+					end: endOfYear(newDate),
+					date: newDate,
 				};
 			}
 
+			const newDate = addYears(state.date, 1);
+
 			return {
 				...state,
-				start: addYears(state.start, 1),
-				end: addYears(state.end, 1),
-				date: addYears(state.date, 1),
+				start: startOfYear(newDate),
+				end: endOfYear(newDate),
+				date: newDate,
 			};
 		}
 	}
