@@ -136,8 +136,8 @@ function stateReducer(state: State, action: Action): State {
 
 					return {
 						...state,
-						start: startOfWeek(newDate),
-						end: endOfWeek(newDate),
+						start: startOfWeek(newDate, { weekStartsOn: 1 }),
+						end: endOfWeek(newDate, { weekStartsOn: 1 }),
 						date: newDate,
 					};
 				}
@@ -146,8 +146,8 @@ function stateReducer(state: State, action: Action): State {
 
 				return {
 					...state,
-					start: startOfWeek(newDate),
-					end: endOfWeek(newDate),
+					start: startOfWeek(newDate, { weekStartsOn: 1 }),
+					end: endOfWeek(newDate, { weekStartsOn: 1 }),
 					date: newDate,
 				};
 			} else if (state.timeframe === "month") {
