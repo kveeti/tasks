@@ -24,5 +24,4 @@ axum = { version = "0.6.18", features = [ "headers", "ws" ] }
 hyper = "0.14.25"
 tower = "0.4.13"
 tower-http = { version = "0.3", features = [ "trace", "cors" ] }
-axum-prometheus = { version = "0.4.0" }
 indexmap = { version = "2.1.0", features = ["serde"] }
