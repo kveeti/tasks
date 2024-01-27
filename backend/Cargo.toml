@@ -38,5 +38,3 @@ now = "0.1"
 strip = "debuginfo"
 lto = true
 opt-level = "z"
-incremental = false
-
