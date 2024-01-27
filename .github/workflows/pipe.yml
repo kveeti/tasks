@@ -76,17 +76,11 @@ jobs:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE }}
-          tags: prod
-
       - name: build and push docker image
         uses: docker/build-push-action@v5
         with:
-          tags: ${{ steps.meta.outputs.tags }}
+          push: true
+          tags: prod
           labels: ${{ steps.meta.outputs.labels }}
           context: ${{ env.BACK_DIR }}
           platforms: linux/amd64
