@@ -22,7 +22,7 @@ jobs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
         id: changes
@@ -40,7 +40,7 @@ jobs:
     if: needs.determine_changes.outputs.backend == 'true'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -132,13 +132,34 @@ jobs:
             cd ~/tasks && \
             docker rollout -f ./docker-compose.yml backend
 
+  check_frontend:
+    needs: [determine_changes]
+    name: check frontend
+    if: needs.determine_changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: install
+        run: bun install
+
+      - name: build
+        run: bun run build
+
+      - name: lint
+        run: bun run lint
+
+      - name: typecheck
+        run: bun run typecheck
+
   deploy_frontend:
-    needs:
-      - determine_changes
-      - deploy_backend
+    needs: [check_frontend]
     name: deploy frontend
     environment: prod
-    if: needs.determine_changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -156,12 +177,6 @@ jobs:
         env:
           VITE_APP_API_URL: ${{ env.FRONT_API_URL }}
           VITE_APP_VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
-
-      - name: lint
-        run: bun run lint
-
-      - name: typecheck
-        run: bun run typecheck
 
       - name: deploy frontend
         run: bun run deploy
