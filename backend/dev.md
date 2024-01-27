@@ -1,5 +1,4 @@
 install watcher:
-a
 
 ```bash
 cargo install cargo-watch
