@@ -19,6 +19,8 @@ jobs:
     name: determine filters
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
         id: filters
         with:
