@@ -1,0 +1,184 @@
+name: pipe
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKERHUB_USERNAME: veetik
+  DOCKER_IMAGE: veetik/tasks-backend
+  FRONT_API_URL: https://tasks-api.veetik.com/api/v1
+  FRONT_VAPID_PUBLIC_KEY: BMvRTtdBaxw8nWOkVbBOH_mC7sPHTkgVbbtrYqEek05-iupcxgkLUksERHvFsBIE5xytDaNzxeuLHTLu8FC-O-k
+  FRONT_DIR: ./frontend
+  BACK_DIR: ./backend
+
+jobs:
+  determine_changes:
+    name: determine changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  build_and_push_backend_image:
+    name: build and push backend docker image
+    runs-on: ubuntu-latest
+    needs: [determine_changes]
+    if: needs.determine_changes.outputs.backend == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: login to docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: build and push docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.BACK_DIR }}
+          platforms: linux/amd64
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+  push_prod_backend_image:
+    name: push prod image
+    needs: [build_and_push_backend_image]
+    environment: prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: login to docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: prod
+
+      - name: build and push docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.BACK_DIR }}
+          platforms: linux/amd64
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+  deploy_backend:
+    needs: [push_prod_backend_image]
+    name: deploy backend
+    environment: prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: update deployment
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/tasks && \
+            docker rollout -f ./docker-compose.yml backend
+
+  check_frontend:
+    needs: [determine_changes]
+    name: check frontend
+    if: needs.determine_changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: install
+        run: bun install
+
+      - name: build
+        run: bun run build
+
+      - name: lint
+        run: bun run lint
+
+      - name: typecheck
+        run: bun run typecheck
+
+  deploy_frontend:
+    needs: [check_frontend]
+    name: deploy frontend
+    environment: prod
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - name: install
+        run: bun install
+
+      - name: build
+        run: bun run build
+        env:
+          VITE_APP_API_URL: ${{ env.FRONT_API_URL }}
+          VITE_APP_VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
+
+      - name: deploy frontend
+        run: bun run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
