@@ -15,9 +15,24 @@ env:
   BACK_DIR: ./backend
 
 jobs:
+  determine_filters:
+    name: determine filters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
+        id: filters
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
   build_and_push_backend_image:
     name: build and push backend docker image
     runs-on: ubuntu-latest
+    needs: [determine_filters]
+    if: needs.determine_filters.output.backend == 'true'
 
     steps:
       - uses: actions/checkout@v3
@@ -113,9 +128,12 @@ jobs:
             docker rollout -f ./docker-compose.yml backend
 
   deploy_frontend:
-    needs: [deploy_backend]
+    needs:
+      - determine_filters
+      - deploy_backend
     name: deploy frontend
     environment: prod
+    if: needs.determine_filters.output.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
