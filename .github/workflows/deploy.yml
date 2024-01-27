@@ -106,7 +106,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             cd ~/tasks && \
             docker rollout -f ./docker-compose.yml backend
