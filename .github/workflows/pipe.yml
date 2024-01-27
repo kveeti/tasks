@@ -3,7 +3,7 @@ name: pipe
 on:
   push:
     branches:
-      - pipe
+      - main
   workflow_dispatch:
 
 env:
