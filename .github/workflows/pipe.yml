@@ -18,6 +18,9 @@ jobs:
   determine_filters:
     name: determine filters
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filters.outputs.backend }}
+      frontend: ${{ steps.filters.outputs.frontend }}
     steps:
       - uses: actions/checkout@v3
 
