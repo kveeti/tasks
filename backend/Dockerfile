@@ -22,5 +22,5 @@ RUN --mount=type=cache,target=/root/.cache/sccache \
 FROM scratch AS runtime
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/backend /usr/local/bin/backend
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-EXPOSE 8000
 ENTRYPOINT ["/usr/local/bin/backend"]
+EXPOSE 8000
