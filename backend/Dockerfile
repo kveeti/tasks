@@ -15,7 +15,7 @@ COPY . .
 ENV SQLX_OFFLINE=true
 ENV OPENSSL_STATIC=1
 ENV RUSTC_WRAPPER=sccache
-RUN rustup target add aarch64-unknown-linux-musl
+RUN rustup target add x86_64-unknown-linux-musl
 RUN --mount=type=cache,target=/root/.cache/sccache \
   cargo build --release --bin backend --target x86_64-unknown-linux-musl
 
