@@ -1,0 +1,66 @@
+name: ci
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  DOCKERHUB_USERNAME: veetik
+  DOCKER_IMAGE: veetik/tasks-backend
+  BACK_DIR: ./backend
+
+jobs:
+  determine_changes:
+    name: determine changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+
+  build_backend_image:
+    name: build backend docker image
+    needs: [determine_changes]
+    if: needs.determine_changes.outputs.backend == 'true'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: build docker image
+        uses: docker/build-push-action@v5
+        with:
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.BACK_DIR }}
+          platforms: linux/amd64
+
+
