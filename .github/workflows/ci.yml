@@ -11,26 +11,26 @@ env:
   BACK_DIR: ./backend
 
 jobs:
-  determine_changes:
-    name: determine changes
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.changes.outputs.backend }}
-      frontend: ${{ steps.changes.outputs.frontend }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
-        id: changes
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
+  # determine_changes:
+  #   name: determine changes
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     backend: ${{ steps.changes.outputs.backend }}
+  #     frontend: ${{ steps.changes.outputs.frontend }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: dorny/paths-filter@0bc4621a3135347011ad047f9ecf449bf72ce2bd
+  #       id: changes
+  #       with:
+  #         filters: |
+  #           backend:
+  #             - 'backend/**'
 
   build_backend_image:
     name: build backend docker image
-    needs: [determine_changes]
-    if: needs.determine_changes.outputs.backend == 'true'
+    # needs: [determine_changes]
+    # if: needs.determine_changes.outputs.backend == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-14]
