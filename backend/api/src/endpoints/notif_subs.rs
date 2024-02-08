@@ -26,6 +26,12 @@ pub async fn add_notif_sub_endpoint(
     State(state): RequestState,
     Json(body): Json<AddNotifSubEndpointBody>,
 ) -> Result<impl IntoResponse, ApiError> {
+    if body.endpoint.len() > 2000 {
+        return Err(ApiError::BadRequest(
+            "endpoint url must be shorter than 2000 characters".to_owned(),
+        ));
+    }
+
     let notification_sub = db::notification_subs::upsert(
         &state.db2,
         &user_id,
