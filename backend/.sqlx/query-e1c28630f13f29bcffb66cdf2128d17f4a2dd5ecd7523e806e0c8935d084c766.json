@@ -15,18 +15,18 @@
       },
       {
         "ordinal": 2,
-        "name": "endpoint",
-        "type_info": "Varchar"
-      },
-      {
-        "ordinal": 3,
         "name": "p256dh",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "auth",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "endpoint",
+        "type_info": "Text"
       }
     ],
     "parameters": {
