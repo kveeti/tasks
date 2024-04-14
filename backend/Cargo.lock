@@ -108,6 +108,7 @@ dependencies = [
  "config",
  "cookie",
  "hex",
+ "hmac",
  "jsonwebtoken",
  "once_cell",
  "serde",

@@ -126,7 +126,7 @@ pub async fn auth_verify_endpoint(
         header::SET_COOKIE,
         format!(
             "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly",
-            create_token(&user.id, &session_id),
+            create_token(&CONFIG.secret, &user.id, &session_id),
             expires_at.format("%a, %d %b %Y %T GMT")
         )
         .parse()
@@ -165,7 +165,7 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
             header::SET_COOKIE,
             format!(
                 "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-                create_token(&user_id, &session_id),
+                create_token(&CONFIG.secret, &user_id, &session_id),
                 expires_at.format("%a, %d %b %Y %T GMT")
             )
             .parse()

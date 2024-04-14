@@ -1,4 +1,5 @@
-use sha2::{Digest, Sha256};
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
 
 pub struct Token {
     pub user_id: String,
@@ -8,23 +9,28 @@ pub struct Token {
 static ID_SPLITTER: &str = ".";
 static SIGNATURE_SPLITTER: &str = ":";
 
-fn create_signature(data_to_sign: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(&data_to_sign);
-    let result = hasher.finalize();
+type HmacSha256 = Hmac<Sha256>;
 
-    return result.iter().map(|b| format!("{:02x}", b)).collect();
+fn create_signature(secret: &str, data_to_sign: &str) -> String {
+    let mut mac = HmacSha256::new_from_slice(secret.as_bytes()).expect("error creating hmac");
+
+    mac.update(data_to_sign.as_bytes());
+
+    let result = mac.finalize();
+    let result = result.into_bytes();
+
+    return hex::encode(result);
 }
 
-pub fn create_token(user_id: &str, session_id: &str) -> String {
+pub fn create_token(secret: &str, user_id: &str, session_id: &str) -> String {
     let data = format!("{user_id}{ID_SPLITTER}{session_id}");
 
-    let signature = create_signature(&data);
+    let signature = create_signature(secret, &data);
 
     return format!("{data}{SIGNATURE_SPLITTER}{signature}");
 }
 
-pub fn verify_token(token: &str) -> Result<Token, anyhow::Error> {
+pub fn verify_token(secret: &str, token: &str) -> Result<Token, anyhow::Error> {
     let parts: Vec<&str> = token.split(SIGNATURE_SPLITTER).collect();
 
     if parts.len() != 2 {
@@ -36,7 +42,7 @@ pub fn verify_token(token: &str) -> Result<Token, anyhow::Error> {
     let data = parts[0];
     let signature = parts[1];
 
-    let expected_signature = create_signature(data);
+    let expected_signature = create_signature(secret, data);
 
     if signature != expected_signature {
         return Err(anyhow::anyhow!("invalid signature"));

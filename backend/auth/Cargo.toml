@@ -16,3 +16,4 @@ hex = { workspace = true }
 config = { path = "../config" }
 jsonwebtoken = "8.3.0"
 cookie = "0.18.0"
+hmac = "0.12.1"

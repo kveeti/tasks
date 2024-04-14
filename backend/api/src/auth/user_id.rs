@@ -8,6 +8,7 @@ use axum::{
     RequestPartsExt,
 };
 use chrono::{Duration, Utc};
+use config::CONFIG;
 use hyper::header;
 
 use crate::types::{ApiError, RequestStateStruct};
@@ -47,7 +48,7 @@ where
                 .ok_or(ApiError::Unauthorized("no auth".to_string()))?;
 
             (
-                verify_token(&token_string).context("error verifying token")?,
+                verify_token(&CONFIG.secret, &token_string).context("error verifying token")?,
                 token_string,
             )
         };
@@ -124,7 +125,7 @@ where
                 .ok_or(ApiError::Unauthorized("no auth".to_string()))?;
 
             (
-                verify_token(&token_string).context("error verifying token")?,
+                verify_token(&CONFIG.secret, &token_string).context("error verifying token")?,
                 token_string,
             )
         };
