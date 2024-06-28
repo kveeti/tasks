@@ -2,7 +2,6 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
-use config::IS_PROD;
 
 use crate::state::RequestStateStruct;
 
@@ -20,7 +19,8 @@ pub fn router() -> Router<RequestStateStruct> {
         .route("/me", get(auth::auth_me_endpoint))
         .route("/logout", get(auth::auth_logout_endpoint));
 
-    if !*IS_PROD {
+    #[cfg(debug_assertions)]
+    {
         v1_auth_routes = v1_auth_routes
             .route("/dev-login", get(auth::dev_login))
             .to_owned();

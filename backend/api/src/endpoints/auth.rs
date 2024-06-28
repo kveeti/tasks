@@ -4,7 +4,7 @@ use crate::{
     state::RequestState,
 };
 use anyhow::Context;
-use auth::token::create_token;
+use auth::{cookie::create_empty_cookie, token::create_token};
 use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
@@ -68,7 +68,7 @@ pub async fn auth_verify_endpoint(
         .await
         .context("error sending access token request")?;
 
-    if access_token_response.status() != StatusCode::OK {
+    if access_token_response.status() != reqwest::StatusCode::OK {
         let status = access_token_response.status();
         let access_token_response_body = access_token_response
             .text()
@@ -137,7 +137,38 @@ pub async fn auth_verify_endpoint(
     return Ok((StatusCode::OK, headers, Json(user)));
 }
 
+pub async fn auth_me_endpoint(
+    UserId(user_id): UserId,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    let user = db::users::get_by_id(&state.db, &user_id)
+        .await
+        .context("error getting user")?
+        .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
+
+    return Ok((StatusCode::OK, Json(user)));
+}
+
+pub async fn auth_logout_endpoint(
+    Auth(auth): Auth,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    db::sessions::delete(&state.db, &auth.session_id, &auth.user_id)
+        .await
+        .context("error deleting session")?;
+
+    let headers: HeaderMap = HeaderMap::from_iter(vec![(
+        header::SET_COOKIE,
+        create_empty_cookie().parse().context("error parsing cookie")?,
+    )]);
+
+    return Ok((StatusCode::OK, headers));
+}
+
+#[cfg(debug_assertions)]
 pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, ApiError> {
+    use auth::cookie::create_cookie;
+
     let email = "dev@dev.local";
 
     let existing_user = db::users::get_by_email(&state.db, email)
@@ -164,10 +195,9 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
     let headers: HeaderMap = HeaderMap::from_iter(vec![
         (
             header::SET_COOKIE,
-            format!(
-                "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-                create_token(&CONFIG.secret, &user_id, &session_id),
-                expires_at.format("%a, %d %b %Y %T GMT")
+            create_cookie(
+                &create_token(&CONFIG.secret, &user_id, &session_id),
+                &expires_at,
             )
             .parse()
             .context("error parsing cookie header")?,
@@ -181,34 +211,4 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
     ]);
 
     return Ok((StatusCode::SEE_OTHER, headers));
-}
-
-pub async fn auth_me_endpoint(
-    UserId(user_id): UserId,
-    State(state): RequestState,
-) -> Result<impl IntoResponse, ApiError> {
-    let user = db::users::get_by_id(&state.db, &user_id)
-        .await
-        .context("error getting user")?
-        .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
-
-    return Ok((StatusCode::OK, Json(user)));
-}
-
-pub async fn auth_logout_endpoint(
-    Auth(auth): Auth,
-    State(state): RequestState,
-) -> Result<impl IntoResponse, ApiError> {
-    db::sessions::delete(&state.db, &auth.session_id, &auth.user_id)
-        .await
-        .context("error deleting session")?;
-
-    let headers: HeaderMap = HeaderMap::from_iter(vec![(
-        header::SET_COOKIE,
-        "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax; HttpOnly"
-            .parse()
-            .context("error parsing cookie header")?,
-    )]);
-
-    return Ok((StatusCode::OK, headers));
 }

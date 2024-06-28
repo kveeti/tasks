@@ -7,7 +7,6 @@ pub struct Config {
     pub secret: String,
     pub google_client_id: String,
     pub google_client_secret: String,
-    pub port: u16,
     pub front_url: String,
     pub vapid_public_key: String,
     pub vapid_private_key: String,
@@ -21,12 +20,12 @@ impl Config {
             dotenv().ok();
         }
 
-        let config = envy::from_env::<Self>().context("Invalid environment variables")?;
+        let config = envy::from_env::<Self>().context("invalid environment variables")?;
 
         return Ok(config);
     }
 }
 
-pub static CONFIG: Lazy<Config> = Lazy::new(|| Config::new().expect("Failed to load app config"));
+pub static CONFIG: Lazy<Config> = Lazy::new(|| Config::new().expect("error loading config"));
 
 pub static IS_PROD: Lazy<bool> = Lazy::new(|| cfg!(not(debug_assertions)));

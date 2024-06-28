@@ -3,7 +3,8 @@ use config::CONFIG;
 use hyper::http::HeaderValue;
 use hyper::{header, Method, Request};
 use state::RequestStateStruct;
-use std::{net::SocketAddr, time::Duration};
+use std::time::Duration;
+use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{info_span, Span};
@@ -44,14 +45,16 @@ pub async fn start_api() -> () {
         )
         .layer(cors());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], CONFIG.port));
-
-    tracing::info!("app listening at {}", addr);
-
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
+    let listener = TcpListener::bind("0.0.0.0:8000")
         .await
-        .unwrap();
+        .expect("error binding listener");
+
+    tracing::info!(
+        "listening at {}",
+        listener.local_addr().expect("error getting local addr")
+    );
+
+    axum::serve(listener, app).await.expect("error serving app");
 }
 
 fn cors() -> CorsLayer {
