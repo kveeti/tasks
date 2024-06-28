@@ -11,7 +11,7 @@ use chrono::{Duration, Utc};
 use config::CONFIG;
 use hyper::header;
 
-use crate::types::{ApiError, RequestStateStruct};
+use crate::{error::ApiError, state::RequestStateStruct};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct UserId(pub String);
@@ -61,7 +61,7 @@ where
         let session_id = &token.session_id;
         let user_id = &token.user_id;
         let new_expiry = Utc::now() + Duration::days(30);
-        let ok = db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
+        let ok = db::sessions::update_expires_at(&state.db, session_id, user_id, &new_expiry)
             .await
             .context("error updating session")?;
 
@@ -138,7 +138,7 @@ where
         let session_id = &token.session_id;
         let user_id = &token.user_id;
         let new_expiry = Utc::now() + Duration::days(30);
-        let ok = db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
+        let ok = db::sessions::update_expires_at(&state.db, session_id, user_id, &new_expiry)
             .await
             .context("error updating session")?;
 

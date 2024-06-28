@@ -1,24 +1,8 @@
 use anyhow::Context;
-
-#[derive(Clone, serde::Deserialize, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum Env {
-    NotProd,
-    Prod,
-}
-
-impl std::fmt::Display for Env {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Env::NotProd => write!(f, "notprod"),
-            Env::Prod => write!(f, "prod"),
-        }
-    }
-}
+use once_cell::sync::Lazy;
 
 #[derive(Clone, serde::Deserialize)]
 pub struct Config {
-    pub env: Env,
     pub database_url: String,
     pub secret: String,
     pub google_client_id: String,
@@ -43,5 +27,6 @@ impl Config {
     }
 }
 
-pub static CONFIG: once_cell::sync::Lazy<Config> =
-    once_cell::sync::Lazy::new(|| Config::new().expect("Failed to load app config"));
+pub static CONFIG: Lazy<Config> = Lazy::new(|| Config::new().expect("Failed to load app config"));
+
+pub static IS_PROD: Lazy<bool> = Lazy::new(|| cfg!(not(debug_assertions)));

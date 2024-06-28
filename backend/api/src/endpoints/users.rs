@@ -1,7 +1,4 @@
-use crate::{
-    auth::user_id::UserId,
-    types::{ApiError, RequestState},
-};
+use crate::{auth::user_id::UserId, error::ApiError, state::RequestState};
 use anyhow::Context;
 use axum::{extract::State, response::IntoResponse};
 use hyper::{header, HeaderMap, StatusCode};
@@ -10,7 +7,7 @@ pub async fn users_me_delete_endpoint(
     UserId(user_id): UserId,
     State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    db::users::delete(&state.db2, &user_id)
+    db::users::delete(&state.db, &user_id)
         .await
         .context("error deleting user")?;
 

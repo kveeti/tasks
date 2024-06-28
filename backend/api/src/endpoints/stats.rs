@@ -1,8 +1,4 @@
-use crate::{
-    auth::user_id::UserId,
-    date::start_of_day,
-    types::{ApiError, RequestState},
-};
+use crate::{auth::user_id::UserId, date::start_of_day, error::ApiError, state::RequestState};
 use anyhow::Context;
 use axum::{
     extract::{Query, State},
@@ -62,7 +58,7 @@ pub async fn get_hours_by_stats_endpoint(
     let end_naive = end.naive_local();
 
     let stats = get_hours_by_stats(
-        &state.db2,
+        &state.db,
         &user_id,
         &precision,
         &start_naive,
@@ -199,7 +195,7 @@ pub async fn get_tag_distribution_stats_endpoint(
         .map_err(|_| ApiError::BadRequest("invalid precision".to_string()))?;
 
     let stats = get_tag_distribution_stats(
-        &state.db2,
+        &state.db,
         &user_id,
         &start.naive_local(),
         &end.naive_local(),

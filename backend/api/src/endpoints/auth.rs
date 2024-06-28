@@ -1,6 +1,7 @@
 use crate::{
     auth::user_id::{Auth, UserId},
-    types::{ApiError, RequestState},
+    error::ApiError,
+    state::RequestState,
 };
 use anyhow::Context;
 use auth::token::create_token;
@@ -101,14 +102,14 @@ pub async fn auth_verify_endpoint(
         .await
         .context("error parsing user response body")?;
 
-    let existing_user = db::users::get_by_email(&state.db2, &oauth_me_response_body.email)
+    let existing_user = db::users::get_by_email(&state.db, &oauth_me_response_body.email)
         .await
         .context("error getting existing user")?;
 
     let user = match existing_user {
         Some(user) => user,
         None => {
-            let user = db::users::create(&state.db2, &oauth_me_response_body.email)
+            let user = db::users::create(&state.db, &oauth_me_response_body.email)
                 .await
                 .context("error creating user")?;
 
@@ -118,7 +119,7 @@ pub async fn auth_verify_endpoint(
 
     let expires_at = Utc::now() + Duration::days(30);
 
-    let session_id = db::sessions::insert(&state.db2, &user.id, &expires_at)
+    let session_id = db::sessions::insert(&state.db, &user.id, &expires_at)
         .await
         .context("error creating session")?;
 
@@ -139,14 +140,14 @@ pub async fn auth_verify_endpoint(
 pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, ApiError> {
     let email = "dev@dev.local";
 
-    let existing_user = db::users::get_by_email(&state.db2, email)
+    let existing_user = db::users::get_by_email(&state.db, email)
         .await
         .context("error getting existing user")?;
 
     let user_id = match existing_user {
         Some(user) => user.id,
         None => {
-            let user = db::users::create(&state.db2, email)
+            let user = db::users::create(&state.db, email)
                 .await
                 .context("error creating user")?;
 
@@ -156,7 +157,7 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
 
     let expires_at = Utc::now() + Duration::days(30);
 
-    let session_id = db::sessions::insert(&state.db2, &user_id, &expires_at)
+    let session_id = db::sessions::insert(&state.db, &user_id, &expires_at)
         .await
         .context("error creating session")?;
 
@@ -186,7 +187,7 @@ pub async fn auth_me_endpoint(
     UserId(user_id): UserId,
     State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    let user = db::users::get_by_id(&state.db2, &user_id)
+    let user = db::users::get_by_id(&state.db, &user_id)
         .await
         .context("error getting user")?
         .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
@@ -198,7 +199,7 @@ pub async fn auth_logout_endpoint(
     Auth(auth): Auth,
     State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    db::sessions::delete(&state.db2, &auth.session_id, &auth.user_id)
+    db::sessions::delete(&state.db, &auth.session_id, &auth.user_id)
         .await
         .context("error deleting session")?;
 

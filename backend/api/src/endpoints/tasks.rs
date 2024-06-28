@@ -1,7 +1,4 @@
-use crate::{
-    auth::user_id::UserId,
-    types::{ApiError, RequestState},
-};
+use crate::{auth::user_id::UserId, error::ApiError, state::RequestState};
 use anyhow::Context;
 use axum::{
     extract::{Path, Query, State},
@@ -30,7 +27,7 @@ pub async fn get_tasks(
         }
     });
 
-    let tasks = db::tasks::get_many(&ctx.db2, &user_id, last_id)
+    let tasks = db::tasks::get_many(&ctx.db, &user_id, last_id)
         .await
         .context("error fetching tasks")?;
 
@@ -41,7 +38,7 @@ pub async fn get_ongoing_task(
     UserId(user_id): UserId,
     State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    let ongoing_task = db::tasks::get_ongoing(&state.db2, &user_id).await?;
+    let ongoing_task = db::tasks::get_ongoing(&state.db, &user_id).await?;
 
     return match ongoing_task {
         Some(task) => Ok((StatusCode::OK, Json(task)).into_response()),
@@ -66,7 +63,7 @@ pub async fn start_task(
         ));
     }
 
-    db::tasks::get_ongoing(&state.db2, &user_id)
+    db::tasks::get_ongoing(&state.db, &user_id)
         .await
         .context("error getting ongoing task")?
         .map_or(Ok(()), |_| {
@@ -75,7 +72,7 @@ pub async fn start_task(
             ))
         })?;
 
-    let tag = db::tags::get_one(&state.db2, &user_id, &body.tag_id)
+    let tag = db::tags::get_one(&state.db, &user_id, &body.tag_id)
         .await
         .context("error fetching tag")?
         .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
@@ -93,7 +90,7 @@ pub async fn start_task(
         end_at,
     };
 
-    db::tasks::insert(&state.db2, &task)
+    db::tasks::insert(&state.db, &task)
         .await
         .context("error inserting task")?;
 
@@ -101,7 +98,7 @@ pub async fn start_task(
         TaskWithTag::from_task(&task, &TagColor(tag.color), &TagLabel(tag.label.to_owned()));
 
     db::notifications::insert(
-        &state.db2,
+        &state.db,
         &user_id,
         &task.id,
         "Task finished",
@@ -118,7 +115,7 @@ pub async fn stop_ongoing_task(
     UserId(user_id): UserId,
     State(state): RequestState,
 ) -> Result<impl IntoResponse, ApiError> {
-    let ongoing_task = db::tasks::get_ongoing(&state.db2, &user_id)
+    let ongoing_task = db::tasks::get_ongoing(&state.db, &user_id)
         .await
         .context("error getting ongoing task")?
         .ok_or(ApiError::BadRequest(
@@ -139,11 +136,11 @@ pub async fn stop_ongoing_task(
         end_at,
     };
 
-    db::tasks::update(&state.db2, &task)
+    db::tasks::update(&state.db, &task)
         .await
         .context("error updating task")?;
 
-    db::notifications::delete_by_task_id(&state.db2, &user_id, &task.id)
+    db::notifications::delete_by_task_id(&state.db, &user_id, &task.id)
         .await
         .context("error deleting notification")?;
 
@@ -155,7 +152,7 @@ pub async fn delete_task(
     State(state): RequestState,
     task_id: Path<String>,
 ) -> Result<impl IntoResponse, ApiError> {
-    db::tasks::delete(&state.db2, &user_id, &task_id)
+    db::tasks::delete(&state.db, &user_id, &task_id)
         .await
         .context("error deleting task")?;
 
@@ -174,7 +171,7 @@ pub async fn add_manual_task(
     State(state): RequestState,
     Json(body): Json<AddManualTaskRequestBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let tag = db::tags::get_one(&state.db2, &user_id, &body.tag_id)
+    let tag = db::tags::get_one(&state.db, &user_id, &body.tag_id)
         .await
         .context("error fetching tag")?
         .ok_or(ApiError::BadRequest("tag not found".to_string()))?;
@@ -192,7 +189,7 @@ pub async fn add_manual_task(
         end_at: body.expires_at,
     };
 
-    db::tasks::insert(&state.db2, &task)
+    db::tasks::insert(&state.db, &task)
         .await
         .context("error inserting task")?;
 
