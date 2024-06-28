@@ -1,17 +1,25 @@
-use anyhow::Context;
-use auth::{cookie::create_cookie, token::verify_token};
+use anyhow::{anyhow, Context};
+use auth::{
+    cookie::{create_cookie, COOKIE_NAME},
+    token::verify_token,
+};
 use axum::{
     async_trait,
     extract::{FromRef, FromRequestParts},
-    headers::{authorization::Bearer, Authorization, Cookie, HeaderMapExt},
     http::request::Parts,
     RequestPartsExt,
 };
+use axum_extra::{headers, typed_header::TypedHeaderRejectionReason, TypedHeader};
 use chrono::{Duration, Utc};
 use config::CONFIG;
 use hyper::header;
+use once_cell::sync::Lazy;
 
-use crate::types::{ApiError, RequestStateStruct};
+use crate::{error::ApiError, state::RequestStateStruct};
+
+use super::session::create_session;
+
+const EXPIRE_AFTER: Lazy<Duration> = Lazy::new(|| Duration::days(30));
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct UserId(pub String);
@@ -25,64 +33,54 @@ where
     type Rejection = ApiError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let mut from_cookie = false;
+        let cookies = parts
+            .extract::<TypedHeader<headers::Cookie>>()
+            .await
+            .map_err(|e| match *e.name() {
+                header::COOKIE => match e.reason() {
+                    TypedHeaderRejectionReason::Missing => {
+                        ApiError::Unauthorized("no cookie".to_owned())
+                    }
+                    _ => ApiError::UnexpectedError(anyhow!("error getting cookies")),
+                },
+                _ => ApiError::UnexpectedError(anyhow!("error getting cookies")),
+            })?;
 
-        let (token, token_string) = {
-            let from_cookie = parts
-                .headers
-                .typed_get::<Cookie>()
-                .and_then(|cookie_header| {
-                    cookie_header.get("token").and_then(|token| {
-                        from_cookie = true;
-                        Some(token.to_string())
-                    })
-                });
+        let session_cookie = cookies
+            .get(COOKIE_NAME)
+            .ok_or(ApiError::Unauthorized("no cookie".to_owned()))?;
 
-            let from_bearer = parts
-                .headers
-                .typed_get::<Authorization<Bearer>>()
-                .and_then(|token| Some(token.token().to_string()));
-
-            let token_string = from_cookie
-                .or(from_bearer)
-                .ok_or(ApiError::Unauthorized("no auth".to_string()))?;
-
-            (
-                verify_token(&CONFIG.secret, &token_string).context("error verifying token")?,
-                token_string,
-            )
-        };
+        let token =
+            verify_token(&CONFIG.secret, &session_cookie).context("error verifying token")?;
 
         let state = parts
             .extract_with_state::<RequestStateStruct, _>(state)
             .await
             .context("error extracting state")?;
 
-        let session_id = &token.session_id;
-        let user_id = &token.user_id;
-        let new_expiry = Utc::now() + Duration::days(30);
-        let ok = db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
-            .await
-            .context("error updating session")?;
+        let new_expiry = Utc::now() + *EXPIRE_AFTER;
+
+        let ok = db::sessions::update_expires_at(
+            &state.db,
+            &token.session_id,
+            &token.user_id,
+            &new_expiry,
+        )
+        .await
+        .context("error updating session")?;
 
         if !ok {
-            return Err(ApiError::Unauthorized(
-                "session and/ user not found".to_string(),
-            ));
+            return Err(ApiError::Unauthorized("session not found".to_owned()));
         }
 
-        if from_cookie {
-            parts.headers.insert(
-                header::SET_COOKIE,
-                create_cookie(&token_string, &new_expiry)
-                    .context("error creating new cookie")?
-                    .to_string()
-                    .parse()
-                    .context("error parsing cookie")?,
-            );
-        }
+        parts.headers.insert(
+            header::SET_COOKIE,
+            create_cookie(&session_cookie, &new_expiry)
+                .parse()
+                .context("error parsing cookie")?,
+        );
 
-        Ok(UserId(user_id.to_string()))
+        Ok(UserId(token.user_id.to_owned()))
     }
 }
 
@@ -102,66 +100,45 @@ where
     type Rejection = ApiError;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let mut from_cookie = false;
+        let cookies = parts
+            .extract::<TypedHeader<headers::Cookie>>()
+            .await
+            .map_err(|e| match *e.name() {
+                header::COOKIE => match e.reason() {
+                    TypedHeaderRejectionReason::Missing => {
+                        ApiError::Unauthorized("no cookie".to_owned())
+                    }
+                    _ => ApiError::UnexpectedError(anyhow!("error getting cookies")),
+                },
+                _ => ApiError::UnexpectedError(anyhow!("error getting cookies")),
+            })?;
 
-        let (token, token_string) = {
-            let from_cookie = parts
-                .headers
-                .typed_get::<Cookie>()
-                .and_then(|cookie_header| {
-                    cookie_header.get("token").and_then(|token| {
-                        from_cookie = true;
-                        Some(token.to_string())
-                    })
-                });
+        let session_cookie = cookies
+            .get(COOKIE_NAME)
+            .ok_or(ApiError::Unauthorized("no cookie".to_owned()))?;
 
-            let from_bearer = parts
-                .headers
-                .typed_get::<Authorization<Bearer>>()
-                .and_then(|token| Some(token.token().to_string()));
-
-            let token_string = from_cookie
-                .or(from_bearer)
-                .ok_or(ApiError::Unauthorized("no auth".to_string()))?;
-
-            (
-                verify_token(&CONFIG.secret, &token_string).context("error verifying token")?,
-                token_string,
-            )
-        };
+        let token =
+            verify_token(&CONFIG.secret, &session_cookie).context("error verifying token")?;
 
         let state = parts
             .extract_with_state::<RequestStateStruct, _>(state)
             .await
             .context("error extracting state")?;
 
-        let session_id = &token.session_id;
-        let user_id = &token.user_id;
-        let new_expiry = Utc::now() + Duration::days(30);
-        let ok = db::sessions::update_expires_at(&state.db2, session_id, user_id, &new_expiry)
+        let new_expiry = Utc::now() + *EXPIRE_AFTER;
+
+        let cookie = create_session(&state.db, &new_expiry, &token.user_id)
             .await
-            .context("error updating session")?;
+            .context("error creating session")?;
 
-        if !ok {
-            return Err(ApiError::Unauthorized(
-                "session and/ user not found".to_string(),
-            ));
-        }
-
-        if from_cookie {
-            parts.headers.insert(
-                header::SET_COOKIE,
-                create_cookie(&token_string, &new_expiry)
-                    .context("error creating new cookie")?
-                    .to_string()
-                    .parse()
-                    .context("error parsing cookie")?,
-            );
-        }
+        parts.headers.insert(
+            header::SET_COOKIE,
+            cookie.parse().context("error parsing cookie")?,
+        );
 
         Ok(Auth(AuthStruct {
-            user_id: user_id.to_string(),
-            session_id: session_id.to_string(),
+            user_id: token.user_id.to_owned(),
+            session_id: token.session_id.to_owned(),
         }))
     }
 }

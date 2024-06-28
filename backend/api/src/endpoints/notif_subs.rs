@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    auth::user_id::UserId,
-    types::{ApiError, RequestState},
-};
+use crate::{auth::user_id::UserId, error::ApiError, state::RequestState};
 use anyhow::Context;
 use axum::{
     extract::{Query, State},
@@ -33,7 +30,7 @@ pub async fn add_notif_sub_endpoint(
     }
 
     let notification_sub = db::notification_subs::upsert(
-        &state.db2,
+        &state.db,
         &user_id,
         &body.endpoint,
         &body.p256dh,
@@ -65,7 +62,7 @@ pub async fn delete_notif_sub_endpoint(
     State(state): RequestState,
     Json(body): Json<DeleteNotifSubBody>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let deleted = db::notification_subs::delete(&state.db2, &user_id, &body.endpoint)
+    let deleted = db::notification_subs::delete(&state.db, &user_id, &body.endpoint)
         .await
         .context("error deleting notification sub")?;
 

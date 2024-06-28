@@ -6,12 +6,12 @@ mod send;
 pub async fn start_notification_service() {
     tracing::info!("starting notification service");
 
-    let db2 = db::get_db().await;
+    let db = db::get_db().await;
 
     tracing::info!("notification service started");
 
     loop {
-        let notifs = db::notifications::get_to_send(&db2).await;
+        let notifs = db::notifications::get_to_send(&db).await;
 
         if let Err(e) = notifs {
             tracing::error!("failed to get notifications: {}", e);
@@ -22,7 +22,7 @@ pub async fn start_notification_service() {
                     .map(|n| n.user_id.to_owned())
                     .collect::<Vec<String>>();
 
-                let subs = db::notification_subs::get_by_user_ids(&db2, &user_ids).await;
+                let subs = db::notification_subs::get_by_user_ids(&db, &user_ids).await;
 
                 let notif_ids = notifs
                     .iter()
@@ -76,7 +76,7 @@ pub async fn start_notification_service() {
                     }
                 }
 
-                let _ = db::notifications::delete_by_ids(&db2, &notif_ids).await;
+                let _ = db::notifications::delete_by_ids(&db, &notif_ids).await;
             }
         }
 

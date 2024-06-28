@@ -1,9 +1,10 @@
 use crate::{
     auth::user_id::{Auth, UserId},
-    types::{ApiError, RequestState},
+    error::ApiError,
+    state::RequestState,
 };
 use anyhow::Context;
-use auth::token::create_token;
+use auth::{cookie::create_empty_cookie, token::create_token};
 use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
@@ -67,7 +68,7 @@ pub async fn auth_verify_endpoint(
         .await
         .context("error sending access token request")?;
 
-    if access_token_response.status() != StatusCode::OK {
+    if access_token_response.status() != reqwest::StatusCode::OK {
         let status = access_token_response.status();
         let access_token_response_body = access_token_response
             .text()
@@ -101,14 +102,14 @@ pub async fn auth_verify_endpoint(
         .await
         .context("error parsing user response body")?;
 
-    let existing_user = db::users::get_by_email(&state.db2, &oauth_me_response_body.email)
+    let existing_user = db::users::get_by_email(&state.db, &oauth_me_response_body.email)
         .await
         .context("error getting existing user")?;
 
     let user = match existing_user {
         Some(user) => user,
         None => {
-            let user = db::users::create(&state.db2, &oauth_me_response_body.email)
+            let user = db::users::create(&state.db, &oauth_me_response_body.email)
                 .await
                 .context("error creating user")?;
 
@@ -118,7 +119,7 @@ pub async fn auth_verify_endpoint(
 
     let expires_at = Utc::now() + Duration::days(30);
 
-    let session_id = db::sessions::insert(&state.db2, &user.id, &expires_at)
+    let session_id = db::sessions::insert(&state.db, &user.id, &expires_at)
         .await
         .context("error creating session")?;
 
@@ -136,17 +137,48 @@ pub async fn auth_verify_endpoint(
     return Ok((StatusCode::OK, headers, Json(user)));
 }
 
+pub async fn auth_me_endpoint(
+    UserId(user_id): UserId,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    let user = db::users::get_by_id(&state.db, &user_id)
+        .await
+        .context("error getting user")?
+        .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
+
+    return Ok((StatusCode::OK, Json(user)));
+}
+
+pub async fn auth_logout_endpoint(
+    Auth(auth): Auth,
+    State(state): RequestState,
+) -> Result<impl IntoResponse, ApiError> {
+    db::sessions::delete(&state.db, &auth.session_id, &auth.user_id)
+        .await
+        .context("error deleting session")?;
+
+    let headers: HeaderMap = HeaderMap::from_iter(vec![(
+        header::SET_COOKIE,
+        create_empty_cookie().parse().context("error parsing cookie")?,
+    )]);
+
+    return Ok((StatusCode::OK, headers));
+}
+
+#[cfg(debug_assertions)]
 pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, ApiError> {
+    use auth::cookie::create_cookie;
+
     let email = "dev@dev.local";
 
-    let existing_user = db::users::get_by_email(&state.db2, email)
+    let existing_user = db::users::get_by_email(&state.db, email)
         .await
         .context("error getting existing user")?;
 
     let user_id = match existing_user {
         Some(user) => user.id,
         None => {
-            let user = db::users::create(&state.db2, email)
+            let user = db::users::create(&state.db, email)
                 .await
                 .context("error creating user")?;
 
@@ -156,17 +188,16 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
 
     let expires_at = Utc::now() + Duration::days(30);
 
-    let session_id = db::sessions::insert(&state.db2, &user_id, &expires_at)
+    let session_id = db::sessions::insert(&state.db, &user_id, &expires_at)
         .await
         .context("error creating session")?;
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![
         (
             header::SET_COOKIE,
-            format!(
-                "token={}; Expires={}; Path=/; SameSite=Lax; HttpOnly;",
-                create_token(&CONFIG.secret, &user_id, &session_id),
-                expires_at.format("%a, %d %b %Y %T GMT")
+            create_cookie(
+                &create_token(&CONFIG.secret, &user_id, &session_id),
+                &expires_at,
             )
             .parse()
             .context("error parsing cookie header")?,
@@ -180,34 +211,4 @@ pub async fn dev_login(State(state): RequestState) -> Result<impl IntoResponse, 
     ]);
 
     return Ok((StatusCode::SEE_OTHER, headers));
-}
-
-pub async fn auth_me_endpoint(
-    UserId(user_id): UserId,
-    State(state): RequestState,
-) -> Result<impl IntoResponse, ApiError> {
-    let user = db::users::get_by_id(&state.db2, &user_id)
-        .await
-        .context("error getting user")?
-        .ok_or(ApiError::Unauthorized("user not found".to_string()))?;
-
-    return Ok((StatusCode::OK, Json(user)));
-}
-
-pub async fn auth_logout_endpoint(
-    Auth(auth): Auth,
-    State(state): RequestState,
-) -> Result<impl IntoResponse, ApiError> {
-    db::sessions::delete(&state.db2, &auth.session_id, &auth.user_id)
-        .await
-        .context("error deleting session")?;
-
-    let headers: HeaderMap = HeaderMap::from_iter(vec![(
-        header::SET_COOKIE,
-        "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax; HttpOnly"
-            .parse()
-            .context("error parsing cookie header")?,
-    )]);
-
-    return Ok((StatusCode::OK, headers));
 }
