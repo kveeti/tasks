@@ -16,4 +16,4 @@ once_cell = { workspace = true }
 futures = { workspace = true }
 config = { path = "../config" }
 db = { path = "../db" }
-web-push =  { version = "0.10.0" }
+web-push =  { version = "0.10.1" }
