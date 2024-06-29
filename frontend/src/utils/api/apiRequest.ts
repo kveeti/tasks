@@ -8,7 +8,7 @@ type Props = {
 	path: string;
 	method: string;
 	body?: unknown;
-	query?: Record<string, string> ;
+	query?: Record<string, string>;
 	signal?: AbortSignal;
 };
 

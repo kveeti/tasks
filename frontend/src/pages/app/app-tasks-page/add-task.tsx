@@ -2,7 +2,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { addSeconds, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as v from 'valibot'
+import * as v from "valibot";
 
 import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,7 @@ const addTaskFormSchema = v.object({
 	startDate: v.date(),
 	startTime: v.string(),
 	hours: v.number(),
-	tagId: v.pipe(v.string(), v.ulid("required"))
+	tagId: v.pipe(v.string(), v.ulid("required")),
 });
 
 export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {

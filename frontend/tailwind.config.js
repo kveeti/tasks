@@ -1,5 +1,5 @@
-import colors from "tailwindcss/colors";
 import pluginAnimate from "tailwindcss-animate";
+import colors from "tailwindcss/colors";
 
 /** @type {import('tailwindcss').Config} */
 export default {

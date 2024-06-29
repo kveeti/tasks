@@ -1,6 +1,6 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
-import * as v from 'valibot'
+import * as v from "valibot";
 
 import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
