@@ -150,6 +150,9 @@ jobs:
       - name: install
         run: bun install
 
+      - name: check formatting
+        run: bun run formatcheck
+
       - name: typecheck
         run: bun run typecheck
 
