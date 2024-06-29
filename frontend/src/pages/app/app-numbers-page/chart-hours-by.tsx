@@ -48,8 +48,8 @@ function Title({
 		timeframe === "week" || timeframe === "month"
 			? "daily"
 			: timeframe === "year"
-			  ? "monthly"
-			  : null;
+				? "monthly"
+				: null;
 
 	const minutesText = avg_minutes > 0 && Math.round(avg_minutes) + "m";
 	const hoursText = avg_hours > 0 && Math.round(avg_hours) + "h";
@@ -105,10 +105,10 @@ function Chart({
 						data.most_hours > 1000
 							? -10
 							: data.most_hours > 100
-							  ? -20
-							  : data.most_hours > 10
-							    ? -25
-							    : -33,
+								? -20
+								: data.most_hours > 10
+									? -25
+									: -33,
 
 					right: 24,
 					top: 10,
