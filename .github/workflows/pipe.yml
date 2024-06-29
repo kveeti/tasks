@@ -150,11 +150,14 @@ jobs:
       - name: install
         run: bun install
 
-      - name: build
-        run: bun run build
-
       - name: typecheck
         run: bun run typecheck
+
+      - name: lint
+        run: bun run lint
+
+      - name: build
+        run: bun run build
 
   deploy_frontend:
     runs-on: ubuntu-latest
