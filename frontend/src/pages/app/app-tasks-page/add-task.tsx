@@ -2,7 +2,7 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import { addSeconds, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { type Output, date, number, object, string, ulid } from "valibot";
+import * as v from 'valibot'
 
 import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
@@ -66,18 +66,18 @@ export function AddTask() {
 	);
 }
 
-const addTaskFormSchema = object({
-	startDate: date(),
-	startTime: string(),
-	hours: number(),
-	tagId: string([ulid("required")]),
+const addTaskFormSchema = v.object({
+	startDate: v.date(),
+	startTime: v.string(),
+	hours: v.number(),
+	tagId: v.pipe(v.string(), v.ulid("required"))
 });
 
 export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 	const tags = useTags();
 	const mutation = useAddManualTask();
 
-	const form = useForm<Output<typeof addTaskFormSchema>>({
+	const form = useForm<v.InferOutput<typeof addTaskFormSchema>>({
 		resolver: valibotResolver(addTaskFormSchema),
 		defaultValues: {
 			startDate: new Date(),
@@ -87,7 +87,7 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 		},
 	});
 
-	function onSubmit(values: Output<typeof addTaskFormSchema>) {
+	function onSubmit(values: v.InferOutput<typeof addTaskFormSchema>) {
 		const seconds = Math.round(values.hours * 3600);
 		const start = new Date(`${format(values.startDate, "yyyy-MM-dd")}T${values.startTime}`);
 		const end = addSeconds(start, seconds);

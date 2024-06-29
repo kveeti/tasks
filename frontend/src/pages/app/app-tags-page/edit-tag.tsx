@@ -1,6 +1,6 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
-import { type Output, minLength, object, picklist, string } from "valibot";
+import * as v from 'valibot'
 
 import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
@@ -64,15 +64,15 @@ export function EditTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void
 	);
 }
 
-const editTagFormSchema = object({
-	label: string([minLength(1, "required")]),
-	color: picklist(tagColors, "required"),
+const editTagFormSchema = v.object({
+	label: v.pipe(v.string(), v.minLength(1, "required")),
+	color: v.picklist(tagColors, "required"),
 });
 
 function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void }) {
 	const mutation = useEditTag();
 
-	const form = useForm<Output<typeof editTagFormSchema>>({
+	const form = useForm<v.InferOutput<typeof editTagFormSchema>>({
 		resolver: valibotResolver(editTagFormSchema),
 		defaultValues: {
 			label: tag.label,
@@ -80,7 +80,7 @@ function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void })
 		},
 	});
 
-	function onSubmit(values: Output<typeof editTagFormSchema>) {
+	function onSubmit(values: v.InferOutput<typeof editTagFormSchema>) {
 		mutation
 			.mutateAsync({ tagId: tag.id, ...values }, { onSuccess })
 			.catch(errorToast("error saving changes§"));

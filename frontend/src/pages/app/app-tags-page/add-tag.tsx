@@ -1,6 +1,6 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
-import { type Output, minLength, object, picklist, string } from "valibot";
+import * as v from "valibot";
 
 import { SpinnerButton } from "@/components/spinner-button";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,9 @@ import { errorToast } from "@/utils/errorToast";
 import { useDialog } from "@/utils/hooks/use-dialog";
 import { getTagColorName, tagColors } from "@/utils/tag-colors";
 
-const newTagFormSchema = object({
-	label: string([minLength(1, "required")]),
-	color: picklist(tagColors, "required"),
+const newTagFormSchema = v.object({
+	label: v.pipe(v.string(), v.minLength(1, "required")),
+	color: v.picklist(tagColors, "required"),
 });
 
 export function AddTag() {
@@ -58,12 +58,12 @@ export function AddTag() {
 function AddTagForm({ onSuccess }: { onSuccess: () => void }) {
 	const mutation = useAddTag();
 
-	const form = useForm<Output<typeof newTagFormSchema>>({
+	const form = useForm<v.InferOutput<typeof newTagFormSchema>>({
 		resolver: valibotResolver(newTagFormSchema),
 		defaultValues: { label: "" },
 	});
 
-	function onSubmit(values: Output<typeof newTagFormSchema>) {
+	function onSubmit(values: v.InferOutput<typeof newTagFormSchema>) {
 		mutation.mutateAsync(values, { onSuccess }).catch(errorToast("error adding tag"));
 	}
 
