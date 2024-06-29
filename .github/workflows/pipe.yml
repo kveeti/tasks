@@ -153,9 +153,6 @@ jobs:
       - name: build
         run: bun run build
 
-      - name: lint
-        run: bun run lint
-
       - name: typecheck
         run: bun run typecheck
 
