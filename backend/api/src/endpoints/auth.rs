@@ -159,7 +159,9 @@ pub async fn auth_logout_endpoint(
 
     let headers: HeaderMap = HeaderMap::from_iter(vec![(
         header::SET_COOKIE,
-        create_empty_cookie().parse().context("error parsing cookie")?,
+        create_empty_cookie()
+            .parse()
+            .context("error parsing cookie")?,
     )]);
 
     return Ok((StatusCode::OK, headers));
