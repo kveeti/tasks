@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { conf } from "@/lib/conf";
+
+const apiUrl = conf.API_URL;
 
 export function LoginPage() {
 	return (
@@ -8,14 +11,12 @@ export function LoginPage() {
 			<h1 className="text-5xl">login</h1>
 
 			<Button asChild>
-				<Link to={`${import.meta.env.VITE_APP_API_URL}/auth/google-init`}>
-					login with google
-				</Link>
+				<Link to={`${apiUrl}/auth/google-init`}>login with google</Link>
 			</Button>
 
-			{!import.meta.env.PROD && (
+			{!conf.IS_PROD && (
 				<Button asChild className="-mt-6">
-					<Link to={`${import.meta.env.VITE_APP_API_URL}/auth/dev-login`}>dev login</Link>
+					<Link to={`${apiUrl}/auth/dev-login`}>dev login</Link>
 				</Button>
 			)}
 		</div>

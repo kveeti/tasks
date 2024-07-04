@@ -11,8 +11,7 @@ services:
             POSTGRES_PASSWORD: postgres
 
     backend:
-        depends_on:
-            - db
+        depends_on: [db]
         image: veetik/tasks-backend:prod
         restart: always
         env_file:
@@ -28,6 +27,21 @@ services:
         networks:
             - proxy
             - default
+
+    frontend:
+        depends_on: [backend]
+        image: veetik/tasks-frontend:prod
+        restart: always
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.tasks-frontend.entrypoints=https"
+            - "traefik.http.routers.tasks-frontend.tls=true"
+            - "traefik.http.routers.tasks-frontend.service=tasks-frontend"
+            - "traefik.http.routers.tasks-frontend.rule=Host(`tasks.veetik.com`)"
+            - "traefik.http.services.tasks-frontend.loadbalancer.server.port=3000"
+            - "traefik.docker.network=proxy"
+        networks:
+            - proxy
 
 networks:
     proxy:
