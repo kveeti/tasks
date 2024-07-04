@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/utils/api/apiRequest";
+import { apiRequest } from "@/lib/api/apiRequest";
 
 export function Logout() {
 	const navigate = useNavigate();

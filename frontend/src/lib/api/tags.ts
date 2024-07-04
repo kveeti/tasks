@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { TagColor } from "../tag-colors";
 import { apiRequest } from "./apiRequest";
+import type { TagColor } from "./types";
 
 export type ApiTag = {
 	id: string;

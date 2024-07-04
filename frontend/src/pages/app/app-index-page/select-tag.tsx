@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { useTags } from "@/utils/api/tags";
+import { useTags } from "@/lib/api/tags";
 
 import { BaseTag } from "../app-tags-page/base-tag";
 import { useTimerContext } from "../timer-context";

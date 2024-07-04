@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 
-import { useOnGoingTask } from "@/utils/api/tasks";
-import { createCtx } from "@/utils/createCtx";
+import { useOnGoingTask } from "@/lib/api/tasks";
+import { createCtx } from "@/lib/create-ctx";
 
 import { useOnGoingSeconds } from "./use-on-going-seconds";
 

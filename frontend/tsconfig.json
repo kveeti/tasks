@@ -4,20 +4,16 @@
 		"paths": {
 			"@/*": ["src/*"]
 		},
-
 		"target": "ESNext",
 		"lib": ["DOM", "ESNext", "WebWorker"],
 		"module": "ESNext",
 		"skipLibCheck": true,
-
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
 		"jsx": "react-jsx",
-
 		"verbatimModuleSyntax": true,
-
 		"strict": true,
 		"noUncheckedIndexedAccess": true,
 		"allowUnreachableCode": true,
@@ -38,5 +34,9 @@
 		"useUnknownInCatchVariables": false
 	},
 	"include": ["src"],
-	"references": [{ "path": "./tsconfig.node.json" }]
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		}
+	]
 }

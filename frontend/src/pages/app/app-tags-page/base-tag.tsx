@@ -1,4 +1,4 @@
-import { getTagColorName } from "@/utils/tag-colors";
+import { getTagColorName } from "@/lib/api/types";
 
 export function BaseTag({
 	tag,

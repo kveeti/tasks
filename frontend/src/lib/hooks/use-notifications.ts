@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { conf } from "@/lib/conf";
 
 import { apiRequest } from "../api/apiRequest";
-import { urlBase64ToUint8Array } from "../urlBase64ToUint8Array";
+import { base64ToUint8Array } from "../base64-to-uint8-array";
 import { useLocalStorage } from "./use-local-storage";
 
 export const notificationsEnabledLocalStorageKey = "notifications-enabled";
@@ -38,7 +38,7 @@ export function useNotifications() {
 
 			const subscription = await reg.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(conf.VAPID_PUBLIC_KEY),
+				applicationServerKey: base64ToUint8Array(conf.VAPID_PUBLIC_KEY),
 			});
 
 			const subJson = subscription.toJSON();

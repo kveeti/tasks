@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { WithEnterExitAnimation } from "@/components/animation/with-enter-exit-animation";
 import { PageLayout } from "@/components/page-layout";
-import { type ApiTag, useTags } from "@/utils/api/tags";
+import { type ApiTag, useTags } from "@/lib/api/tags";
 
 import { AddTag } from "./add-tag";
 import { BaseTag } from "./base-tag";

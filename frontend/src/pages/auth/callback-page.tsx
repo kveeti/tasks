@@ -1,49 +1,26 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useMeasure from "react-use-measure";
 
-import { CheckmarkGreen } from "@/Ui/Status";
 import { Spinner } from "@/components/spinner";
-import { cn } from "@/lib/utils";
-import { apiRequest } from "@/utils/api/apiRequest";
-import { useSetTimeout } from "@/utils/hooks/useSetInterval";
+import { CheckmarkGreen } from "@/components/status";
+import { useGoogleVerifyMutation } from "@/lib/api/auth";
+import { cn } from "@/lib/classnames";
+import { useSetTimeout } from "@/lib/hooks/use-set-interval";
 
 export function CallbackPage() {
 	const [searchParams] = useSearchParams();
 	const code = searchParams.get("code");
 	const navigate = useNavigate();
 
-	const mutation = useMutation({
-		mutationKey: ["auth", "google-verify"],
-		mutationFn: async ({ code }: { code: string }) => {
-			const [res] = await Promise.allSettled([
-				apiRequest({
-					method: "POST",
-					path: "/auth/google-verify",
-					query: { code },
-				}),
-				new Promise((resolve) => setTimeout(resolve, 1000)),
-			]);
-
-			if (res.status === "rejected") {
-				throw res.reason;
-			}
-
-			return res.value;
-		},
-	});
+	const mutation = useGoogleVerifyMutation();
 
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState<"logged-in" | "welcome">("logged-in");
 
-	useSetTimeout(
-		() => {
-			setPage("welcome");
-		},
-		mutation.isSuccess ? 1600 : null
-	);
+	useSetTimeout(() => setPage("welcome"), mutation.isSuccess ? 1600 : null);
 
 	useSetTimeout(
 		() => {
@@ -54,17 +31,15 @@ export function CallbackPage() {
 		page === "welcome" ? 2000 : null
 	);
 
-	useSetTimeout(
-		() => {
-			navigate("/app");
-		},
-		mutation.isError ? 1000 : null
-	);
+	useSetTimeout(() => navigate("/app"), mutation.isError ? 1000 : null);
 
 	useEffect(() => {
 		(async () => {
 			if (code) {
-				await mutation.mutateAsync({ code });
+				await Promise.allSettled([
+					mutation.mutateAsync({ code }),
+					new Promise((res) => setTimeout(res, 800)),
+				]);
 
 				return;
 			}

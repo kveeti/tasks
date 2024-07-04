@@ -2,8 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { differenceInSeconds } from "date-fns";
 import { useEffect, useState } from "react";
 
-import { type ApiTaskWithTag } from "@/utils/api/tasks";
-import { useSetInterval } from "@/utils/hooks/useSetInterval";
+import { type ApiTaskWithTag } from "@/lib/api/tasks";
+import { useSetInterval } from "@/lib/hooks/use-set-interval";
 
 export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTag }) {
 	const [onGoingSeconds, setOnGoingSeconds] = useState(0);

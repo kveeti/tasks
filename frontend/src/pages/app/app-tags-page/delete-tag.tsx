@@ -9,9 +9,9 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { type ApiTag, useDeleteTag } from "@/utils/api/tags";
-import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/hooks/use-dialog";
+import { type ApiTag, useDeleteTag } from "@/lib/api/tags";
+import { errorToast } from "@/lib/error-toast";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 import { BaseTag } from "./base-tag";
 
