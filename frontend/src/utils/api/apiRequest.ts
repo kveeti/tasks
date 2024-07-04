@@ -1,3 +1,5 @@
+import { conf } from "@/lib/conf";
+
 export type ApiError = {
 	error: {
 		message: string;
@@ -14,7 +16,7 @@ type Props = {
 
 export async function apiRequest<TReturnValue>(props: Props) {
 	return fetch(
-		`${import.meta.env.VITE_APP_API_URL}${props.path}${props.query ? `?${new URLSearchParams(props.query)}` : ""}`,
+		`${conf.API_URL}${props.path}${props.query ? `?${new URLSearchParams(props.query)}` : ""}`,
 		{
 			signal: props.signal,
 			method: props.method,

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+import { conf } from "@/lib/conf";
+
 import { apiRequest } from "../api/apiRequest";
 import { urlBase64ToUint8Array } from "../urlBase64ToUint8Array";
 import { useLocalStorage } from "./use-local-storage";
@@ -36,9 +38,7 @@ export function useNotifications() {
 
 			const subscription = await reg.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(
-					import.meta.env.VITE_APP_VAPID_PUBLIC_KEY
-				),
+				applicationServerKey: urlBase64ToUint8Array(conf.VAPID_PUBLIC_KEY),
 			});
 
 			const subJson = subscription.toJSON();

@@ -10,7 +10,6 @@
 		"lint": "eslint --max-warnings 0",
 		"formatcheck": "prettier --ignore-path ../.gitignore --check .",
 		"preview": "vite preview",
-		"deploy": "bunx wrangler pages deploy dist --project-name tasks-frontend --branch $(git branch --show-current)",
 		"ui": "bunx shadcn-ui@latest"
 	},
 	"dependencies": {

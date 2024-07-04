@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { conf } from "@/lib/conf";
 import { apiRequest } from "@/utils/api/apiRequest";
 import { errorToast } from "@/utils/errorToast";
 import { useLocalStorage } from "@/utils/hooks/use-local-storage";
@@ -25,13 +26,6 @@ export function AppSettingsPage() {
 					<div className="flex items-center justify-between gap-2 text-sm font-medium">
 						<NotificationSwitch />
 					</div>
-
-					{/* <div className="border-t"></div>
-
-					<div className="flex items-center justify-between gap-2 text-sm font-medium">
-						<label htmlFor="notifications">task ending</label>
-						<Switch id="notifications" />
-					</div> */}
 				</section>
 			</main>
 
@@ -143,7 +137,7 @@ async function createNotifSubscription(reg: ServiceWorkerRegistration) {
 
 	const subscription = await reg.pushManager.subscribe({
 		userVisibleOnly: true,
-		applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_APP_VAPID_PUBLIC_KEY),
+		applicationServerKey: urlBase64ToUint8Array(conf.VAPID_PUBLIC_KEY),
 	});
 
 	const subJson = subscription?.toJSON();
