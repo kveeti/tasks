@@ -1,28 +1,26 @@
-FROM oven/bun:1 as pre
+FROM node:22-alpine AS pre
 WORKDIR /www
+RUN corepack enable pnpm
+RUN corepack prepare pnpm@latest --activate
 
 FROM pre as deps
-COPY package.json bun.lockb ./
-RUN bun i --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm i --frozen-lockfile
 
-FROM pre as build
+FROM pre AS build
 COPY src src
 COPY public public
-# tsconfig is for the vite-tsconfig-paths plugin
-COPY index.html tsconfig.json tsconfig.node.json vite.config.ts tailwind.config.js postcss.config.js package.json bun.lockb ./
+COPY index.html tsconfig.json rsbuild.config.ts tailwind.config.js postcss.config.js package.json pnpm-lock.yaml ./
 COPY --from=deps /www/node_modules ./node_modules
 ENV NODE_ENV=production
-
 ARG API_URL
-ENV VITE_APP_API_URL ${API_URL}
-
+ENV PUBLIC_API_URL ${API_URL}
 ARG VAPID_PUBLIC_KEY
-ENV VITE_APP_VAPID_PUBLIC_KEY ${VAPID_PUBLIC_KEY}
+ENV PUBLIC_VAPID_PUBLIC_KEY ${VAPID_PUBLIC_KEY}
+RUN pnpm run build
 
-RUN bun run build
-
-FROM caddy:2.8.4 as runtime
-COPY Caddyfile /etc/caddy/Caddyfile
+FROM caddy:2.8.4 AS runtime
 COPY --from=build /www/dist /srv
+COPY Caddyfile /etc/caddy/Caddyfile
 ARG API_URL
 ENV API_URL ${API_URL}
