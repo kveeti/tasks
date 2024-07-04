@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { SpinnerButton } from "@/components/spinner-button";
-import { useTags } from "@/utils/api/tags";
-import { useStartTask, useStopOnGoingTask } from "@/utils/api/tasks";
-import { errorToast } from "@/utils/errorToast";
+import { useTags } from "@/lib/api/tags";
+import { useStartTask, useStopOnGoingTask } from "@/lib/api/tasks";
+import { errorToast } from "@/lib/error-toast";
 
 import { useTimerContext } from "../timer-context";
 

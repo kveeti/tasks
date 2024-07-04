@@ -9,9 +9,9 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { type ApiTaskWithTag, useDeleteTask } from "@/utils/api/tasks";
-import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/hooks/use-dialog";
+import { type ApiTaskWithTag, useDeleteTask } from "@/lib/api/tasks";
+import { errorToast } from "@/lib/error-toast";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 import { BaseTask } from "./base-task";
 

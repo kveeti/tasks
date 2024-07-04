@@ -29,12 +29,6 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
 	const [storedValue, setStoredValue] = useState<T>(readValue);
 
 	const setValue: SetValue<T> = useEventCallback((value) => {
-		if (typeof window === "undefined") {
-			console.warn(
-				`Tried setting localStorage key “${key}” even though environment is not a client`
-			);
-		}
-
 		try {
 			const newValue = value instanceof Function ? value(storedValue) : value;
 

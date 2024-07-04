@@ -3,8 +3,8 @@ import { MoreHorizontalIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent } from "@/components/ui/dropdown-menu";
-import type { ApiTag } from "@/utils/api/tags";
-import { useDialog } from "@/utils/hooks/use-dialog";
+import type { ApiTag } from "@/lib/api/tags";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 import { DeleteTag } from "./delete-tag";
 import { EditTag } from "./edit-tag";

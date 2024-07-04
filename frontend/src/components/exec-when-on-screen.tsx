@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { useIntersectionObserver } from "@/utils/hooks/use-intersection-observer";
+import { useIntersectionObserver } from "@/lib/hooks/use-intersection-observer";
 
 export function ExecWhenOnScreen({ func }: { func: () => unknown }) {
 	const ref = useRef<HTMLDivElement | null>(null);

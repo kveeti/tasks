@@ -1,8 +1,7 @@
 import useMeasure from "react-use-measure";
 import { Cell, Pie, PieChart } from "recharts";
 
-import { type StatsPrecision, useTagDistributionStats } from "@/utils/api/stats";
-import { secondsToHours } from "@/utils/number";
+import { type StatsPrecision, useTagDistributionStats } from "@/lib/api/stats";
 
 export function ChartTagDistribution({
 	start,
@@ -129,3 +128,7 @@ const Label = ({ cx, cy, midAngle, innerRadius, outerRadius, percentage }: any) 
 		</text>
 	);
 };
+
+function secondsToHours(seconds: number): number {
+	return Math.round((seconds / 3600) * 100) / 100;
+}

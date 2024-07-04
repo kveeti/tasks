@@ -27,10 +27,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useAddTag } from "@/utils/api/tags";
-import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/hooks/use-dialog";
-import { getTagColorName, tagColors } from "@/utils/tag-colors";
+import { useAddTag } from "@/lib/api/tags";
+import { getTagColorName, tagColors } from "@/lib/api/types";
+import { errorToast } from "@/lib/error-toast";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 const newTagFormSchema = v.object({
 	label: v.pipe(v.string(), v.minLength(1, "required")),

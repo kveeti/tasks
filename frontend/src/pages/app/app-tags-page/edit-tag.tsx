@@ -28,10 +28,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { type ApiTag, useEditTag } from "@/utils/api/tags";
-import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/hooks/use-dialog";
-import { getTagColorName, tagColors } from "@/utils/tag-colors";
+import { type ApiTag, useEditTag } from "@/lib/api/tags";
+import { getTagColorName, tagColors } from "@/lib/api/types";
+import { errorToast } from "@/lib/error-toast";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 export function EditTag({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void }) {
 	const dialog = useDialog();
@@ -83,7 +83,7 @@ function EditTagForm({ tag, onSuccess }: { tag: ApiTag; onSuccess: () => void })
 	function onSubmit(values: v.InferOutput<typeof editTagFormSchema>) {
 		mutation
 			.mutateAsync({ tagId: tag.id, ...values }, { onSuccess })
-			.catch(errorToast("error saving changes§"));
+			.catch(errorToast("error saving changes"));
 	}
 
 	return (

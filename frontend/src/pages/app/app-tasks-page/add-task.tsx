@@ -31,11 +31,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { useTags } from "@/utils/api/tags";
-import { useAddManualTask } from "@/utils/api/tasks";
-import { errorToast } from "@/utils/errorToast";
-import { useDialog } from "@/utils/hooks/use-dialog";
+import { useTags } from "@/lib/api/tags";
+import { useAddManualTask } from "@/lib/api/tasks";
+import { cn } from "@/lib/classnames";
+import { errorToast } from "@/lib/error-toast";
+import { useDialog } from "@/lib/hooks/use-dialog";
 
 export function AddTask() {
 	const dialog = useDialog();

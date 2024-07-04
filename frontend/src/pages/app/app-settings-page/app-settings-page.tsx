@@ -3,12 +3,12 @@ import { toast } from "sonner";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { apiRequest } from "@/lib/api/apiRequest";
+import { base64ToUint8Array } from "@/lib/base64-to-uint8-array";
 import { conf } from "@/lib/conf";
-import { apiRequest } from "@/utils/api/apiRequest";
-import { errorToast } from "@/utils/errorToast";
-import { useLocalStorage } from "@/utils/hooks/use-local-storage";
-import { notificationsEnabledLocalStorageKey } from "@/utils/hooks/use-notifications";
-import { urlBase64ToUint8Array } from "@/utils/urlBase64ToUint8Array";
+import { errorToast } from "@/lib/error-toast";
+import { useLocalStorage } from "@/lib/hooks/use-local-storage";
+import { notificationsEnabledLocalStorageKey } from "@/lib/hooks/use-notifications";
 
 import { Logout } from "./logout";
 
@@ -137,7 +137,7 @@ async function createNotifSubscription(reg: ServiceWorkerRegistration) {
 
 	const subscription = await reg.pushManager.subscribe({
 		userVisibleOnly: true,
-		applicationServerKey: urlBase64ToUint8Array(conf.VAPID_PUBLIC_KEY),
+		applicationServerKey: base64ToUint8Array(conf.VAPID_PUBLIC_KEY),
 	});
 
 	const subJson = subscription?.toJSON();

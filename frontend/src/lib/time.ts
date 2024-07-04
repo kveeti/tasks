@@ -1,3 +1,5 @@
+import humanizeDuration from "humanize-duration";
+
 export function getMinutesAndSeconds(seconds: number) {
 	return {
 		minutes: Math.floor(seconds / 60),
@@ -42,3 +44,19 @@ export function formatMonth(date: Date) {
 export function getTz() {
 	return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
+
+export const humanizer = humanizeDuration.humanizer({
+	language: "shortEn",
+	languages: {
+		shortEn: {
+			y: () => "y",
+			mo: () => "mo",
+			w: () => "w",
+			d: () => "d",
+			h: () => "h",
+			m: () => "m",
+			s: () => "s",
+			ms: () => "ms",
+		},
+	},
+});

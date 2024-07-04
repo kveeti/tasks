@@ -2,8 +2,8 @@ import { format } from "date-fns";
 import useMeasure from "react-use-measure";
 import { Bar, BarChart, CartesianGrid, Label, ReferenceLine, XAxis, YAxis } from "recharts";
 
-import { useHoursByStats } from "@/utils/api/stats";
-import { getHoursAndMinutes } from "@/utils/time";
+import { useHoursByStats } from "@/lib/api/stats";
+import { getHoursAndMinutes } from "@/lib/time";
 
 export function ChartHoursBy({
 	start,

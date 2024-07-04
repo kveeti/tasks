@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/classnames";
 
 import { Spinner } from "./spinner";
 import { Button, type ButtonProps } from "./ui/button";

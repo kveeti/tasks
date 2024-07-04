@@ -1,8 +1,7 @@
 import { format } from "date-fns";
 
-import type { ApiTaskWithTag } from "@/utils/api/tasks";
-import { humanizer } from "@/utils/humanizer";
-import { formatDate, formatTime } from "@/utils/time";
+import type { ApiTaskWithTag } from "@/lib/api/tasks";
+import { formatDate, formatTime, humanizer } from "@/lib/time";
 
 export function BaseTask({ task }: { task: ApiTaskWithTag }) {
 	const start = new Date(task.start_at);

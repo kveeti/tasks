@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { useNotifications } from "@/utils/hooks/use-notifications";
+import { useNotifications } from "@/lib/hooks/use-notifications";
 
 import { AppIndexPage } from "./app/app-index-page/app-index-page";
 import { AppLayout } from "./app/app-layout/app-layout";

@@ -5,12 +5,10 @@ const queryClient = new QueryClient();
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {
 	return (
-		<>
-			<QueryClientProvider client={queryClient}>
-				<ReactQueryDevtools initialIsOpen={false} client={queryClient} />
+		<QueryClientProvider client={queryClient}>
+			<ReactQueryDevtools initialIsOpen={false} client={queryClient} />
 
-				{children}
-			</QueryClientProvider>
-		</>
+			{children}
+		</QueryClientProvider>
 	);
 }
