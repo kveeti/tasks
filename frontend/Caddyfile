@@ -30,6 +30,10 @@
         header Cache-Control "public, max-age=86400, must-revalidate"
     }
 
+    handle /sw.js {
+        header Cache-Control "no-store, no-cache, must-revalidate"
+    }
+
     handle {
         rewrite * /index.html
         header Cache-Control "no-store, no-cache, must-revalidate"

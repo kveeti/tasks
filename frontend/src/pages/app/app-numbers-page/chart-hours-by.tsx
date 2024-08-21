@@ -144,6 +144,7 @@ function Chart({
 
 				{data.tags.map((tag) => (
 					<Bar
+						key={tag.id}
 						isAnimationActive={false}
 						fill={tag.color}
 						stackId="id"
