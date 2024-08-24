@@ -1,4 +1,5 @@
 use anyhow::Context;
+use dotenv::dotenv;
 use once_cell::sync::Lazy;
 
 #[derive(Clone, serde::Deserialize)]
@@ -14,11 +15,7 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Result<Self, anyhow::Error> {
-        #[cfg(debug_assertions)]
-        {
-            use dotenv::dotenv;
-            dotenv().ok();
-        }
+        dotenv().expect("error loading environment variables from .env");
 
         let config = envy::from_env::<Self>().context("invalid environment variables")?;
 
