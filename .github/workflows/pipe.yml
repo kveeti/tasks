@@ -217,8 +217,8 @@ jobs:
       - name: build
         run: pnpm run build
         env:
-          API_URL: ${{ env.FRONT_API_URL }}
-          VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
+          PUBLIC_API_URL: ${{ env.FRONT_API_URL }}
+          PUBLIC_VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
 
       - name: update deployment
         uses: cloudflare/wrangler-action@v3
