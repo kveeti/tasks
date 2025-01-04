@@ -2,10 +2,25 @@ import fs from "node:fs/promises";
 import { exec } from "node:child_process";
 import path from "node:path";
 
-const newTag = process.argv[2];
+const scriptDir = new URL(".", import.meta.url).pathname;
+
+let newTag = process.argv[2];
 if (!newTag) {
-  console.error("no new tag provided");
-  process.exit(1);
+  newTag = await cmd("git rev-parse HEAD", scriptDir);
+  newTag = newTag.trim();
+
+  const answer = await new Promise((resolve) => {
+    process.stdout.write(`\ntag was not provided, use git hash as tag? (${newTag}) [y/n]: `);
+    process.stdin.on("data", (data) => resolve(data.toString().trim()));
+  })
+
+  if (answer !== "y") {
+    console.log("alright, exiting...");
+    process.exit(0);
+  }
+
+  console.log("ok! using git hash as tag...");
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 const filename = "tasks.yml"
@@ -13,17 +28,15 @@ const image = "veetik/tasks-backend"
 const remote = "user@servu"
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-const scriptDir = new URL(".", import.meta.url).pathname;
-const backendDir = path.join(scriptDir, "..", "backend");
 const tempDir = path.join(scriptDir, timestamp);
 const remoteFilePath = `${remote}:~/${filename}`;
 const localFilePath = path.join(tempDir, filename);
 
 console.log("\nbuilding image...");
-await cmd(`docker build -t ${image}:${newTag} .`, backendDir);
+await cmd(`docker build -t ${image}:${newTag} .`, scriptDir);
 
 console.log("\npushing image...");
-await cmd(`docker push ${image}:${newTag}`, backendDir);
+await cmd(`docker push ${image}:${newTag}`, scriptDir);
 
 console.log("\ncreating temp directory...");
 await fs.mkdir(tempDir, { recursive: true });
