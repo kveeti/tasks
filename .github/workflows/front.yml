@@ -1,0 +1,101 @@
+name: front
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+env:
+  DOCKERHUB_USERNAME: veetik
+  FRONT_API_URL: https://tasks-api.veetik.com
+  FRONT_VAPID_PUBLIC_KEY: BMvRTtdBaxw8nWOkVbBOH_mC7sPHTkgVbbtrYqEek05-iupcxgkLUksERHvFsBIE5xytDaNzxeuLHTLu8FC-O-k
+  FRONT_DIR: ./frontend
+
+jobs:
+  check_frontend:
+    runs-on: macos-14
+
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: install pnpm
+        with:
+          version: 9
+          run_install: false
+
+      - name: install node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: '${{ env.FRONT_DIR }}/pnpm-lock.yaml'
+
+      - name: install deps
+        run: pnpm install
+
+      - name: check formatting
+        run: pnpm run formatcheck
+
+      - name: typecheck
+        run: pnpm run typecheck
+
+      - name: lint
+        run: pnpm run lint
+
+      - name: build
+        run: pnpm run build
+
+  deploy_frontend:
+    runs-on: macos-14
+    needs: [check_frontend]
+    if: github.event_name != 'pull_request'
+    environment: prod
+
+    defaults:
+      run:
+        working-directory: ${{ env.FRONT_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: install pnpm
+        with:
+          version: 9
+          run_install: false
+
+      - name: install node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: '${{ env.FRONT_DIR }}/pnpm-lock.yaml'
+
+      - name: install deps
+        run: pnpm install
+
+      - name: build
+        run: pnpm run build
+        env:
+          PUBLIC_API_URL: ${{ env.FRONT_API_URL }}
+          PUBLIC_VAPID_PUBLIC_KEY: ${{ env.FRONT_VAPID_PUBLIC_KEY }}
+
+      - name: update deployment
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          command: pages deploy "${{ env.FRONT_DIR }}/dist" --project-name=tasks-front
