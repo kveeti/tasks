@@ -1,7 +1,2 @@
-**/target
-**/sql
-*.sh
-*.md
-*.yml
-*.yaml
+target
 .env
