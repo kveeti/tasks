@@ -1,0 +1,103 @@
+name: pr backend
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+env:
+  DOCKERHUB_USERNAME: veetik
+  IMAGE: tasks_backend
+  DIR: ./backend
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@1fbea72663f6d4c03efaab13560c8a24cfd2a7cc
+        with:
+          components: rustfmt
+
+      - name: formatting
+        run: cargo fmt --check
+
+  build_and_push_docker:
+    needs: [check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.DIR }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=${{ env.IMAGE }}-pr:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}-pr:buildcache,mode=max
+
+  build_and_push_docker_2:
+    needs: [check]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - run: sudo apt install -y gcc-arm-linux-gnueabi musl-tools pkg-config libssl-dev
+      - uses: actions-rust-lang/setup-rust-toolchain@1fbea72663f6d4c03efaab13560c8a24cfd2a7cc
+        with:
+          target: armv7-unknown-linux-musleabi
+      - name: build server
+        run: cargo build --release --bin backend --target armv7-unknown-linux-musleabi
+
+      - name: build and push docker
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.DIR }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=${{ env.IMAGE }}-pr:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}-pr:buildcache,mode=max
+
