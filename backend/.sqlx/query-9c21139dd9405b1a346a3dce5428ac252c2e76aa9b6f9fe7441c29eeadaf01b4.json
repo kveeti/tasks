@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            ORDER BY id DESC\n        ",
+  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            ORDER BY last_used_at asc\n        ",
   "describe": {
     "columns": [
       {
@@ -22,6 +22,11 @@
         "ordinal": 3,
         "name": "color",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "last_used_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -33,8 +38,9 @@
       false,
       false,
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "0c6fa785fdfbb2c36f5d97aca2d2b99c6f46546cc81ad7ca7c5e784293720bb9"
+  "hash": "9c21139dd9405b1a346a3dce5428ac252c2e76aa9b6f9fe7441c29eeadaf01b4"
 }

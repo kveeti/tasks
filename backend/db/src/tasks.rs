@@ -140,6 +140,8 @@ pub async fn get_ongoing(db: &Db, user_id: &str) -> Result<Option<TaskWithTag>, 
 }
 
 pub async fn insert(db: &Db, task: &Task) -> Result<(), anyhow::Error> {
+    let mut tx = db.begin().await.context("error staring tx")?;
+
     sqlx::query!(
         r#"
             INSERT INTO tasks (id, user_id, tag_id, is_manual, start_at, end_at, seconds)
@@ -153,9 +155,26 @@ pub async fn insert(db: &Db, task: &Task) -> Result<(), anyhow::Error> {
         task.end_at,
         task.seconds,
     )
-    .execute(db)
+    .execute(&mut *tx)
     .await
     .context("error inserting task")?;
+
+    sqlx::query!(
+        r#"
+            UPDATE tags
+            SET last_used_at = $1
+            WHERE 
+                id = $2 AND user_id = $3;
+        "#,
+        Utc::now(),
+        task.tag_id,
+        task.user_id,
+    )
+    .execute(&mut *tx)
+    .await
+    .context("error updating tag last_used_at")?;
+
+    tx.commit().await.context("error committing tx")?;
 
     return Ok(());
 }

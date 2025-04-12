@@ -22,6 +22,11 @@
         "ordinal": 3,
         "name": "color",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "last_used_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -34,7 +39,8 @@
       false,
       false,
       false,
-      false
+      false,
+      true
     ]
   },
   "hash": "fc3f1e385913bb7bd670a459accf5d67ea1ec14c6296f05a378ee6c190db8e3d"

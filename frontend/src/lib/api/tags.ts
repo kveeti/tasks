@@ -7,6 +7,7 @@ export type ApiTag = {
 	id: string;
 	label: string;
 	color: TagColor;
+	last_used_at: Date;
 };
 
 export function useTags() {

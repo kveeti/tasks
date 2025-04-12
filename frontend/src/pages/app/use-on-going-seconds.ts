@@ -17,6 +17,7 @@ export function useOnGoingSeconds({ onGoingTask }: { onGoingTask?: ApiTaskWithTa
 
 		if (diff === 0 && onGoingSeconds === 0) {
 			queryClient.resetQueries({ queryKey: ["on-going-task"] });
+			queryClient.resetQueries({ queryKey: ["tags"] });
 			queryClient.invalidateQueries({ queryKey: ["infinite-tasks"], refetchType: "all" });
 		}
 

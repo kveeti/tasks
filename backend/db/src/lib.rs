@@ -16,6 +16,12 @@ pub async fn get_db() -> Db {
         .await
         .expect("error connecting to database");
 
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("error running migrations");
+    tracing::info!("migrated!");
+
     return pool;
 }
 

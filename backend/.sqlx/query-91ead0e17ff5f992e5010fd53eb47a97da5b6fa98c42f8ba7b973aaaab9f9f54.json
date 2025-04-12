@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE tags\n            SET last_used_at = $1\n            WHERE \n                id = $2 AND user_id = $3;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "91ead0e17ff5f992e5010fd53eb47a97da5b6fa98c42f8ba7b973aaaab9f9f54"
+}

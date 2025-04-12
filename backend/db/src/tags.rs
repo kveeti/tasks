@@ -1,5 +1,6 @@
 use crate::{create_id, Db};
 use anyhow::Context;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Tag {
@@ -7,6 +8,7 @@ pub struct Tag {
     pub user_id: String,
     pub label: String,
     pub color: String,
+    pub last_used_at: Option<DateTime<Utc>>,
 }
 
 pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>, anyhow::Error> {
@@ -55,7 +57,7 @@ pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> 
         r#"
             SELECT * FROM tags
             WHERE user_id = $1
-            ORDER BY id DESC
+            ORDER BY last_used_at asc
         "#,
         user_id
     )
@@ -77,6 +79,7 @@ pub async fn insert(
         user_id: user_id.to_owned(),
         label: label.to_owned(),
         color: color.to_owned(),
+        last_used_at: None,
     };
 
     sqlx::query!(
