@@ -1,4 +1,5 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
+import { useQueryClient } from "@tanstack/react-query";
 import { addSeconds, format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -76,6 +77,7 @@ const addTaskFormSchema = v.object({
 export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 	const tags = useTags();
 	const mutation = useAddManualTask();
+	const queryClient = useQueryClient();
 
 	const form = useForm<v.InferOutput<typeof addTaskFormSchema>>({
 		resolver: valibotResolver(addTaskFormSchema),
@@ -99,7 +101,14 @@ export function AddTaskForm({ onSuccess }: { onSuccess: () => void }) {
 					started_at: start.toISOString(),
 					expires_at: end.toISOString(),
 				},
-				{ onSuccess }
+				{
+					onSuccess: () => {
+						onSuccess();
+						void queryClient.invalidateQueries({
+							queryKey: ["on-going-task"],
+						});
+					},
+				}
 			)
 			.catch(errorToast("error adding task"));
 	}
