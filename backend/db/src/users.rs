@@ -14,7 +14,12 @@ pub async fn get_by_email(db: &Db, email: &str) -> Result<Option<User>, anyhow::
     let user = sqlx::query_as!(
         User,
         r#"
-            SELECT * FROM users
+            SELECT
+                id,
+                email,
+                preferences,
+                joined_at
+            FROM users
             WHERE email = $1
         "#,
         email
@@ -30,7 +35,12 @@ pub async fn get_by_id(db: &Db, user_id: &str) -> Result<Option<User>, anyhow::E
     let user = sqlx::query_as!(
         User,
         r#"
-            SELECT * FROM users
+            SELECT
+                id,
+                email,
+                preferences,
+                joined_at
+            FROM users
             WHERE id = $1
         "#,
         user_id

@@ -80,7 +80,16 @@ pub async fn get_many(
         sqlx::query_as!(
             TaskWithTag,
             r#"
-                SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label
+                SELECT 
+                    tasks.id,
+                    tasks.user_id,
+                    tasks.tag_id,
+                    tasks.is_manual,
+                    tasks.seconds,
+                    tasks.start_at,
+                    tasks.end_at,
+                    tags.color AS tag_color,
+                    tags.label AS tag_label
                 FROM tasks
                 INNER JOIN tags ON tasks.tag_id = tags.id
                 WHERE tasks.user_id = $1
@@ -99,7 +108,16 @@ pub async fn get_many(
         sqlx::query_as!(
             TaskWithTag,
             r#"
-                SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label
+                SELECT 
+                    tasks.id,
+                    tasks.user_id,
+                    tasks.tag_id,
+                    tasks.is_manual,
+                    tasks.seconds,
+                    tasks.start_at,
+                    tasks.end_at,
+                    tags.color AS tag_color,
+                    tags.label AS tag_label
                 FROM tasks
                 INNER JOIN tags ON tasks.tag_id = tags.id
                 WHERE tasks.user_id = $1
@@ -121,7 +139,16 @@ pub async fn get_ongoing(db: &Db, user_id: &str) -> Result<Option<TaskWithTag>, 
     let ongoing_task = sqlx::query_as!(
         TaskWithTag,
         r#"
-            SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label
+            SELECT 
+                tasks.id,
+                tasks.user_id,
+                tasks.tag_id,
+                tasks.is_manual,
+                tasks.seconds,
+                tasks.start_at,
+                tasks.end_at,
+                tags.color AS tag_color,
+                tags.label AS tag_label
             FROM tasks
             INNER JOIN tags ON tasks.tag_id = tags.id
             WHERE tasks.user_id = $1

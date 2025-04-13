@@ -54,7 +54,14 @@ pub async fn get_to_send(db: &Db) -> Result<Vec<Notification>, anyhow::Error> {
     return Ok(sqlx::query_as!(
         Notification,
         r#"
-            SELECT * FROM notifications
+            SELECT
+                id,
+                user_id,
+                task_id,
+                title,
+                message,
+                send_at
+            FROM notifications
             WHERE send_at <= NOW()
         "#,
     )

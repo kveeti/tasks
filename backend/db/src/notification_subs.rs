@@ -70,7 +70,13 @@ pub async fn get_by_endpoint(
     return Ok(sqlx::query_as!(
         NotificationSub,
         r#"
-            SELECT * FROM notification_subs
+            SELECT 
+                id,
+                user_id,
+                endpoint,
+                p256dh,
+                auth
+            FROM notification_subs
             WHERE endpoint = $1
         "#,
         endpoint
@@ -87,7 +93,13 @@ pub async fn get_by_user_ids(
     return Ok(sqlx::query_as!(
         NotificationSub,
         r#"
-            SELECT * FROM notification_subs
+            SELECT
+                id,
+                user_id,
+                endpoint,
+                p256dh,
+                auth
+            FROM notification_subs
             WHERE user_id = ANY($1)
         "#,
         user_ids

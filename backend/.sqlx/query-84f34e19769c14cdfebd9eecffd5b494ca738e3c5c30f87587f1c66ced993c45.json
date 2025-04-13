@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM notification_subs\n            WHERE user_id = ANY($1)\n        ",
+  "query": "\n            SELECT\n                id,\n                user_id,\n                label,\n                color,\n                last_used_at\n            FROM tags\n            WHERE user_id = $1\n            ORDER BY last_used_at asc\n        ",
   "describe": {
     "columns": [
       {
@@ -15,23 +15,23 @@
       },
       {
         "ordinal": 2,
-        "name": "p256dh",
+        "name": "label",
         "type_info": "Varchar"
       },
       {
         "ordinal": 3,
-        "name": "auth",
+        "name": "color",
         "type_info": "Varchar"
       },
       {
         "ordinal": 4,
-        "name": "endpoint",
-        "type_info": "Text"
+        "name": "last_used_at",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "TextArray"
+        "Text"
       ]
     },
     "nullable": [
@@ -39,8 +39,8 @@
       false,
       false,
       false,
-      false
+      true
     ]
   },
-  "hash": "e1c28630f13f29bcffb66cdf2128d17f4a2dd5ecd7523e806e0c8935d084c766"
+  "hash": "84f34e19769c14cdfebd9eecffd5b494ca738e3c5c30f87587f1c66ced993c45"
 }

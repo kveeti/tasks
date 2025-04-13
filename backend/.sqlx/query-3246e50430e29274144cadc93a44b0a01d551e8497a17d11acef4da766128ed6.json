@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            AND id = $2\n        ",
+  "query": "\n            SELECT\n                id,\n                user_id,\n                task_id,\n                title,\n                message,\n                send_at\n            FROM notifications\n            WHERE send_at <= NOW()\n        ",
   "describe": {
     "columns": [
       {
@@ -15,33 +15,36 @@
       },
       {
         "ordinal": 2,
-        "name": "label",
+        "name": "task_id",
         "type_info": "Varchar"
       },
       {
         "ordinal": 3,
-        "name": "color",
+        "name": "title",
         "type_info": "Varchar"
       },
       {
         "ordinal": 4,
-        "name": "last_used_at",
+        "name": "message",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "send_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
-      "Left": [
-        "Text",
-        "Text"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
       false,
       false,
       false,
-      true
+      false,
+      false
     ]
   },
-  "hash": "fc3f1e385913bb7bd670a459accf5d67ea1ec14c6296f05a378ee6c190db8e3d"
+  "hash": "3246e50430e29274144cadc93a44b0a01d551e8497a17d11acef4da766128ed6"
 }

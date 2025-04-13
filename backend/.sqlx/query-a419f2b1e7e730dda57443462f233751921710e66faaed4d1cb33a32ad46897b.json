@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT tasks.*, tags.color AS tag_color, tags.label AS tag_label\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                AND tasks.id < $2\n                ORDER BY tasks.start_at DESC\n                LIMIT $3;\n            ",
+  "query": "\n                SELECT \n                    tasks.id,\n                    tasks.user_id,\n                    tasks.tag_id,\n                    tasks.is_manual,\n                    tasks.seconds,\n                    tasks.start_at,\n                    tasks.end_at,\n                    tags.color AS tag_color,\n                    tags.label AS tag_label\n                FROM tasks\n                INNER JOIN tags ON tasks.tag_id = tags.id\n                WHERE tasks.user_id = $1\n                AND tasks.id < $2\n                ORDER BY tasks.start_at DESC\n                LIMIT $3;\n            ",
   "describe": {
     "columns": [
       {
@@ -68,5 +68,5 @@
       false
     ]
   },
-  "hash": "b4da9fea41999a6da5161b4eb2ef7f8e0e6fbe9fc475d8543326c43d3b54571a"
+  "hash": "a419f2b1e7e730dda57443462f233751921710e66faaed4d1cb33a32ad46897b"
 }

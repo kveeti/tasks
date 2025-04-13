@@ -17,7 +17,11 @@ pub async fn get_one(
     let session = sqlx::query_as!(
         Session,
         r#"
-            SELECT * FROM sessions
+            SELECT
+                id,
+                user_id,
+                expires_at
+            FROM sessions
             WHERE id = $1 AND user_id = $2
         "#,
         session_id,

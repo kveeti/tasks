@@ -15,7 +15,13 @@ pub async fn get_one(db: &Db, user_id: &str, tag_id: &str) -> Result<Option<Tag>
     let tag = sqlx::query_as!(
         Tag,
         r#"
-            SELECT * FROM tags
+            SELECT
+                id,
+                user_id,
+                label,
+                color,
+                last_used_at
+            FROM tags
             WHERE user_id = $1
             AND id = $2
         "#,
@@ -37,7 +43,13 @@ pub async fn get_by_label(
     let tag = sqlx::query_as!(
         Tag,
         r#"
-            SELECT * FROM tags
+            SELECT
+                id,
+                user_id,
+                label,
+                color,
+                last_used_at
+            FROM tags
             WHERE user_id = $1
             AND label = $2
         "#,
@@ -55,7 +67,13 @@ pub async fn get_all(db: &Db, user_id: &str) -> Result<Vec<Tag>, anyhow::Error> 
     let tags = sqlx::query_as!(
         Tag,
         r#"
-            SELECT * FROM tags
+            SELECT
+                id,
+                user_id,
+                label,
+                color,
+                last_used_at
+            FROM tags
             WHERE user_id = $1
             ORDER BY last_used_at asc
         "#,

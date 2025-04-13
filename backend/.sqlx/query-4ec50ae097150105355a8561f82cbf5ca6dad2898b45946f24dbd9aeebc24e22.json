@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            AND label = $2\n        ",
+  "query": "\n            SELECT \n                id,\n                user_id,\n                endpoint,\n                p256dh,\n                auth\n            FROM notification_subs\n            WHERE endpoint = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -15,23 +15,22 @@
       },
       {
         "ordinal": 2,
-        "name": "label",
-        "type_info": "Varchar"
+        "name": "endpoint",
+        "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "color",
+        "name": "p256dh",
         "type_info": "Varchar"
       },
       {
         "ordinal": 4,
-        "name": "last_used_at",
-        "type_info": "Timestamptz"
+        "name": "auth",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Text",
         "Text"
       ]
     },
@@ -40,8 +39,8 @@
       false,
       false,
       false,
-      true
+      false
     ]
   },
-  "hash": "0d8236dcc8bce3fb250d044e51863b3753058266843d92cdc0330df16ae2c62e"
+  "hash": "4ec50ae097150105355a8561f82cbf5ca6dad2898b45946f24dbd9aeebc24e22"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM tags\n            WHERE user_id = $1\n            ORDER BY last_used_at asc\n        ",
+  "query": "\n            SELECT\n                id,\n                user_id,\n                label,\n                color,\n                last_used_at\n            FROM tags\n            WHERE user_id = $1\n            AND id = $2\n        ",
   "describe": {
     "columns": [
       {
@@ -31,6 +31,7 @@
     ],
     "parameters": {
       "Left": [
+        "Text",
         "Text"
       ]
     },
@@ -42,5 +43,5 @@
       true
     ]
   },
-  "hash": "9c21139dd9405b1a346a3dce5428ac252c2e76aa9b6f9fe7441c29eeadaf01b4"
+  "hash": "278876d9be42476c24108fd49d621c011a233bd3c4faa73bd5c90686ea97cc1e"
 }
