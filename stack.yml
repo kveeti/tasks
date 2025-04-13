@@ -1,0 +1,46 @@
+services:
+  backend:
+    image: veetik/tasks-backend:${COMMIT_SHA:-latest}
+    networks:
+      - proxy
+      - pg
+    logging:
+      options:
+        max-size: 2m
+        max-file: 3
+    secrets:
+      - source: tasks_envs
+        target: /.env
+    deploy:
+      rollback_config:
+        parallelism: 2
+        delay: 5s
+        failure_action: continue
+        monitor: 5s
+        order: start-first
+      update_config:
+        parallelism: 2
+        delay: 1s
+        failure_action: rollback
+        monitor: 5s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.http.routers.tasks_backend.rule=Host(`tasks-api.veetik.com`)"
+        - "traefik.http.services.tasks_backend.loadbalancer.server.port=8000"
+
+networks:
+  proxy:
+    external: true
+  pg:
+    external: true
+
+secrets:
+  tasks_envs:
+    external: true
+
