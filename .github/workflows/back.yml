@@ -1,0 +1,80 @@
+name: back
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+env:
+  DIR: backend
+  DOCKERHUB_USERNAME: veetik
+  DOCKERHUB_IMAGE: veetik/tasks-backend
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04-arm
+    defaults:
+      run:
+        working-directory: ${{ env.DIR }}
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - uses: actions-rust-lang/setup-rust-toolchain@9d7e65c320fdb52dcd45ffaa68deb6c02c8754d9 # 1.12.0
+        with:
+          components: rustfmt
+
+      - name: check formatting
+        run: cargo fmt --check
+
+  build_and_push_docker_image:
+    name: build and push docker image
+#    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
+    needs: checks
+    defaults:
+      run:
+        working-directory: ${{ env.DIR }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+
+      - name: setup docker
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # 3.6.0
+
+      - name: setup buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # 3.10.0
+
+      - name: login to dockerhub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # 3.4.0
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: generate metadata for docker image
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # 5.7.0
+        id: meta
+        with:
+          images: ${{ env.DOCKERHUB_IMAGE }}
+          tags: |
+            type=sha
+            type=ref,event=pr
+
+      - name: build and push docker image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # 6.18.0
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ env.DIR }}
+          file: ${{ env.DIR }}/Dockerfile
+#          platforms: linux/arm64
+          platforms: linux/amd64
+          cache-from: type=registry,ref=${{ env.DOCKERHUB_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKERHUB_IMAGE }}:buildcache,mode=max
