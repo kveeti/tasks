@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
 import { conf } from "@/lib/conf";
 
@@ -11,12 +9,12 @@ export function LoginPage() {
 			<h1 className="text-5xl">login</h1>
 
 			<Button asChild>
-				<Link to={`${apiUrl}/auth/google-init`}>login with google</Link>
+				<a href={`${apiUrl}/auth/google-init`}>login with google</a>
 			</Button>
 
 			{!conf.IS_PROD && (
 				<Button asChild className="-mt-6">
-					<Link to={`${apiUrl}/auth/dev-login`}>dev login</Link>
+					<a href={`${apiUrl}/auth/dev-login`}>dev login</a>
 				</Button>
 			)}
 		</div>
