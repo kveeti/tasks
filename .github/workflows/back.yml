@@ -1,4 +1,4 @@
-name: back
+name: Backend image
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
 env:
   DIR: backend
   DOCKERHUB_USERNAME: veetik
-  DOCKERHUB_IMAGE: veetik/tasks-backend
+  DOCKERHUB_IMAGE: veetik/tasks
 
 jobs:
   checks:
@@ -63,7 +63,7 @@ jobs:
         with:
           images: ${{ env.DOCKERHUB_IMAGE }}
           tags: |
-            type=sha
+            type=raw,value=backend
             type=ref,event=pr
 
       - name: build and push docker image
