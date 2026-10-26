@@ -1,4 +1,6 @@
-use axum::{body::Body, response::Response, Router};
+use axum::{
+    body::Body, extract::State, http::StatusCode, response::Response, routing::get, Router,
+};
 use config::CONFIG;
 use hyper::http::HeaderValue;
 use hyper::{header, Method, Request};
@@ -24,7 +26,6 @@ pub async fn start_api() -> () {
 
     let app = Router::new()
         .nest("/api", router)
-        .with_state(state)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request<Body>| {
@@ -32,7 +33,7 @@ pub async fn start_api() -> () {
                         "request",
                         id = %db::create_id(),
                         method = %request.method(),
-                        uri = %request.uri(),
+                        path = %request.uri().path(),
                     )
                 })
                 .on_response(|response: &Response, latency: Duration, _span: &Span| {
@@ -43,9 +44,11 @@ pub async fn start_api() -> () {
                     );
                 }),
         )
+        .route("/api/health", get(health))
+        .with_state(state)
         .layer(cors());
 
-    let listener = TcpListener::bind("0.0.0.0:8000")
+    let listener = TcpListener::bind(&CONFIG.host)
         .await
         .expect("error binding listener");
 
@@ -55,6 +58,13 @@ pub async fn start_api() -> () {
     );
 
     axum::serve(listener, app).await.expect("error serving app");
+}
+
+async fn health(State(state): State<RequestStateStruct>) -> StatusCode {
+    match tokio::time::timeout(Duration::from_secs(2), db::ping(&state.db)).await {
+        Ok(Ok(())) => StatusCode::OK,
+        _ => StatusCode::SERVICE_UNAVAILABLE,
+    }
 }
 
 fn cors() -> CorsLayer {

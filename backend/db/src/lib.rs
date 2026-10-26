@@ -25,6 +25,11 @@ pub async fn get_db() -> Db {
     return pool;
 }
 
+pub async fn ping(db: &Db) -> Result<(), sqlx::Error> {
+    sqlx::query("SELECT 1").execute(db).await?;
+    Ok(())
+}
+
 pub fn create_id() -> String {
     return Ulid::new().to_string();
 }
