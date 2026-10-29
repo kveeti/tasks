@@ -24,11 +24,11 @@
         src = ./frontend;
         pnpmDeps = pkgs.fetchPnpmDeps {
           inherit (finalAttrs) pname version src;
-          pnpm = pkgs.pnpm_10;
+          pnpm = pkgs.pnpm_10_latest;
           fetcherVersion = 3;
           hash = "sha256-dSr5/3xSnww4QXEpj0oTyqEU9lUEV6qaPuIdrCXvojw=";
         };
-        nativeBuildInputs = [ pkgs.nodejs pkgs.pnpm_10 pkgs.pnpmConfigHook ];
+        nativeBuildInputs = [ pkgs.nodejs pkgs.pnpm_10_latest pkgs.pnpmConfigHook ];
         buildPhase = ''
           runHook preBuild
           pnpm build
